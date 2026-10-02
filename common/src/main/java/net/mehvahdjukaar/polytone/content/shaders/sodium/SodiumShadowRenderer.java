@@ -7,6 +7,7 @@ import net.caffeinemc.mods.sodium.client.render.SodiumWorldRenderer;
 import net.caffeinemc.mods.sodium.client.render.chunk.ChunkRenderMatrices;
 import net.caffeinemc.mods.sodium.client.render.chunk.RenderSectionManager;
 import net.caffeinemc.mods.sodium.client.render.chunk.UniformBufferManager;
+import net.caffeinemc.mods.sodium.client.render.chunk.lists.DeferredTaskList;
 import net.caffeinemc.mods.sodium.client.render.viewport.Viewport;
 import net.caffeinemc.mods.sodium.client.render.viewport.ViewportProvider;
 import net.caffeinemc.mods.sodium.client.util.FogParameters;
@@ -54,6 +55,9 @@ public final class SodiumShadowRenderer {
 
         RenderSectionManager sectionManager = renderSectionManager();
         boolean mutatedRenderLists = sectionManager != null;
+        // the light cull also swaps in its own chunk build queue, which the list rebuild doesn't put back
+        DeferredTaskList cameraTasks = mutatedRenderLists
+                ? ((SodiumRenderSectionManagerAccessor) sectionManager).polytone$getTaskLists() : null;
         try {
             if (mutatedRenderLists) cullTerrainToLightVolume(sectionManager, cam, volume, camPos);
 
@@ -82,6 +86,8 @@ public final class SodiumShadowRenderer {
             }
         } finally {
             if (mutatedRenderLists) {
+                // before the rebuild, which may hand in a fresher camera queue of its own
+                ((SodiumRenderSectionManagerAccessor) sectionManager).polytone$setTaskLists(cameraTasks);
                 rebuildCameraRenderList(mc, cam);
             }
         }
