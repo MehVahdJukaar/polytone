@@ -3,6 +3,9 @@ package net.mehvahdjukaar.polytone.common.expressions.proxies;
 import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -61,6 +64,11 @@ public abstract class AbstractEntityProxy extends PositionalProxy {
 
     public boolean inWater() {
         return entity().isInWater();
+    }
+
+    // eyes in the fluid tag, inWater() is true when merely touching
+    public boolean eyeInFluid(String fluidTag) {
+        return entity().isEyeInFluid(TagKey.create(Registries.FLUID, Identifier.parse(fluidTag)));
     }
 
     public boolean onFire() {

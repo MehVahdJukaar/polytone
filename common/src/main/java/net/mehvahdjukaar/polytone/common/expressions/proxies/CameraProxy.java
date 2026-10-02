@@ -74,6 +74,16 @@ public class CameraProxy extends PositionalProxy {
         return Minecraft.getInstance().options.getCameraType().toString().toLowerCase(Locale.ROOT);
     }
 
+    // what the camera is in, as vanilla picks fog by: 0 none, 1 water, 2 lava, 3 powder snow
+    public int fogType() {
+        return switch (delegate().getFluidInCamera()) {
+            case WATER -> 1;
+            case LAVA -> 2;
+            case POWDER_SNOW -> 3;
+            default -> 0;
+        };
+    }
+
     public double viewDistance() {
         return Minecraft.getInstance().options.renderDistance().get() * 16.0;
     }
