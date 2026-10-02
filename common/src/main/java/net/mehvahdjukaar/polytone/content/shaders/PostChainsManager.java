@@ -29,6 +29,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
+import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;
 
@@ -60,6 +61,10 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
     private TextureTarget worldDepthSnapshot;
     private boolean worldDepthCaptured = false;
     private boolean levelRenderedThisFrame = false;
+
+    // the bobbed projection, see captureRenderedProjection
+    private final Matrix4f renderedProjection = new Matrix4f();
+    private boolean renderedProjectionValid = false;
 
     public PostChainsManager() {
         super(Spec.of("Post chain", () -> PostChainActivator.CODEC)
@@ -203,7 +208,21 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         Polytone.POST_TARGETS.close();
     }
 
+    // vanilla renders with a bobbed copy of cameraState.projectionMatrix, depth reconstruction needs that one
+    public void captureRenderedProjection(Matrix4fc projection) {
+        renderedProjection.set(projection);
+        renderedProjectionValid = true;
+    }
+
+    // consumed, so a frame without a capture falls back instead of reusing the last one
+    private Matrix4fc renderedProjectionOr(Matrix4fc fallback) {
+        if (!renderedProjectionValid) return fallback;
+        renderedProjectionValid = false;
+        return renderedProjection;
+    }
+
     public void updateGlobalUniforms(Matrix4fc projectionMatrix, Matrix4fc viewMatrix, float deltaTime) {
+        projectionMatrix = renderedProjectionOr(projectionMatrix);
         if (!globalsDeclared && !Polytone.isDevEnv) return;
         Minecraft mc = Minecraft.getInstance();
         float sunAngle = mc.levelRenderer.levelRenderState.skyRenderState.sunAngle;
