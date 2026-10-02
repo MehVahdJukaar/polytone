@@ -24,7 +24,7 @@ import net.minecraft.client.renderer.LevelTargetBundle;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.renderer.ShaderManager;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
-import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
@@ -164,7 +164,7 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
             GpuTextureView shadowMap = Polytone.SHADOWS.renderer().getShadowTexture();
             if (shadowMap == null) {
                 shadowMap = Minecraft.getInstance().getTextureManager()
-                        .getTexture(TextureManager.INTENTIONAL_MISSING_TEXTURE).getTextureView();
+                        .getTexture(MissingTextureAtlasSprite.getLocation()).getTextureView();
             }
             pass.bindTexture(SHADOW_SAMPLER_NAME, shadowMap,
                     RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
