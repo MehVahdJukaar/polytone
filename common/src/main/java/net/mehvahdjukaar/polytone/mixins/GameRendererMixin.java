@@ -56,6 +56,7 @@ public abstract class GameRendererMixin {
         Polytone.POST_CHAINS.onClose();
         Polytone.SHADER_EFFECTS.onClose();
         Polytone.SHADOWS.renderer().close();
+        Polytone.VIEWPOINTS.onClose();
     }
 
     // post_chains_after_hand: save the world depth right before vanilla clears it to draw the hand...

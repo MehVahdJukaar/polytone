@@ -29,7 +29,7 @@ public class GlProgramMixin {
         GlProgram self = (GlProgram) (Object) this;
         Map<String, Uniform> byName = self.getUniforms();
         PostChainsManager.onProgramLinked(byName.keySet());
-        for (String name : PostChainsManager.DYNAMIC_SAMPLERS) {
+        for (String name : PostChainsManager.dynamicSamplers()) {
             if (byName.containsKey(name)) continue;
             int location = GL20C.glGetUniformLocation(self.getProgramId(), name);
             if (location == -1) continue;

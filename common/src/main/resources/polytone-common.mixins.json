@@ -97,6 +97,7 @@
     "accessor.BiomeAccessor",
     "accessor.DimensionTypeAccessor",
     "accessor.DustParticleOptionAccessor",
+    "accessor.GameRendererAccessor",
     "accessor.GlBufferAccessor",
     "accessor.LevelRendererShadowAccessor",
     "accessor.ParticleAccessor",

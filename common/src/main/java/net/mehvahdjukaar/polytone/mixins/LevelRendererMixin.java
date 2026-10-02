@@ -8,10 +8,12 @@ import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.content.particle.PreviewRenderTarget;
+import net.mehvahdjukaar.polytone.mixins.accessor.GameRendererAccessor;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LevelTargetBundle;
+import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.state.level.LevelRenderState;
 import org.joml.Matrix4fc;
@@ -57,6 +59,10 @@ public class LevelRendererMixin {
         // shadow map goes first so the post chains built into this frame's graph sample this frame's map
         Polytone.SHADOWS.renderer().renderShadowPassIfNeeded(terrainFog, Minecraft.getInstance().gameRenderer.mainCamera(),
                 modelViewMatrix, cameraState.projectionMatrix);
+        // viewpoints too, without fog since it would be measured from their eye
+        GpuBufferSlice noFog = ((GameRendererAccessor) Minecraft.getInstance().gameRenderer).polytone$getFogRenderer()
+                .getBuffer(FogRenderer.FogMode.NONE);
+        Polytone.VIEWPOINTS.renderActive(noFog, Minecraft.getInstance().gameRenderer.mainCamera());
     }
 
     // after weather, the last world pass that depth tests

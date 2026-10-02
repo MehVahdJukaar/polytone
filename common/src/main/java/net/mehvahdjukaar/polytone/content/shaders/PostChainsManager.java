@@ -37,6 +37,7 @@ import org.lwjgl.system.MemoryStack;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,16 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
     public static final String GLOBALS_NAME = "PolyGlobals";
     public static final String SHADOW_UBO_NAME = "PolyShadow";
     public static final String SHADOW_SAMPLER_NAME = "InShadow";
-    public static final List<String> DYNAMIC_SAMPLERS = List.of(SHADOW_SAMPLER_NAME);
+
+    // bound at runtime, not by a pipeline. read from the raw jsons so they exist before a level does
+    public static List<String> dynamicSamplers() {
+        List<String> viewpoints = Polytone.VIEWPOINTS.declaredSamplerNames();
+        if (viewpoints.isEmpty()) return List.of(SHADOW_SAMPLER_NAME);
+        List<String> all = new ArrayList<>(viewpoints.size() + 1);
+        all.add(SHADOW_SAMPLER_NAME);
+        all.addAll(viewpoints);
+        return all;
+    }
 
     private static volatile boolean globalsDeclared = false;
     private static volatile boolean shadowUboDeclared = false;
@@ -143,7 +153,8 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
     }
 
     public boolean hasAnyPassBindings() {
-        return globalsDeclared || shadowUboDeclared || shadowSamplerDeclared || !samplersByPassPipeline.isEmpty();
+        return globalsDeclared || shadowUboDeclared || shadowSamplerDeclared || !samplersByPassPipeline.isEmpty()
+                || !Polytone.VIEWPOINTS.isEmpty();
     }
 
     public void bindUniformBlocks(RenderPass pass, Set<String> declaredUniforms) {
@@ -155,6 +166,7 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
             GpuBufferSlice shadowSlice = Polytone.SHADOWS.renderer().getUniformsSlice();
             pass.setUniform(SHADOW_UBO_NAME, shadowSlice != null ? shadowSlice : emptyShadowUbo());
         }
+        Polytone.VIEWPOINTS.bindUniformBlocks(pass, declaredUniforms);
     }
 
     public boolean anyActiveChainWantsShadowMap() {
@@ -164,6 +176,15 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
             }
         }
         return false;
+    }
+
+    // union of the viewpoints every currently active chain asked for
+    public Set<Identifier> wantedViewpoints() {
+        Set<Identifier> wanted = new HashSet<>();
+        synchronized (activators) {
+            for (var a : activators) wanted.addAll(a.wantedViewpoints());
+        }
+        return wanted;
     }
 
     public void registerSamplers(Identifier pipelineLocation, Map<String, Identifier> samplers) {
@@ -189,6 +210,7 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
             pass.bindTexture(SHADOW_SAMPLER_NAME, shadowMap,
                     RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
         }
+        Polytone.VIEWPOINTS.bindSamplers(pass, declaredUniforms);
         if (samplersByPassPipeline.isEmpty()) return;
         List<Map<String, Identifier>> list = samplersByPassPipeline.get(pipeline.getLocation());
         if (list == null) return;

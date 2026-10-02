@@ -23,7 +23,7 @@ public final class ShadowCasterVolume {
     private final float[] planes = new float[MAX_PLANES * 4];
     private int planeCount;
 
-    ShadowCasterVolume(Matrix4f lightView, float coverage, float depthRange) {
+    public ShadowCasterVolume(Matrix4f lightView, float coverage, float depthRange) {
         this.lightRight = new Vector3f(lightView.m00(), lightView.m10(), lightView.m20());
         this.lightUp = new Vector3f(lightView.m01(), lightView.m11(), lightView.m21());
         this.lightForward = new Vector3f(lightView.m02(), lightView.m12(), lightView.m22());
