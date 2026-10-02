@@ -52,6 +52,8 @@ public final class PolytoneAsyncParticles {
     private static final AtomicInteger ERRORS = new AtomicInteger();
 
     private static final int MIN_PARALLEL = 64; // below this, chunking costs more than it saves
+    // workers take blocks this size from a shared cursor
+    private static final int BLOCK = 16;
 
     private PolytoneAsyncParticles() {}
 
@@ -117,13 +119,15 @@ public final class PolytoneAsyncParticles {
         // even small batches go to the pool, ticking inline on main would defeat the overlap
         int chunks = (size < MIN_PARALLEL || THREADS <= 1) ? 1
                 : Math.min(THREADS, (size + MIN_PARALLEL - 1) / MIN_PARALLEL);
-        int per = (size + chunks - 1) / chunks;
         ForkJoinTask<?>[] tasks = new ForkJoinTask[chunks];
+        // no even slices, the newest particles are the costliest and sit at the end
+        AtomicInteger next = new AtomicInteger();
         for (int c = 0; c < chunks; c++) {
-            final int start = c * per;
-            final int end = Math.min(start + per, size);
             tasks[c] = POOL.submit(() -> {
-                for (int i = start; i < end; i++) tickOne(batch[i]);
+                for (int i = next.getAndAdd(BLOCK); i < size; i = next.getAndAdd(BLOCK)) {
+                    int end = Math.min(i + BLOCK, size);
+                    for (int j = i; j < end; j++) tickOne(batch[j]);
+                }
             });
         }
         inFlight = tasks;
