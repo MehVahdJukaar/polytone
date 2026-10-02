@@ -94,8 +94,7 @@ public class LevelRendererMixin {
                                     boolean shouldRenderSky,
                                     CallbackInfo ci,
                                     @Local FrameGraphBuilder frameGraphBuilder) {
-        // with post_chains_after_hand (default) GameRendererMixin runs the chains after the hand instead
-        if (Polytone.CONFIGS.postChainsAfterHand.get()) return;
+        // always, the sorting targets only exist in this graph
         RenderTarget mainTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
         Polytone.POST_CHAINS.addChainsToFrameGraph(mainTarget.width, mainTarget.height, this.targets, frameGraphBuilder,
                 terrainFog, this.levelRenderState.cameraRenderState);

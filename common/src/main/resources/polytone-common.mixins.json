@@ -98,6 +98,7 @@
     "accessor.GlBufferAccessor",
     "accessor.LevelRendererShadowAccessor",
     "accessor.ParticleAccessor",
+    "accessor.PostChainAccessor",
     "accessor.PostPassAccessor",
     "accessor.GlRenderPassAccessor",
     "accessor.VulkanRenderPassAccessor",

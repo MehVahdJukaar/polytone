@@ -58,6 +58,11 @@ public final class PostChainActivator {
         return active;
     }
 
+    // PostChain has no id of its own
+    public Identifier postChainId() {
+        return postChainId;
+    }
+
     public boolean wantsShadowMap() {
         return active && useShadowMap;
     }
