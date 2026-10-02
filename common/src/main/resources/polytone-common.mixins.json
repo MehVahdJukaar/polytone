@@ -92,7 +92,7 @@
     "SoundManagerMixin",
     "SpatialAttributeInterpolatorMixin",
     "SpriteContentsMixin",
-    "SubmitNodeStorageMixin",
+    "SubmitNodeCollectionMixin",
     "TextureSetupMixin",
     "VariantDeserializerMixin",
     "VertexConsumerMixin",
