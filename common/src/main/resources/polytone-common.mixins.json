@@ -86,7 +86,7 @@
     "SodiumShaderConstantsMixin",
     "SpatialAttributeInterpolatorMixin",
     "SpriteContentsMixin",
-    "SubmitNodeStorageMixin",
+    "SubmitNodeCollectionMixin",
     "TextureSetupMixin",
     "VariantDeserializerMixin",
     "WaterVisionMixin",

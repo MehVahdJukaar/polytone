@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.mixins;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -14,8 +14,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(SubmitNodeStorage.class)
-public class SubmitNodeStorageMixin {
+// every model submission passes through here: SubmitNodeStorage.submitModel only forwards to it
+@Mixin(SubmitNodeCollection.class)
+public class SubmitNodeCollectionMixin {
 
     @Inject(method = "submitModel", at = @At("HEAD"))
     private <S> void polytone$onSubmitModel(Model<? super S> model, S object, PoseStack poseStack,
