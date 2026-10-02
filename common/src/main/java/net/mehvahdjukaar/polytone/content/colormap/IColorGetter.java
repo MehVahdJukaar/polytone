@@ -51,7 +51,8 @@ public interface IColorGetter extends BlockTintSource, BarColor {
         }
 
         @Override
-        public int colorInWorld(BlockState state, BlockAndTintGetter reader, BlockPos pos) {
+        public int colorInWorld(BlockState state, @Nullable BlockAndTintGetter reader, BlockPos pos) {
+            if (reader == null) return bc.color(state);   // see OfColorResolver below
             return bc.colorInWorld(state, reader, pos);
         }
 
@@ -85,6 +86,8 @@ public interface IColorGetter extends BlockTintSource, BarColor {
 
         @Override
         public int colorInWorld(BlockState state, @Nullable BlockAndTintGetter reader, BlockPos pos) {
+            // a chunk build can outlive the level, leaving the reader null
+            if (reader == null) return bc.color(state);
             return bc.colorInWorld(state, reader, pos);
         }
 
