@@ -16,6 +16,7 @@ public record Viewpoint(ISimpleExp x, ISimpleExp y, ISimpleExp z,
                         ISimpleExp near, ISimpleExp far,
                         List<ChunkSectionLayer> terrainLayers,
                         boolean renderEntities, boolean renderBlockEntities, boolean renderCameraEntity,
+                        boolean renderParticles,
                         int resolution,
                         String depthSampler, String colorSampler,
                         String uniformBlock,
@@ -52,6 +53,8 @@ public record Viewpoint(ISimpleExp x, ISimpleExp y, ISimpleExp z,
                     i.optional("render_block_entities", Codec.BOOL, false, Viewpoint::renderBlockEntities),
                     // the entity the camera views from, drawn even in first person
                     i.optional("render_camera_entity", Codec.BOOL, true, Viewpoint::renderCameraEntity),
+                    // camera facing modes face the viewpoint, a second extract per viewpoint
+                    i.optional("render_particles", Codec.BOOL, false, Viewpoint::renderParticles),
                     i.optional("resolution", Codec.INT, 1024, Viewpoint::resolution),
                     i.optional("depth_sampler", Codec.STRING, "", Viewpoint::depthSampler),
                     // lit, unfogged, alpha 0 where nothing was drawn

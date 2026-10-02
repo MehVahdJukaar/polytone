@@ -75,6 +75,7 @@
     "ParticleGroupMixin",
     "ParticleResourcesMixin",
     "QuadParticleGroupMixin",
+    "QuadParticleFeatureRendererMixin",
     "RenderSetupMixin",
     "ScreenMixin",
     "SlotMixin",

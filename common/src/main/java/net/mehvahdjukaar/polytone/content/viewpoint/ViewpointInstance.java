@@ -20,12 +20,20 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
+import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticles;
+import net.mehvahdjukaar.polytone.content.particle.custom.render.ModelParticleRenderGroup;
+import net.mehvahdjukaar.polytone.content.particle.custom.render.ModelParticleRenderState;
 import net.mehvahdjukaar.polytone.content.shaders.ShadowCasterVolume;
 import net.mehvahdjukaar.polytone.content.shaders.sodium.SodiumShadowRenderer;
 import net.mehvahdjukaar.polytone.mixins.accessor.LevelRendererShadowAccessor;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.ItemPickupParticleGroup;
+import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.ParticleGroup;
+import net.minecraft.client.particle.QuadParticleGroup;
+import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.renderer.DynamicUniforms;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.ViewArea;
@@ -37,6 +45,7 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -58,8 +67,11 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.function.Predicate;
 
 public class ViewpointInstance {
+
+    private static final float PARTICLE_MARGIN = 3f; // same slack as the main pass's particle frustum
 
     private GpuTexture depthTexture = null;
     private GpuTextureView depthTextureView = null;
@@ -86,6 +98,11 @@ public class ViewpointInstance {
 
     private final List<SectionRenderDispatcher.RenderSection> sections = new ArrayList<>();
     private final List<BlockEntity> capturedBlockEntities = new ArrayList<>();
+
+    // render_particles
+    private final ViewpointCamera particleCamera = new ViewpointCamera();
+    private final QuadParticleRenderState quadParticles = new QuadParticleRenderState();
+    private final ModelParticleRenderState modelParticles = new ModelParticleRenderState();
 
     public GpuTextureView getDepthTexture() {
         return depthTextureView;
@@ -239,16 +256,19 @@ public class ViewpointInstance {
             drawTerrain(mc, view, vp.terrainLayers());
         }
 
-        if (vp.renderEntities() || vp.renderBlockEntities()) {
-            drawEntitiesAndBlockEntities(vp, mc, camPos, eye, view, volume, orthoSize > 0);
+        if (vp.renderParticles()) {
+            particleCamera.setup(cam, view, pitch * Mth.RAD_TO_DEG, yaw * Mth.RAD_TO_DEG);
+        }
+        if (vp.renderEntities() || vp.renderBlockEntities() || vp.renderParticles()) {
+            drawFeatures(vp, mc, camPos, eye, view, volume, orthoSize > 0);
         } else {
             capturedBlockEntities.clear();
         }
     }
 
     // like ShadowMapRenderer, with this viewpoint's matrices and target swapped in
-    private void drawEntitiesAndBlockEntities(Viewpoint vp, Minecraft mc, Vec3 camPos, Vector3f eye,
-                                              Matrix4f view, ShadowCasterVolume volume, boolean ortho) {
+    private void drawFeatures(Viewpoint vp, Minecraft mc, Vec3 camPos, Vector3f eye,
+                              Matrix4f view, ShadowCasterVolume volume, boolean ortho) {
         ClientLevel level = mc.level;
         if (level == null) return;
 
@@ -315,6 +335,10 @@ public class ViewpointInstance {
                 }
             }
 
+            if (vp.renderParticles()) {
+                submitParticles(mc, camPos, eye, volume, submitNodes, camState);
+            }
+
             try {
                 featureDispatcher.renderAllFeatures(submitNodes);
             } catch (Exception e) {
@@ -322,11 +346,45 @@ public class ViewpointInstance {
             }
         } finally {
             capturedBlockEntities.clear();
+            quadParticles.clear();
+            modelParticles.clear();
             RenderSystem.outputColorTextureOverride = null;
             RenderSystem.outputDepthTextureOverride = null;
             mvStack.popMatrix();
             RenderSystem.restoreProjectionMatrix();
         }
+    }
+
+    // into our own states, never the groups': those still hold the main pass's particles, which draw after this
+    private void submitParticles(Minecraft mc, Vec3 camPos, Vector3f eye, ShadowCasterVolume volume,
+                                 SubmitNodeStorage submitNodes, CameraRenderState camState) {
+        PolytoneAsyncParticles.awaitTicks();
+        float partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        Predicate<Particle> inView = p -> volume.intersects((float) (p.x - camPos.x) - eye.x,
+                (float) (p.y - camPos.y) - eye.y, (float) (p.z - camPos.z) - eye.z,
+                PARTICLE_MARGIN, PARTICLE_MARGIN, PARTICLE_MARGIN);
+
+        for (ParticleGroup<?> group : mc.particleEngine.particles.values()) {
+            if (group instanceof QuadParticleGroup quads) {
+                for (SingleQuadParticle particle : quads.particles) {
+                    if (!inView.test(particle)) continue;
+                    try {
+                        particle.extract(quadParticles, particleCamera, partialTick);
+                    } catch (Exception e) {
+                        // one broken particle must not kill the frame
+                    }
+                }
+            } else if (group instanceof ModelParticleRenderGroup models) {
+                models.extract(modelParticles, inView, particleCamera, partialTick);
+            } else if (group instanceof ItemPickupParticleGroup) {
+                // fresh state per call, frustum unused
+                group.extractRenderState(particleCamera.getCullFrustum(), particleCamera, partialTick)
+                        .submit(submitNodes, camState);
+            }
+            // elder guardian curses are a screen overlay, not world particles
+        }
+        quadParticles.submit(submitNodes, camState);
+        modelParticles.submit(submitNodes, camState);
     }
 
     // same as ShadowMapRenderer#drawVanillaTerrain
@@ -503,5 +561,6 @@ public class ViewpointInstance {
         renderedLateralHalf = 0f;
         sections.clear();
         capturedBlockEntities.clear();
+        particleCamera.reset(); // drops the entity
     }
 }
