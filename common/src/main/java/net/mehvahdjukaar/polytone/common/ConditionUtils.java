@@ -57,11 +57,11 @@ public class ConditionUtils {
             triState -> PackMetadataExp.TRUE);
 
     public static final Codec<Boolean> CODEC_SINGLE_JSON = SchemaCodecs.alternatives(
-            "conditions", CODEC_SINGLE_JSON_FULL, //old
             "keyed", SchemaCodecs.alternatives(
                     "conditions", CODEC_SINGLE_JSON_FULL,
                     "expression", CODEC_EXPRESSION_SINGLE_JSON
-            ).fieldOf("polytone_condition").codec()
+            ).fieldOf("polytone_condition").codec(),
+            "conditions", CODEC_SINGLE_JSON_FULL //old
     );
 
      static final Codec<TriState> CODEC_OVERLAY_FULL = RecordCodecBuilder.create(instance -> instance.group(
