@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.platform;
 
 import net.fabricmc.fabric.api.client.model.loading.v1.ExtraModelKey;
-import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
+import net.fabricmc.fabric.api.client.model.loading.v1.PreparableModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.model.loading.v1.SimpleUnbakedExtraModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.dispatch.BlockModelRotation;
@@ -11,11 +11,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class SpecialModelsHandlerImpl {
 
     //DUMB
     private static final Map<Identifier, ExtraModelKey<QuadCollection>> SPECIAL_MODELS = new HashMap<>();
+
+    private static CompletableFuture<Map<Identifier, ExtraModelKey<QuadCollection>>> pendingModels = new CompletableFuture<>();
 
     public static void clear() {
         SPECIAL_MODELS.clear();
@@ -35,31 +38,26 @@ public class SpecialModelsHandlerImpl {
         return null;
     }
 
-    private static ModelLoadingPlugin.Context hack = null;
-
     public static void init() {
-        // safely sets hack
-        ModelLoadingPlugin.register(context -> hack = context);
+        PreparableModelLoadingPlugin.register((sharedState, executor) -> {
+            pendingModels = new CompletableFuture<>();
+            return pendingModels;
+        }, (models, context) -> {
+            for (var entry : models.entrySet()) {
+                context.addModel(entry.getValue(), new SimpleUnbakedExtraModel<>(
+                        entry.getKey(),
+                        (model, baker) -> model.bakeTopGeometry(
+                                model.getTopTextureSlots(),
+                                baker,
+                                BlockModelRotation.IDENTITY
+                        )
+                ));
+            }
+        });
     }
 
     public static void finalizeAdditions() {
-        if (hack == null) return;
-        // Wait for hack to be initialized, up to a timeout if desired
-        for (var entry : SPECIAL_MODELS.entrySet()) {
-            var key = entry.getKey();
-            var value = entry.getValue();
-
-            hack.addModel(value, new SimpleUnbakedExtraModel<>(
-                    key,
-                    (model, baker) -> model.bakeTopGeometry(
-                            model.getTopTextureSlots(),
-                            baker,
-                            BlockModelRotation.IDENTITY
-                    )
-            ));
-        }
-
-
+        pendingModels.complete(Map.copyOf(SPECIAL_MODELS));
     }
 
 }

@@ -159,9 +159,12 @@ public class PolytoneReloadManager implements PreparableReloadListener {
     }
 
     public void earlyProcess(SharedState sharedState) {
-        for (var c : children) {
-            c.earlyProcess(sharedState);
+        try {
+            for (var c : children) {
+                c.earlyProcess(sharedState);
+            }
+        } finally {
+            SpecialModelsHandler.finalizeAdditions();
         }
-        SpecialModelsHandler.finalizeAdditions();
     }
 }
