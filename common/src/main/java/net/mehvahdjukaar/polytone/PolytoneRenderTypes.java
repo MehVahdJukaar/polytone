@@ -94,6 +94,7 @@ public class PolytoneRenderTypes {
             .withSampler("Sampler0")
             .withSampler("Sampler2")
             .withColorTargetState(new ColorTargetState(ADDITIVE_TRANSLUCENT_BLEND))
+            .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
             .withVertexFormat(DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS)
             .build());
 
