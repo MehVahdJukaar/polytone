@@ -183,7 +183,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
         var offset = this.type.offset;
         modelParticleRenderState.add(
                 this.type.renderType,
-                (float) (x + offset.x), (float) (y + offset.y), (float) (z + offset.z),
+                (float) (Mth.lerp(f, xo, x) + offset.x), (float) (Mth.lerp(f, yo, y) + offset.y), (float) (Mth.lerp(f, zo, z) + offset.z),
                 quaternionf.x,
                 quaternionf.y,
                 quaternionf.z,
