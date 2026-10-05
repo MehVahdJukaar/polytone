@@ -1,1 +1,1 @@
-- added back fluid tint feature
+- fixed some issues with particle 3d models, like non emissive not rendering, emissive ones having wrong depth test & model particles having no interpolation in pos
