@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.shaders.light;
 
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import com.google.gson.JsonElement;
@@ -7,16 +8,13 @@ import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.compat.CompatHandler;
-import net.mehvahdjukaar.polytone.compat.VeilCompat;
-import net.mehvahdjukaar.polytone.content.shaders.GLHelper;
 import net.mehvahdjukaar.polytone.content.shaders.IShader;
 import net.mehvahdjukaar.polytone.content.shaders.IShaderModifier;
 import net.mehvahdjukaar.polytone.content.config.ConfigsManager.ColoredLightsBackend;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
@@ -31,6 +29,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTest;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -62,35 +61,35 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
     private volatile MovingLightSource<Particle, IParticleExp> particleLights;
 
     public ColoredLightsManager() {
-        super(Spec.of("Colored Light", () -> ColoredLightEntry.CODEC)
+        super(Spec.of("Colored Light", () -> SchemaCodec.wrap(ColoredLightEntry.CODEC))
                 .folders("colored_lights")
                 .wikiPage("Colored-Lights"));
     }
 
     @Override
     protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops,
-                                  RegistryAccess access) {
+                                  HolderLookup.Provider access) {
         var jsons = resources.jsons();
         for (var e : parseEnabledJsons(jsons, ops)) {
             Identifier fileId = e.getKey();
             switch (e.getValue()) {
                 case ColoredLightEntry.Blocks b -> {
-                    for (var holder : b.targets().compute(fileId, BuiltInRegistries.BLOCK.asLookup())) {
+                    for (var holder : b.targets().compute(fileId, BuiltInRegistries.BLOCK)) {
                         addBlockLight(holder.value(), b.light(), b.predicate());
                     }
                 }
                 case ColoredLightEntry.Entities en -> {
-                    for (var holder : en.targets().compute(fileId, BuiltInRegistries.ENTITY_TYPE.asLookup())) {
+                    for (var holder : en.targets().compute(fileId, BuiltInRegistries.ENTITY_TYPE)) {
                         addEntityLight(holder.value(), en.light());
                     }
                 }
                 case ColoredLightEntry.Items it -> {
-                    for (var holder : it.targets().compute(fileId, BuiltInRegistries.ITEM.asLookup())) {
+                    for (var holder : it.targets().compute(fileId, BuiltInRegistries.ITEM)) {
                         addItemLight(holder.value(), it.light());
                     }
                 }
                 case ColoredLightEntry.Particles p -> {
-                    for (var holder : p.targets().compute(fileId, BuiltInRegistries.PARTICLE_TYPE.asLookup())) {
+                    for (var holder : p.targets().compute(fileId, BuiltInRegistries.PARTICLE_TYPE)) {
                         addParticleLight(holder.value(), p.light());
                     }
                 }
@@ -165,7 +164,7 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
     }
 
     @Override
-    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
+    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
         // block rules stay even without Veil, the voxel volme reads them too
         if (blocks.isEmpty() && entities.isEmpty() && items.isEmpty() && particles.isEmpty()) return;
         var backend = Polytone.CONFIGS.coloredLightsBackend.get();
@@ -187,13 +186,10 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
     private PointLightStorage storageFor(ColoredLightsBackend backend) {
         return switch (backend) {
             case VEIL -> {
-                if (!CompatHandler.VEIL) {
-                    Polytone.LOGGER.info("Colored lights are set to use Veil but Veil is not installed. Install it or switch the backend to Built-in");
-                    yield null;
-                }
-                yield VeilCompat.createPointLightStorage();
+                Polytone.LOGGER.info("Colored lights are set to use Veil but Veil is not available on this version. Switch the backend to Built-in");
+                yield null;
             }
-            case HYBRID -> CompatHandler.VEIL ? VeilCompat.createPointLightStorage() : shaderPointLights;
+            case HYBRID -> shaderPointLights; //TODO: add later
             case BUILT_IN -> shaderPointLights;
             case OFF -> null;
         };
@@ -218,7 +214,15 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
     }
 
     public void onTick(ClientLevel level, BlockPos camera) {
-        for (var source : lightSources) source.tick(level, camera.getCenter());
+        for (var source : lightSources) source.tick(level, Vec3.atCenterOf(camera));
+    }
+
+    public void beforeRenderLevel(Vec3 camera) {
+        if (pointLightStorage == shaderPointLights) shaderPointLights.upload(camera);
+    }
+
+    public void close() {
+        shaderPointLights.close();
     }
 
     public void onRenderTick(float partialTicks) {
@@ -245,13 +249,7 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
 
     @Override
     public List<String> getEnablingUniforms() {
-        return List.of(PolyShaderPointLights.COUNT);
-    }
-
-    //the lightmap patched vanilla shaders get these from the include, not their json
-    @Override
-    public boolean isEnabledFor(IShader shader) {
-        return shader.isGlProgram() && GLHelper.usesUniform(shader.programId(), PolyShaderPointLights.COUNT);
+        return List.of(PolyShaderPointLights.BLOCK_NAME);
     }
 
     @Override

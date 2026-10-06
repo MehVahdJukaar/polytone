@@ -73,10 +73,10 @@ public class BlockLightSource extends LightSource {
             }
             found.addAll(e.getValue());
         }
-        keepNearest(found, MAX_LIGHTS, b -> b.pos.getCenter().distanceToSqr(camera));
+        keepNearest(found, MAX_LIGHTS, b -> Vec3.atCenterOf(b.pos).distanceToSqr(camera));
 
         for (LitBlock lit : found) {
-            Vec3 center = lit.pos.getCenter();
+            Vec3 center = Vec3.atCenterOf(lit.pos);
             ResolvedPointLight resolved = lit.rule.light().resolve(
                     exp -> exp.evaluate(level, center, lit.state), defaultRadius(lit.state));
             set(lit.pos, center.x, center.y, center.z, resolved);

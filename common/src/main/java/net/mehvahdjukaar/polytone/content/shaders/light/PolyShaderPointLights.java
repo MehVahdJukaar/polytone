@@ -1,91 +1,126 @@
 package net.mehvahdjukaar.polytone.content.shaders.light;
 
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.buffers.Std140Builder;
+import com.mojang.blaze3d.buffers.Std140SizeCalculator;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
-import net.mehvahdjukaar.polytone.content.shaders.GLHelper;
 import net.mehvahdjukaar.polytone.content.shaders.IShader;
 import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.FastColor;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 
+import java.nio.ByteBuffer;
 import java.util.*;
 
-public class PolyShaderPointLights implements PointLightStorage {
+public class PolyShaderPointLights implements PointLightStorage, AutoCloseable {
 
     //must match polytone_point_lights.glsl
     public static final int MAX_LIGHTS = 64;
-    public static final String COUNT = "PolyPointLightCount";
-    private static final String POSITIONS = "PolyPointLightPos";
-    private static final String COLORS = "PolyPointLightColor";
+    public static final String BLOCK_NAME = "PolyPointLights";
+
+    private static final int UBO_SIZE;
+
+    static {
+        Std140SizeCalculator size = new Std140SizeCalculator().putIVec3().putInt();
+        for (int i = 0; i < MAX_LIGHTS * 2; i++) size.putVec4();
+        UBO_SIZE = size.get();
+    }
 
     private final Map<Object, LightAt> lights = new HashMap<>();
     private int generation;
+    private int uploadedGeneration = -1;
+    //positions go in relative to this, the shader adds the camera offset from vanilla Globals
+    private BlockPos uploadedAnchor = BlockPos.ZERO;
 
-    private final float[] positionsUpload = new float[MAX_LIGHTS * 4];
-    private final float[] colorsUpload = new float[MAX_LIGHTS * 4];
-    private int count;
-    private int packedVersion = -1;
-    private Vec3 packedForCamera = Vec3.ZERO;
-    private final Int2IntOpenHashMap uploadedVersionByProgram = new Int2IntOpenHashMap();
-
-    public PolyShaderPointLights() {
-        uploadedVersionByProgram.defaultReturnValue(Integer.MIN_VALUE);
-    }
+    @Nullable
+    private GpuBuffer buffer = null;
+    @Nullable
+    private GpuBuffer emptyBuffer = null;
 
     @Override
     public void clear() {
         lights.clear();
-        uploadedVersionByProgram.clear();
         generation++;
     }
 
-    public void bindTo(IShader shader) {
-        int program = shader.programId();
-        //GUI items and the hand aren't in wotld space, and a portal view into another level isnt ours
-        boolean inOurLevel = (LevelRenderPassTracker.isInLevelPass() || Polytone.POST_CHAINS.isProcessing())
-                && LevelRenderPassTracker.currentLevel() == Minecraft.getInstance().level;
-        if (!inOurLevel || lights.isEmpty() || CompatHandler.irisShaderPackActive()) {
-            if (uploadedVersionByProgram.remove(program) != Integer.MIN_VALUE) {
-                GLHelper.setProgramUniform(program, COUNT, 0);
-            }
-            return;
-        }
-        repackIfStale(LevelRenderPassTracker.currentCamera().getPosition());
-        if (uploadedVersionByProgram.get(program) == packedVersion) return;
-        uploadedVersionByProgram.put(program, packedVersion);
-        //ez
-        GLHelper.setProgramUniform4fv(program, POSITIONS, positionsUpload);
-        GLHelper.setProgramUniform4fv(program, COLORS, colorsUpload);
-        GLHelper.setProgramUniform(program, COUNT, count);
-    }
-
-    private void repackIfStale(Vec3 camera) {
-        if (packedVersion == generation && packedForCamera.equals(camera)) return;
-        packedVersion = generation;
-        packedForCamera = camera;
+    //renderLevel HEAD, no render pass open
+    public void upload(Vec3 camera) {
+        if (lights.isEmpty() && buffer == null) return;
+        BlockPos anchor = BlockPos.containing(camera);
+        boolean nearestMayChange = lights.size() > MAX_LIGHTS && !anchor.equals(uploadedAnchor);
+        if (uploadedGeneration == generation && !nearestMayChange) return;
+        uploadedGeneration = generation;
+        uploadedAnchor = anchor;
 
         List<LightAt> all = new ArrayList<>(lights.values());
         if (all.size() > MAX_LIGHTS) {
             all.sort(Comparator.comparingDouble(l -> camera.distanceToSqr(l.x, l.y, l.z)));
         }
-        count = Math.min(all.size(), MAX_LIGHTS);
-        for (int i = 0; i < count; i++) {
-            LightAt l = all.get(i);
-            int color = l.light.color();
-            float scale = l.light.brightness() / 255f;
-            putVec4(positionsUpload, i, (float) (l.x - camera.x), (float) (l.y - camera.y), (float) (l.z - camera.z), l.light.radius());
-            putVec4(colorsUpload, i, FastColor.ARGB32.red(color) * scale, FastColor.ARGB32.green(color) * scale, FastColor.ARGB32.blue(color) * scale, 0);
+        int count = Math.min(all.size(), MAX_LIGHTS);
+        if (buffer == null) {
+            buffer = RenderSystem.getDevice().createBuffer(() -> "Polytone point lights UBO",
+                    GpuBuffer.USAGE_COPY_DST | GpuBuffer.USAGE_UNIFORM, UBO_SIZE);
+        }
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            Std140Builder builder = Std140Builder.onStack(stack, UBO_SIZE)
+                    .putIVec3(anchor.getX(), anchor.getY(), anchor.getZ())
+                    .putInt(count);
+            for (int i = 0; i < MAX_LIGHTS; i++) {
+                if (i >= count) {
+                    builder.putVec4(0, 0, 0, 0);
+                    continue;
+                }
+                LightAt l = all.get(i);
+                builder.putVec4((float) (l.x - anchor.getX()), (float) (l.y - anchor.getY()), (float) (l.z - anchor.getZ()), l.light.radius());
+            }
+            for (int i = 0; i < MAX_LIGHTS; i++) {
+                if (i >= count) {
+                    builder.putVec4(0, 0, 0, 0);
+                    continue;
+                }
+                ResolvedPointLight light = all.get(i).light;
+                int color = light.color();
+                float scale = light.brightness() / 255f;
+                builder.putVec4(ARGB.red(color) * scale, ARGB.green(color) * scale, ARGB.blue(color) * scale, 0);
+            }
+            RenderSystem.getDevice().createCommandEncoder().writeToBuffer(buffer.slice(), builder.get());
         }
     }
 
-    private static void putVec4(float[] array, int index, float x, float y, float z, float w) {
-        int o = index * 4;
-        array[o] = x;
-        array[o + 1] = y;
-        array[o + 2] = z;
-        array[o + 3] = w;
+    public void bindTo(IShader shader) {
+        //GUI items and the hand aren't in wotld space, and a portal view into another level isnt ours
+        boolean inOurLevel = (LevelRenderPassTracker.isInLevelPass() || Polytone.POST_CHAINS.isProcessing())
+                && LevelRenderPassTracker.currentLevel() == Minecraft.getInstance().level;
+        boolean hasLights = buffer != null && !lights.isEmpty();
+        shader.setUniform(BLOCK_NAME, inOurLevel && hasLights && !CompatHandler.irisShaderPackActive()
+                ? buffer.slice() : emptyBuffer());
+    }
+
+    //inside a render pass here so no writeToBuffer, the zeros go in at creation
+    private GpuBufferSlice emptyBuffer() {
+        if (emptyBuffer == null) {
+            ByteBuffer zeros = MemoryUtil.memCalloc(UBO_SIZE);
+            emptyBuffer = RenderSystem.getDevice().createBuffer(() -> "Polytone empty point lights UBO", GpuBuffer.USAGE_UNIFORM, zeros);
+            MemoryUtil.memFree(zeros);
+        }
+        return emptyBuffer.slice();
+    }
+
+    @Override
+    public void close() {
+        if (buffer != null) buffer.close();
+        if (emptyBuffer != null) emptyBuffer.close();
+        buffer = null;
+        emptyBuffer = null;
+        uploadedGeneration = -1;
     }
 
     @Override

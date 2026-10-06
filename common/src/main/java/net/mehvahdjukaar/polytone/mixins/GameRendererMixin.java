@@ -60,6 +60,7 @@ public abstract class GameRendererMixin {
         Polytone.SHADOW_MAP.close();
         Polytone.GLOBAL_UNIFORMS.close();
         Polytone.VOXEL_VOLUME.close();
+        Polytone.COLORED_LIGHTS.close();
     }
 
     //world depth, saved before vanilla clears it for the hand
