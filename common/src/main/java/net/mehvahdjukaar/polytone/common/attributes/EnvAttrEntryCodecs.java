@@ -5,9 +5,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.attributes.IExtendedEnvAttrEntry.Blend;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
-import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.minecraft.util.Util;
 import net.minecraft.world.attribute.AttributeType;
@@ -19,6 +19,18 @@ import net.minecraft.world.attribute.modifier.AttributeModifier;
 import java.util.function.Supplier;
 
 class EnvAttrEntryCodecs {
+
+    //no legacy exp4j here, it parses almost anything and only fails once evaluated
+    private static final Codec<IColorGetter> EXPRESSION_COLOR = IBlockExp.CODEC.xmap(
+            IColorGetter.ExpressionColor::new,
+            g -> g instanceof IColorGetter.ExpressionColor(IBlockExp exp) ? exp : IBlockExp.ZERO
+    );
+
+    private static final Codec<IColorGetter> COLORMAP_OR_EXPRESSION = SchemaCodecs.withAlternative(
+            SchemaCodecs.alt("reference", Polytone.COLORMAPS.byNameCodec()),
+            SchemaCodecs.alt("inline", SchemaCodecs.withAlternative(
+                    SchemaCodecs.alt("color", IColorGetter.SINGLE_COLOR_CODEC),
+                    SchemaCodecs.alt("expression", EXPRESSION_COLOR))));
 
     // either just the argument (override modifier) or {modifier, argument, blend}
     static <Value, Argument> Codec<EnvironmentAttributeMap.Entry<Value, Argument>> entryCodec(
@@ -87,13 +99,13 @@ class EnvAttrEntryCodecs {
     // Allows a Colormap or an Expression to be used wherever a color or a float attribute value is expected
     private static <A, Value> Codec<Either<A, Supplier<A>>> valueOrDynamic(Codec<A> valueCodec, AttributeType<Value> type) {
         if (type == AttributeTypes.ARGB_COLOR || type == AttributeTypes.RGB_COLOR) {
-            Codec<Supplier<Integer>> colormapCodec = Colormap.REFERENCE_OR_EXPRESSION.xmap(
+            Codec<Supplier<Integer>> colormapCodec = COLORMAP_OR_EXPRESSION.xmap(
                     colormap -> () -> DynamicAttributeContext.sampleColor(colormap),
                     supplier -> new IColorGetter.StaticColor(supplier.get()));
             return Codec.either(valueCodec, (Codec) colormapCodec);
         }
         if (type == AttributeTypes.FLOAT || type == AttributeTypes.ANGLE_DEGREES) {
-            Codec<Supplier<Float>> expressionCodec = IBlockExp.CODEC_LEGACY.xmap(
+            Codec<Supplier<Float>> expressionCodec = IBlockExp.CODEC.xmap(
                     exp -> () -> DynamicAttributeContext.evaluate(exp),
                     supplier -> IBlockExp.ZERO);
             return Codec.either(valueCodec, (Codec) expressionCodec);
