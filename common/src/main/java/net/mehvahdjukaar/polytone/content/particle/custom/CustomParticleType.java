@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.content.particle.ParticleParticleEmitter;
 import net.mehvahdjukaar.polytone.content.sound.ParticleSoundEmitter;
@@ -52,7 +53,7 @@ public class CustomParticleType implements ICustomParticleFactory {
     protected final boolean killWhenNotInView;
     protected final @Nullable ParticleColor colormap;
     protected final IRotationProvider rotationProvider;
-    protected final Vec3 offset;
+    protected final RenderOffset offset;
     protected final Optional<ParticleLimit> particleGroupLimit;
     protected final boolean forceSpawn;
     protected final boolean sticky;
@@ -64,7 +65,7 @@ public class CustomParticleType implements ICustomParticleFactory {
     protected Identifier debugId = null;
 
     private CustomParticleType(ParticleRenderMode renderType, IRotationProvider rotationProvider,
-                               @Nullable Identifier model, Vec3 offset,
+                               @Nullable Identifier model, RenderOffset offset,
                                int light, boolean hasPhysics, boolean killOnContact, boolean killWhenStill, boolean killWhenNotInView,
                                LiquidAffinity liquidAffinity, @Nullable ParticleColor colormap,
                                boolean randomSprite,
@@ -100,7 +101,7 @@ public class CustomParticleType implements ICustomParticleFactory {
             i.optional("render_type", ParticleRenderMode.CODEC, ParticleRenderMode.OPAQUE, c -> c.renderType),
             i.optional("rotation_mode", IRotationProvider.CODEC, RotationMode.LOOK_AT_XYZ, c -> c.rotationProvider),
             i.optional("model", Identifier.CODEC, c -> Optional.ofNullable(c.model)),
-            i.optional("offset", Vec3.CODEC, Vec3.ZERO, c -> c.offset),
+            i.optional("offset", RenderOffset.CODEC, RenderOffset.NONE, c -> c.offset),
             i.optional("light_level", Codec.intRange(0, 15), 0, c -> c.lightLevel),
             i.optional("has_physics", Codec.BOOL, true, c -> c.hasPhysics),
             i.optional("kill_on_contact", Codec.BOOL, false, c -> c.killOnContact),
@@ -122,7 +123,7 @@ public class CustomParticleType implements ICustomParticleFactory {
     ).apply(i, CustomParticleType::new));
 
     private CustomParticleType(ParticleRenderMode renderType, IRotationProvider rotationProvider,
-                               Optional<Identifier> model, Vec3 offset,
+                               Optional<Identifier> model, RenderOffset offset,
                                int light, boolean hasPhysics, boolean killOnContact, boolean killWhenStill, boolean killWhenNotInView,
                                LiquidAffinity liquidAffinity, Optional<ParticleColor> colormap,
                                boolean randomSprite,
@@ -247,6 +248,17 @@ public class CustomParticleType implements ICustomParticleFactory {
     public static final Codec<Optional<Identifier>> CUSTOM_MODEL_ONLY_CODEC = RecordCodecBuilder.create(i -> i.group(
             Identifier.CODEC.optionalFieldOf("model").forGetter(e -> e)
     ).apply(i, r -> r));
+
+    public record RenderOffset(Vec3 world, float camera) {
+        public static final RenderOffset NONE = new RenderOffset(Vec3.ZERO, 0);
+
+        public static final Codec<RenderOffset> CODEC = SchemaCodecs.alternatives(
+                "world and camera", RecordCodecBuilder.create(i -> i.group(
+                        Vec3.CODEC.optionalFieldOf("world", Vec3.ZERO).forGetter(RenderOffset::world),
+                        Codec.FLOAT.optionalFieldOf("camera", 0f).forGetter(RenderOffset::camera)
+                ).apply(i, RenderOffset::new)),
+                "world", Vec3.CODEC.xmap(v -> new RenderOffset(v, 0), RenderOffset::world));
+    }
 
 }
 

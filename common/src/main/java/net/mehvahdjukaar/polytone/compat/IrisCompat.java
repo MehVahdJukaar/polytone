@@ -20,7 +20,7 @@ public class IrisCompat {
     }
 
 
-    public static boolean isIrisRenderOn() {
+    public static boolean isIrisShaderFuckeryActive() {
         WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
         if (pipeline instanceof ShaderRenderingPipeline s) {
             return s.shouldOverrideShaders();

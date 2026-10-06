@@ -255,8 +255,6 @@ public final class Colormap implements IColorGetter, ColorResolver {
         return image.pixels()[(int) (pixel & 0xFFFFFFFFL)][(int) (pixel >>> 32)];
     }
 
-    // Maps the two axis outputs to a source-image pixel. High 32 bits = column (x/temperature axis),
-    // low 32 bits = row (y/humidity axis). Single source of truth shared by sample() and the sink path.
     private long pixelIndex(float textY, float textX) {
         if (triangular) textY *= textX;
         int wm = image.width() - 1;

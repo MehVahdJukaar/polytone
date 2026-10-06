@@ -25,15 +25,13 @@ public final class PostChainActivator {
                     i.optional("expression_uniforms", ExpressionUniformBuffers.CODEC,
                             new ExpressionUniformBuffers(Map.of()), p -> p.buffers),
                     i.optional("samplers", Codec.unboundedMap(Codec.STRING, Identifier.CODEC),
-                            Map.of(), p -> p.samplers),
-                    i.optional("use_shadow_map", Codec.BOOL, false, p -> p.useShadowMap)
+                            Map.of(), p -> p.samplers)
             ).apply(i, PostChainActivator::new));
 
     private final Identifier postChain;
     private final ISimpleExp turnOnCondition;
     private final ExpressionUniformBuffers buffers;
     private final Map<String, Identifier> samplers;
-    private final boolean useShadowMap;
 
     private boolean cachedOn = false;
     private PostChain cachedPostChain = null;
@@ -41,28 +39,19 @@ public final class PostChainActivator {
     private final List<Identifier> registeredPassPipelines = new ArrayList<>();
 
     public PostChainActivator(Identifier postChain, ISimpleExp turnOnCondition,
-                              ExpressionUniformBuffers buffers, Map<String, Identifier> samplers,
-                              boolean useShadowMap) {
+                              ExpressionUniformBuffers buffers, Map<String, Identifier> samplers) {
         this.postChain = postChain;
         this.turnOnCondition = turnOnCondition;
         this.buffers = buffers;
         this.samplers = samplers;
-        this.useShadowMap = useShadowMap;
     }
 
     public void refreshEnabled() {
         cachedOn = turnOnCondition.evaluate() > 0;
     }
 
-    // Whether this chain's activation condition currently passes (as of the last refreshEnabled).
     public boolean isOn() {
         return cachedOn;
-    }
-
-    // True when this chain is currently on and declared use_shadow_map, i.e. it wants the light-POV depth map
-    // rendered this frame (see ShadowMapRenderer).
-    public boolean wantsShadowMap() {
-        return cachedOn && useShadowMap;
     }
 
     public boolean readsMainDepth() {
@@ -101,7 +90,7 @@ public final class PostChainActivator {
         if (buffers.isEmpty() && samplers.isEmpty()) return;
         for (PostPass pass : chain.passes) {
             Identifier pipelineLocation = ((PostPassAccessor) pass).polytone$getPipeline().getLocation();
-            if (!buffers.isEmpty()) Polytone.SHADER_EFFECTS.registerOnPostPass(pipelineLocation, buffers);
+            if (!buffers.isEmpty()) Polytone.SHADER_UNIFORMS.registerOnPostPass(pipelineLocation, buffers);
             if (!samplers.isEmpty()) Polytone.POST_CHAINS.registerSamplers(pipelineLocation, samplers);
             registeredPassPipelines.add(pipelineLocation);
         }
@@ -109,7 +98,7 @@ public final class PostChainActivator {
 
     private void unregisterFromPasses() {
         for (Identifier id : registeredPassPipelines) {
-            if (!buffers.isEmpty()) Polytone.SHADER_EFFECTS.unregisterFromPostPass(id, buffers);
+            if (!buffers.isEmpty()) Polytone.SHADER_UNIFORMS.unregisterFromPostPass(id, buffers);
             if (!samplers.isEmpty()) Polytone.POST_CHAINS.unregisterSamplers(id, samplers);
         }
         registeredPassPipelines.clear();

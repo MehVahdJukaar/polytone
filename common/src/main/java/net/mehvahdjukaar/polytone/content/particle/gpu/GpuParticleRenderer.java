@@ -222,7 +222,7 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
         pass.bindTexture("Sampler2", Minecraft.getInstance().gameRenderer.lightmap(),
                 RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
         pass.setUniform("ParticleInfo", infoUbo);
-        customUniforms.bind(pass, type.uniforms().keySet());
+        customUniforms.bind(pass);
         pass.setVertexBuffer(0, vertices);
         pass.setIndexBuffer(indexBuffer, indexType);
         pass.drawIndexed(0, 0, indexCount(), 1);

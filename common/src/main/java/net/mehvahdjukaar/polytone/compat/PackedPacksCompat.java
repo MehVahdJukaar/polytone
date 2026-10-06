@@ -27,11 +27,16 @@ public class PackedPacksCompat implements PackedPacksInitializer {
 
         Pack pack = event.packContext().pack();
         String id = pack.getId();
-        if (!PackInfoBadge.shouldShow(PackInfos.get(id))) return;
+        if (!PackInfoBadge.shouldShow(infoPage(id))) return;
 
         //badge hides itself while the pack sits in the available list
-        Supplier<@Nullable PackInfo> info = () -> isSelected(screen, id) ? PackInfos.get(id) : null;
+        Supplier<@Nullable PackInfo> info = () -> isSelected(screen, id) ? infoPage(id) : null;
         event.addTopRight(2, new PackInfoBadge(info, pack.getTitle(), screen::reload));
+    }
+
+    private static @Nullable PackInfo infoPage(String packId) {
+        PackInfo info = PackInfos.get(packId);
+        return info != null && info.hasInfoPage() ? info : null;
     }
 
     private static boolean isSelected(ScreenContext screen, String packId) {

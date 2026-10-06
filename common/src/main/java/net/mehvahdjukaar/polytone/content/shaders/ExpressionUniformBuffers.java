@@ -16,7 +16,6 @@ import org.lwjgl.system.MemoryStack;
 import java.nio.ByteBuffer;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 // Shared buffer plumbing for expression-driven uniforms. Each entry becomes a single-float UBO block, named
 // after the map key, and gets bound to the RenderPass under that name.
@@ -69,13 +68,18 @@ public final class ExpressionUniformBuffers {
         }
     }
 
-    public void bind(RenderPass pass, Set<String> declaredUniforms) {
+    //for pipelines that declare all of them
+    public void bind(RenderPass pass) {
         if (buffers == null) return;
         for (var e : buffers.entrySet()) {
-            // skip blocks the bound program doesn't declare, else Iris/Sodium logs binding errors
-            if (declaredUniforms.contains(e.getKey())) {
-                pass.setUniform(e.getKey(), e.getValue());
-            }
+            pass.setUniform(e.getKey(), e.getValue());
+        }
+    }
+
+    public void bind(IShader shader) {
+        if (buffers == null) return;
+        for (var e : buffers.entrySet()) {
+            shader.setUniform(e.getKey(), e.getValue().slice());
         }
     }
 

@@ -9,7 +9,8 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.content.particle.PreviewRenderTarget;
 import net.mehvahdjukaar.polytone.content.particle.custom.ParticleLightCache;
-import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTrack;
+import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTracker;
+import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -42,16 +43,11 @@ public class LevelRendererMixin {
     @Final
     public LevelRenderState levelRenderState;
 
-    // During the particle editor preview the main target is redirected to the offscreen buffer; force
-    // the separate translucent-particles target to null too, so opaque AND translucent particles render
-    // in the single main-target pass (into the offscreen buffer) instead of a screen-bound target.
     @Inject(method = "getParticlesTarget", at = @At("HEAD"), cancellable = true)
     private void poly$redirectParticlesTargetForPreview(CallbackInfoReturnable<RenderTarget> cir) {
         if (CompatHandler.NAUTILUS && PreviewRenderTarget.current() != null) cir.setReturnValue(null);
     }
 
-    // Every section rebuild (block or light change) funnels through setSectionDirty; bump that
-    // section's light-cache version so particles there re-sample. Section coords come in directly.
     @Inject(method = "setSectionDirty(IIIZ)V", at = @At("HEAD"))
     private void poly$invalidateParticleLight(int x, int y, int z, boolean important, CallbackInfo ci) {
         ParticleLightCache.markSectionDirty(x, y, z);
@@ -68,29 +64,21 @@ public class LevelRendererMixin {
                                boolean shouldRenderSky,
                                ChunkSectionsToRender chunkSectionsToRender,
                                CallbackInfo ci) {
-        // upload expression-driven UBOs now, while no render pass is open; tryApply() only binds them
-        Polytone.SHADER_EFFECTS.updateAll();
-        //a second camera from some other mod. shadows and post chains only care about the main one
-        if (!LevelRenderPassTrack.pushAndIsMain()) return;
-        // deltaTime from this call's own tracker parameter, fresh every render call
-        Polytone.POST_CHAINS.captureLevelRendererParams(cameraState.projectionMatrix, modelViewMatrix,
-                deltaTracker.getGameTimeDeltaTicks());
-        // Render the directional shadow map here: no render pass is open (UBO writes need that), last
-        // frame's compiled section meshes are still current, and the frame graph that runs the post
-        // chains sampling it hasn't been built yet. The matrices are this call's own rather than the
-        // GameRenderer globals, so they still agree when a mod renders a second view; they narrow the
-        // caster volume to what the camera can see.
-        Polytone.SHADOWS.renderer().renderShadowPassIfNeeded(terrainFog, minecraft.gameRenderer.getMainCamera(),
-                modelViewMatrix, cameraState.projectionMatrix);
+        Polytone.SHADER_UNIFORMS.updateAll();
+        Camera camera = minecraft.gameRenderer.getMainCamera();
+        if (!LevelRenderPassTracker.pushAndIsMain(camera)) return;
+        Polytone.GLOBAL_UNIFORMS.capture(cameraState.projectionMatrix, modelViewMatrix, deltaTracker.getGameTimeDeltaTicks());
+        Polytone.SHADOW_MAP.updateBeforeRenderLevel(terrainFog, camera, modelViewMatrix, cameraState.projectionMatrix);
     }
 
+    //the frame graph already ran here, no pass is open
     @Inject(method = "renderLevel", at = @At("RETURN"))
     public void poly$popLevelRenderPass(CallbackInfo ci) {
-        LevelRenderPassTrack.pop();
+        Camera camera = LevelRenderPassTracker.currentCamera();
+        if (!LevelRenderPassTracker.popAndWasMain()) return;
+        Polytone.VOXEL_VOLUME.updateAfterRenderLevel(camera);
     }
 
-    // Own pass right after the main one, on the particles target, so gpu particles land in the
-    // world with depth and fog like any other particle.
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addMainPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lnet/minecraft/client/renderer/culling/Frustum;Lorg/joml/Matrix4fc;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;ZLnet/minecraft/client/renderer/state/level/LevelRenderState;Lnet/minecraft/client/DeltaTracker;Lnet/minecraft/util/profiling/ProfilerFiller;Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;)V",
             shift = At.Shift.AFTER))
     public void poly$addGpuParticlesPass(GraphicsResourceAllocator resourceAllocator,
@@ -122,8 +110,6 @@ public class LevelRendererMixin {
                                     ChunkSectionsToRender chunkSectionsToRender,
                                     CallbackInfo ci,
                                     @Local FrameGraphBuilder frameGraphBuilder) {
-        // Standard placement only. When post_chains_after_hand is on (default), chains run later,
-        // after the first-person hand, from GameRendererMixin so held items occlude depth effects.
         if (Polytone.CONFIGS.postChainsAfterHand.get()) return;
         int i = this.minecraft.getMainRenderTarget().width;
         int j = this.minecraft.getMainRenderTarget().height;

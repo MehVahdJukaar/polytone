@@ -4,6 +4,10 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticles;
+import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
+import net.mehvahdjukaar.polytone.content.block.TickSource;
+import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticleHandler;
+import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
@@ -26,12 +30,13 @@ public abstract class ParticleEngineMixin {
     @ModifyReturnValue(method = "makeParticle", at = @At("RETURN"))
     public @Nullable <T extends ParticleOptions> Particle polytone$applyModifiers(@Nullable Particle original,
                                                                                   @Local(argsOnly = true) T particleData) {
-        if (original != null) Polytone.PARTICLE_MODIFIERS.maybeModify(particleData, this.level, original);
+        if (original != null) {
+            Polytone.PARTICLE_MODIFIERS.maybeModify(particleData, this.level, original);
+            Polytone.COLORED_LIGHTS.onParticleCreated(particleData.getType(), original);
+        }
         return original;
     }
 
-    // Batch dispatched at tick() TAIL overlaps the rest of the game tick and early frame render,
-    // joined before anything reads (extract) or mutates (next tick, level change) particle state.
     @Inject(method = "tick", at = @At("HEAD"))
     private void polytone$joinBeforeTick(CallbackInfo ci) {
         PolytoneAsyncParticles.awaitTicks();
@@ -52,11 +57,13 @@ public abstract class ParticleEngineMixin {
     @Inject(method = "setLevel", at = @At("HEAD"))
     private void polytone$joinBeforeLevelChange(CallbackInfo ci) {
         PolytoneAsyncParticles.awaitTicks();
+        Polytone.COLORED_LIGHTS.onParticlesCleared();
     }
 
     @Inject(method = "clearParticles", at = @At("HEAD"))
     private void polytone$joinBeforeClear(CallbackInfo ci) {
         PolytoneAsyncParticles.awaitTicks();
+        Polytone.COLORED_LIGHTS.onParticlesCleared();
     }
 
 }
