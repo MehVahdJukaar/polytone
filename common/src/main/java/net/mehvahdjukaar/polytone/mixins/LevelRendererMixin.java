@@ -48,6 +48,7 @@ public class LevelRendererMixin {
         DeltaTracker deltaTracker = Minecraft.getInstance().getDeltaTracker();
         Polytone.GLOBAL_UNIFORMS.capture(cameraState.projectionMatrix, cameraState.viewRotationMatrix, deltaTracker.getGameTimeDeltaTicks());
         Polytone.SHADOW_MAP.updateBeforeRenderLevel(terrainFog, camera, cameraState.viewRotationMatrix, cameraState.projectionMatrix);
+        //Polytone.COLORED_LIGHTS.beforeRenderLevel(camera.position());
     }
 
     //the frame graph already ran here, no pass is open

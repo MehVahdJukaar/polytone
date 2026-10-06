@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.block;
 
+import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTest;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.gson.JsonElement;
@@ -164,6 +165,11 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
                     IndexCompoundColorGetter.createDefault(orphan.parts().get(TINTS), true));
             contentTexture.fill(textures, orphan.stemId(), modifier, true);
             addModifier(orphan.stemId(), modifier);
+        }
+
+        //in parse so COLORED_LIGHTS sees them when it applies
+        for (var e : modifiers.entrySet()) {
+            e.getValue().coloredLight().ifPresent(l -> Polytone.COLORED_LIGHTS.addBlockLight(e.getKey(), l, AlwaysTrueTest.INSTANCE));
         }
     }
 

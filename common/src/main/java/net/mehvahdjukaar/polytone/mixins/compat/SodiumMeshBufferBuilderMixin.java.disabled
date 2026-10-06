@@ -50,6 +50,6 @@ public abstract class SodiumMeshBufferBuilderMixin {
         float ny = az * bx - ax * bz;
         float nz = ax * by - ay * bx;
         if (nx * nx + ny * ny + nz * nz < 1.0e-8f) return null;
-        return Direction.getNearest(nx, ny, nz);
+        return Direction.getApproximateNearest(nx, ny, nz);
     }
 }

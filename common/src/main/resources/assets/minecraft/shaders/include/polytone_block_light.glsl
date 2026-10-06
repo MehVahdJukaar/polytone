@@ -1,4 +1,3 @@
-#moj_import <light.glsl>
 #moj_import <polytone_voxel_volume.glsl>
 #moj_import <polytone_point_lights.glsl>
 #moj_import <polytone_far_light.glsl>

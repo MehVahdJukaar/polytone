@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.entity;
 
+import net.mehvahdjukaar.polytone.Polytone;
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -44,6 +45,10 @@ public class EntityModifiersManager extends ContentManager<EntityModifier> {
             if (j != null) {
                 addModifier(j.getKey(), j.getValue());
             }
+        }
+
+        for (var e : emittersPerEntity.entrySet()) {
+            e.getValue().coloredLight().ifPresent(l -> Polytone.COLORED_LIGHTS.addEntityLight(e.getKey(), l));
         }
     }
 

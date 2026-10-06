@@ -20,15 +20,18 @@ import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static net.mehvahdjukaar.polytone.common.struc.ListUtils.mergeList;
 
 public record EntityModifier(List<EntityParticleEmitter> emitters,
+                             Optional<ColoredLight<IEntityExp>> coloredLight,
                              Targets targets) {
 
 
     public static final SchemaCodec<EntityModifier> CODEC = SchemaRecord.create(EntityModifier.class, i -> i.group(
-            i.field("emitters", SchemaCodecs.singleOrList(EntityParticleEmitter.CODEC), em -> em.emitters),
+            i.optional("emitters", SchemaCodecs.singleOrList(EntityParticleEmitter.CODEC), List.of(), em -> em.emitters),
+            i.optional("colored_light", ColoredLight.codec(IEntityExp.CODEC, c -> e -> c), em -> em.coloredLight),
             i.optional("targets", Targets.CODEC, Targets.EMPTY, em -> em.targets)
     ).apply(i, EntityModifier::new));
 
@@ -73,6 +76,7 @@ public record EntityModifier(List<EntityParticleEmitter> emitters,
     public EntityModifier merge(EntityModifier entityModifier) {
         return new EntityModifier(
                 mergeList(this.emitters, entityModifier.emitters),
+                entityModifier.coloredLight.isPresent() ? entityModifier.coloredLight : this.coloredLight,
                 this.targets.merge(entityModifier.targets)
         );
     }

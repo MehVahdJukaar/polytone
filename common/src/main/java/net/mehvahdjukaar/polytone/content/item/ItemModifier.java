@@ -41,6 +41,7 @@ public record ItemModifier(Optional<IColorGetter> barColor,
                            Optional<Identifier> scopeOverlay,
                            Optional<Boolean> bobAsEntity,
                            Optional<Boolean> spreadAsEntity,
+                           Optional<ColoredLight<IEntityExp>> coloredLight,
                            Targets targets) {
 
     private static final Codec<HumanoidModel.ArmPose> ARM_POSE_CODEC = Codec.STRING.comapFlatMap(
@@ -68,6 +69,7 @@ public record ItemModifier(Optional<IColorGetter> barColor,
             i.optional("scope_overlay", Identifier.CODEC, ItemModifier::scopeOverlay),
             i.optional("bob_as_entity", Codec.BOOL, ItemModifier::bobAsEntity),
             i.optional("spread_as_entity", Codec.BOOL, ItemModifier::spreadAsEntity),
+            i.optional("colored_light", ColoredLight.codec(IEntityExp.CODEC, c -> e -> c), ItemModifier::coloredLight),
             i.optional("targets", Targets.CODEC, Targets.EMPTY, ItemModifier::targets)
     ).apply(i, ItemModifier::new));
 
@@ -86,7 +88,7 @@ public record ItemModifier(Optional<IColorGetter> barColor,
              //   List.of(),
                 List.of(), List.of(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Targets.EMPTY);
+                Optional.empty(), Optional.empty(), Optional.empty(), Targets.EMPTY);
     }
 
     public ItemModifier merge(ItemModifier newMod) {
@@ -103,6 +105,7 @@ public record ItemModifier(Optional<IColorGetter> barColor,
                 newMod.scopeOverlay.isPresent() ? newMod.scopeOverlay : this.scopeOverlay,
                 newMod.bobAsEntity.isPresent() ? newMod.bobAsEntity : this.bobAsEntity,
                 newMod.spreadAsEntity.isPresent() ? newMod.spreadAsEntity : this.spreadAsEntity,
+                newMod.coloredLight.isPresent() ? newMod.coloredLight : this.coloredLight,
                 newMod.targets.merge(this.targets)
         );
     }
@@ -127,7 +130,7 @@ public record ItemModifier(Optional<IColorGetter> barColor,
            //     List.of(),
                 List.of(), List.of(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Targets.EMPTY);
+                Optional.empty(), Optional.empty(), Optional.empty(), Targets.EMPTY);
     }
 
     @Nullable

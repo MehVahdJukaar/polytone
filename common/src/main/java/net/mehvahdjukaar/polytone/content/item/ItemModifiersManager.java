@@ -81,6 +81,10 @@ public class ItemModifiersManager extends ContentManager<ItemModifier> {
             contentTexture.fill(textures, orphan.stemId(), modifier, true);
             addModifier(orphan.stemId(), modifier);
         }
+
+        for (var e : modifiers.entrySet()) {
+            e.getValue().coloredLight().ifPresent(l -> Polytone.COLORED_LIGHTS.addItemLight(e.getKey(), l));
+        }
     }
 
     private void addModifier(Identifier id, ItemModifier mod) {

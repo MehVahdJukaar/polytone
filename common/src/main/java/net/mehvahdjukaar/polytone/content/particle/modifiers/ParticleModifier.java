@@ -50,6 +50,7 @@ public class ParticleModifier {
             i.optional("blue", IParticleExp.CODEC, p -> Optional.ofNullable(p.colorGetter)),
             i.optional("alpha", IParticleExp.CODEC, p -> Optional.ofNullable(p.colorGetter)),
             i.optional("speed", IParticleExp.CODEC, p -> Optional.ofNullable(p.speedGetter)),
+            i.optional("colored_light", ColoredLight.codec(IParticleExp.CODEC, c -> (particle, level) -> c), p -> Optional.ofNullable(p.coloredLight)),
             i.optional("targets", Targets.CODEC, Targets.EMPTY, p -> p.targets)
     ).apply(i, ParticleModifier::new));
 
@@ -79,6 +80,8 @@ public class ParticleModifier {
     public final IParticleExp greenGetter;
     @Nullable
     public final IParticleExp alphaGetter;
+    @Nullable
+    public final ColoredLight<IParticleExp> coloredLight;
     public final Targets targets;
 
     private ParticleModifier(Optional<Filter> filter, Optional<IColorGetter> colormap,
@@ -86,10 +89,11 @@ public class ParticleModifier {
                              Optional<IParticleExp> size, Optional<IParticleExp> red,
                              Optional<IParticleExp> green, Optional<IParticleExp> blue,
                              Optional<IParticleExp> alpha, Optional<IParticleExp> speed,
+                             Optional<ColoredLight<IParticleExp>> coloredLight,
                              Targets targets) {
         this(filter.orElse(null), colormap.orElse(null), color.orElse(null), life.orElse(null), size.orElse(null),
                 red.orElse(null), green.orElse(null), blue.orElse(null),
-                alpha.orElse(null), speed.orElse(null), targets);
+                alpha.orElse(null), speed.orElse(null), coloredLight.orElse(null), targets);
     }
 
     private ParticleModifier(@Nullable Filter filter, @Nullable IColorGetter colormap,
@@ -97,6 +101,7 @@ public class ParticleModifier {
                             @Nullable IParticleExp size, @Nullable IParticleExp red,
                             @Nullable IParticleExp green, @Nullable IParticleExp blue,
                             @Nullable IParticleExp alpha, @Nullable IParticleExp speed,
+                            @Nullable ColoredLight<IParticleExp> coloredLight,
                             Targets explicitTargets) {
         this.colorGetter = color;
         this.lifeGetter = life;
@@ -105,6 +110,7 @@ public class ParticleModifier {
         this.greenGetter = green;
         this.blueGetter = blue;
         this.alphaGetter = alpha;
+        this.coloredLight = coloredLight;
         this.speedGetter = speed;
         this.targets = explicitTargets;
         this.filter = filter;
@@ -114,12 +120,12 @@ public class ParticleModifier {
     public static ParticleModifier ofColor(String color) {
         IParticleExp expression = ParticleExp.TYPE.create(color).getOrThrow();
         return new ParticleModifier(null, null, expression, null, null, null, null,
-                null, null, null, Targets.EMPTY);
+                null, null, null, null, Targets.EMPTY);
     }
 
     public static ParticleModifier ofColormap(IColorGetter colormap) {
         return new ParticleModifier(null, colormap, null, null, null, null, null,
-                null, null, null, Targets.EMPTY);
+                null, null, null, null, Targets.EMPTY);
     }
 
 
