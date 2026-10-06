@@ -43,9 +43,9 @@ public final class DeclaredUniforms {
         return names;
     }
 
-    private static final class VulkanProgram implements IProgramWithModifiers {
+    private static class VulkanProgram implements IProgramWithModifiers {
         private final Set<String> uniformNames;
-        private EnabledModifiers modifiers = null;
+        private EnabledModifiers modifiers;
 
         private VulkanProgram(Set<String> uniformNames) {
             this.uniformNames = uniformNames;

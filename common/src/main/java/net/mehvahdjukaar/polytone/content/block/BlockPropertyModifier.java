@@ -217,8 +217,6 @@ public record BlockPropertyModifier(
         return List.of(src);
     }
 
-    // Declaration-site schema: enum dropdown over the layer labels, inference only sees
-    // STRING.xmap and would render plain text.
     public static final Codec<ChunkSectionLayer> SECTION_LAYER_CODEC = SchemaCodec.of(
             Codec.STRING.xmap(s -> ChunkSectionLayer.valueOf(s.toUpperCase(Locale.ROOT)), ChunkSectionLayer::label),
             new Schema.Enum<>(List.of(ChunkSectionLayer.values()), ChunkSectionLayer::label));
