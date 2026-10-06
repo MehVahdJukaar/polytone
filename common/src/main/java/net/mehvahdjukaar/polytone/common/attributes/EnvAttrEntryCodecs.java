@@ -20,7 +20,6 @@ import java.util.function.Supplier;
 
 class EnvAttrEntryCodecs {
 
-    //no legacy exp4j here, it parses almost anything and only fails once evaluated
     private static final Codec<IColorGetter> EXPRESSION_COLOR = IBlockExp.CODEC.xmap(
             IColorGetter.ExpressionColor::new,
             g -> g instanceof IColorGetter.ExpressionColor(IBlockExp exp) ? exp : IBlockExp.ZERO
