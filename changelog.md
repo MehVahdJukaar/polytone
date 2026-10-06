@@ -1,1 +1,1 @@
-ported stuff form 26.1.2
+fixed a bug with null gui
