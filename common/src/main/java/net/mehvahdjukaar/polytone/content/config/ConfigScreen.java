@@ -356,7 +356,7 @@ public class ConfigScreen extends OptionsSubScreen {
 
     static void onOptionValueChanged() {
         Gui gui = Minecraft.getInstance().gui;
-        if (gui.screen() instanceof ConfigScreen cs) {
+        if (gui != null && gui.screen() instanceof ConfigScreen cs) {
             cs.presets.rederiveAll();
         }
     }
