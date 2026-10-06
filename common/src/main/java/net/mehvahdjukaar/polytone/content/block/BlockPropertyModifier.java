@@ -15,6 +15,8 @@ import net.mehvahdjukaar.polytone.content.sound.BlockSoundEmitter;
 import net.mehvahdjukaar.polytone.content.sound.PolytoneSoundType;
 import net.mehvahdjukaar.polytone.mixins.BlockColorsAccessor;
 import net.mehvahdjukaar.polytone.common.Targets;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
+import net.mehvahdjukaar.polytone.content.shaders.light.ColoredLight;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.color.block.BlockTintSource;
@@ -44,6 +46,7 @@ public record BlockPropertyModifier(
         Optional<Boolean> breakingParticlesTinted,
         Optional<ChunkSectionLayer> renderType,
         Optional<ToIntFunction<BlockState>> clientLight,
+        Optional<ColoredLight<IBlockExp>> coloredLight,
         List<BlockParticleEmitter> particleEmitters,
         List<BlockSoundEmitter> soundEmitters,
         Optional<BlockBehaviour.OffsetFunction> offsetType,
@@ -62,6 +65,7 @@ public record BlockPropertyModifier(
                 newMod.breakingParticlesTinted().isPresent() ? newMod.breakingParticlesTinted() : this.breakingParticlesTinted(),
                 newMod.renderType().isPresent() ? newMod.renderType() : this.renderType(),
                 newMod.clientLight.isPresent() ? newMod.clientLight : this.clientLight,
+                newMod.coloredLight.isPresent() ? newMod.coloredLight : this.coloredLight,
                 mergeList(newMod.particleEmitters, this.particleEmitters),
                 mergeList(newMod.soundEmitters, this.soundEmitters),
                 newMod.offsetType().isPresent() ? newMod.offsetType() : this.offsetType(),
@@ -77,7 +81,7 @@ public record BlockPropertyModifier(
         return new BlockPropertyModifier(Optional.ofNullable(colormap),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), List.of(),
+                Optional.empty(), Optional.empty(), Optional.empty(), List.of(),
                 List.of(), Optional.empty(), Optional.empty(),
                 false, Targets.EMPTY, false, List.of());
     }
@@ -98,7 +102,7 @@ public record BlockPropertyModifier(
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(),
-                java.util.Optional.empty(), Optional.empty(), List.of(),
+                java.util.Optional.empty(), Optional.empty(), Optional.empty(), List.of(),
                 List.of(), Optional.empty(), Optional.empty(),
                 false, t, false, List.of());
     }
@@ -205,7 +209,7 @@ public record BlockPropertyModifier(
                 Optional.ofNullable(oldMapColor),
                 Optional.ofNullable(oldCanOcclude), Optional.ofNullable(oldSpawnParticlesOnBreak),
                 Optional.empty(),
-                Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight),
+                Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight), Optional.empty(),
                 List.of(), List.of(), Optional.empty(),
                 Optional.ofNullable(oldType),
                 false, Targets.EMPTY, false, List.of());
@@ -238,6 +242,7 @@ public record BlockPropertyModifier(
                     i.optional("tinted_breaking_particles", Codec.BOOL, BlockPropertyModifier::breakingParticlesTinted),
                     i.optional("render_type", SECTION_LAYER_CODEC, BlockPropertyModifier::renderType),
                     i.optional("client_light", Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0), BlockPropertyModifier::clientLight),
+                    i.optional("colored_light", ColoredLight.codec(IBlockExp.CODEC, IBlockExp::constant), BlockPropertyModifier::coloredLight),
                     i.optional("particle_emitters", BlockParticleEmitter.CODEC.listOf(), List.of(), BlockPropertyModifier::particleEmitters),
                     i.optional("sound_emitters", BlockSoundEmitter.CODEC.listOf(), List.of(), BlockPropertyModifier::soundEmitters),
                     i.optional("offset_type", BlockOffsets.CODEC, BlockPropertyModifier::offsetType),

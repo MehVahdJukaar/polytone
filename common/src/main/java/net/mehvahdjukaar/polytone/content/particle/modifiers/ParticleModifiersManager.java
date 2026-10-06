@@ -90,6 +90,10 @@ public class ParticleModifiersManager extends ContentManager<ParticleModifier> {
                 this.xpOrbReplaceParticle = v.getResultOrPartial();
             }
         }
+
+        for (var e : particleModifiers.entries()) {
+            if (e.getValue().coloredLight != null) Polytone.COLORED_LIGHTS.addParticleLight(e.getKey(), e.getValue().coloredLight);
+        }
     }
 
     @Override

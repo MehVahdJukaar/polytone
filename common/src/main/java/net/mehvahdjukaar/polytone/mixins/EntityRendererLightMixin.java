@@ -56,7 +56,7 @@ public abstract class EntityRendererLightMixin<T extends Entity> {
                     float wz = dz == 1 ? fz : 1 - fz;
                     pos.set(x0 + dx, y0 + dy, z0 + dz);
                     //solid blocks have 0 light inside, would darken anything next to a wall
-                    if (level.getBlockState(pos).isSolidRender(level, pos)) continue;
+                    if (level.getBlockState(pos).isSolidRender()) continue;
                     float w = wx * wy * wz;
                     block += w * getBlockLightLevel(entity, pos);
                     sky += w * getSkyLightLevel(entity, pos);

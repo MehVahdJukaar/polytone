@@ -8,6 +8,7 @@ import net.mehvahdjukaar.polytone.content.shaders.IProgramWithModifiers;
 import net.mehvahdjukaar.polytone.content.shaders.IProgramWithModifiers.EnabledModifiers;
 import net.mehvahdjukaar.polytone.content.shaders.PolyGlobalUniforms;
 import net.mehvahdjukaar.polytone.content.shaders.PolytoneBuiltInUniformsSet;
+import net.mehvahdjukaar.polytone.content.shaders.light.PolyShaderPointLights;
 import net.mehvahdjukaar.polytone.content.shaders.shadow.ShadowMapManager;
 import net.mehvahdjukaar.polytone.content.shaders.voxel.VoxelVolumeManager;
 import org.jetbrains.annotations.Nullable;
@@ -38,6 +39,7 @@ public class GlProgramMixin implements IProgramWithModifiers {
         s.add(PolyGlobalUniforms.BLOCK_NAME);
         s.add(ShadowMapManager.BLOCK_NAME);
         s.add(VoxelVolumeManager.BLOCK_NAME);
+        s.add(PolyShaderPointLights.BLOCK_NAME);
         return s;
     }
 

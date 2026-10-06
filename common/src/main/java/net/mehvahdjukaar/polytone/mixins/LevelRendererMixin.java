@@ -69,6 +69,7 @@ public class LevelRendererMixin {
         if (!LevelRenderPassTracker.pushAndIsMain(camera)) return;
         Polytone.GLOBAL_UNIFORMS.capture(cameraState.projectionMatrix, modelViewMatrix, deltaTracker.getGameTimeDeltaTicks());
         Polytone.SHADOW_MAP.updateBeforeRenderLevel(terrainFog, camera, modelViewMatrix, cameraState.projectionMatrix);
+        Polytone.COLORED_LIGHTS.beforeRenderLevel(camera.position());
     }
 
     //the frame graph already ran here, no pass is open
