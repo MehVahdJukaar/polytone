@@ -107,7 +107,7 @@ public class ShadowMap implements AutoCloseable {
         return now - renderedAtMs < settings.updateInterval() * 50f;
     }
 
-    //ortho and the light basis is fixed between updates, so a translate by the camera delta is enough
+    // ortho and the light basis is fixed between updates, so a translate by the camera delta is enough
     public void realignTo(Vec3 camPos) {
         shadowMatrix.set(renderedShadowMatrix).translate(
                 (float) (camPos.x - renderedCamPos.x),
