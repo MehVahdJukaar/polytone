@@ -13,13 +13,9 @@ import net.minecraft.sounds.SoundEvents;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-// Polytone-specific "forward reference" aware registry codecs (deferred resolution against our
-// map registries). Generic codec combinators now live in codecui's SchemaCodecs.
 public class CodecUtils {
 
-    // A double parsed from either a JSON number OR a JSON string holding a plain numeric literal
-    // (e.g. "0.5"). Lets a constant written as a string take the same fast constant-lambda path as
-    // a JSON number instead of being compiled/evaluated as an expression every frame.
+    //so "0.5" as a string still takes the constant fast path instead of compiling as an expression
     public static final Codec<Double> LENIENT_DOUBLE = Codec.withAlternative(Codec.DOUBLE,
             Codec.STRING.comapFlatMap(CodecUtils::parseDouble, s -> Double.toString(s)));
 

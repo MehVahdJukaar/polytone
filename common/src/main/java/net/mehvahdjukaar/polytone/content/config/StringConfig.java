@@ -33,7 +33,12 @@ public class StringConfig extends PolyConfig<String> implements OptionInstance.C
                            String defaultValue, List<String> allowedValues) {
         super(valueTranslation, presets, sectionPresets, order, section, sectionOrder,
                 performanceImpact, wide, tooltipImages, defaultValue);
-        this.allowedValues = List.copyOf(new HashSet<>(allowedValues));
+        this.allowedValues = List.copyOf(new LinkedHashSet<>(allowedValues));
+    }
+
+    public StringConfig(Optional<String> valueTranslation, String defaultValue, List<String> allowedValues) {
+        this(valueTranslation, Map.of(), Map.of(), 0, Optional.empty(), Optional.empty(),
+                Optional.empty(), false, Map.of(), defaultValue, allowedValues);
     }
 
     @Override

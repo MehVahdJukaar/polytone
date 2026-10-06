@@ -7,6 +7,8 @@ import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.model.WornModel;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
+import net.mehvahdjukaar.polytone.content.shaders.light.ColoredLight;
 import net.mehvahdjukaar.polytone.common.Targets;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.core.component.DataComponentMap;

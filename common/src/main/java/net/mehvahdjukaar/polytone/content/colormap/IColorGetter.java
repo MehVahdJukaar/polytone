@@ -162,20 +162,23 @@ public interface IColorGetter extends BlockTintSource, BarColor {
     record ExpressionColor(IBlockExp exp) implements IColorGetter {
         @Override
         public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome, @Nullable ItemStack item) {
-            if (pos == null) {
-                return 0;
-            }
-            return (int) (long) exp.evaluate(Minecraft.getInstance().level, pos, state);
+            ClientLevel cl = Minecraft.getInstance().level;
+            if (cl == null || pos == null) return -1;
+            return (int) (long) exp.evaluate(cl, pos, state);
         }
 
         @Override
         public int getItemColor(ItemStack stack, int tintIndex) {
-            return (int) (long) exp.evaluate(Minecraft.getInstance().level, Vec3.ZERO, Blocks.AIR.defaultBlockState());
+            ClientLevel cl = Minecraft.getInstance().level;
+            if (cl == null) return -1;
+            return (int) (long) exp.evaluate(cl, Vec3.ZERO, Blocks.AIR.defaultBlockState());
         }
 
         @Override
         public int colorInWorld(BlockState state, BlockAndTintGetter level, BlockPos pos) {
+            //RenderChunkRegion when meshing
             ClientLevel cl = level instanceof ClientLevel c ? c : Minecraft.getInstance().level;
+            if (cl == null) return -1;
             return (int) (long) exp.evaluate(cl, Vec3.atCenterOf(pos), state);
         }
 

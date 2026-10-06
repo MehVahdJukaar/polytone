@@ -11,7 +11,6 @@ public interface ILightmapNumberProvider {
 
     MapRegistry<ILightmapNumberProvider> BUILTIN_PROVIDERS = new MapRegistry<>("Lightmap Number Providers");
 
-    // Same wire codec as always; the labels only name the editor's picker options.
     Codec<ILightmapNumberProvider> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
             SchemaCodecs.referenceOrDirect(BUILTIN_PROVIDERS,
                     LightmapExp.TYPE.codec(), true),

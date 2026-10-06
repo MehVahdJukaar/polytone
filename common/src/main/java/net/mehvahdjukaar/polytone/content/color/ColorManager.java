@@ -430,9 +430,6 @@ public class ColorManager extends SingleFileContentManager<Void> {
                     }
                 }
             } else if (k.startsWith("code:") || k.equals("code")) {
-                // 26.2: legacy §-code recoloring removed. ChatFormatting/TextColor are now immutable
-                // (no getById/getByName/color field), so globally overriding the 16 vanilla chat
-                // color codes is no longer supported.
                 Polytone.LOGGER.warn("Recoloring legacy chat formatting codes ('{}') is no longer supported as of MC 26.2", k);
             } else {
                 Polytone.LOGGER.warn("Unsupported 'text' color key '{}'. Recoloring named chat formatting is no longer supported as of MC 26.2", k);

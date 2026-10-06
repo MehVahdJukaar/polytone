@@ -6,7 +6,8 @@ import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTrack;
+import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTracker;
+import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -41,21 +42,20 @@ public class LevelRendererMixin {
                                boolean shouldRenderSky,
                                boolean consistentDepthRequired,
                                CallbackInfo ci) {
-        // no render pass is open here, which the UBO writes below need
-        Polytone.SHADER_EFFECTS.updateAll();
-        //a second camera from some other mod. shadows and post chains only care about the main one
-        if (!LevelRenderPassTrack.pushAndIsMain()) return;
+        Polytone.SHADER_UNIFORMS.updateAll();
+        Camera camera = Minecraft.getInstance().gameRenderer.mainCamera();
+        if (!LevelRenderPassTracker.pushAndIsMain(camera)) return;
         DeltaTracker deltaTracker = Minecraft.getInstance().getDeltaTracker();
-        Polytone.POST_CHAINS.updateGlobalUniforms(cameraState.projectionMatrix, cameraState.viewRotationMatrix,
-                deltaTracker.getGameTimeDeltaTicks());
-        // shadow map goes first so the post chains built into this frame's graph sample this frame's map
-        Polytone.SHADOWS.renderer().renderShadowPassIfNeeded(terrainFog, Minecraft.getInstance().gameRenderer.mainCamera(),
-                cameraState.viewRotationMatrix, cameraState.projectionMatrix);
+        Polytone.GLOBAL_UNIFORMS.capture(cameraState.projectionMatrix, cameraState.viewRotationMatrix, deltaTracker.getGameTimeDeltaTicks());
+        Polytone.SHADOW_MAP.updateBeforeRenderLevel(terrainFog, camera, cameraState.viewRotationMatrix, cameraState.projectionMatrix);
     }
 
+    //the frame graph already ran here, no pass is open
     @Inject(method = "render", at = @At("RETURN"))
     public void poly$popLevelRenderPass(CallbackInfo ci) {
-        LevelRenderPassTrack.pop();
+        Camera camera = LevelRenderPassTracker.currentCamera();
+        if (!LevelRenderPassTracker.popAndWasMain()) return;
+        //Polytone.VOXEL_VOLUME.updateAfterRenderLevel(camera);
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", shift = At.Shift.AFTER,

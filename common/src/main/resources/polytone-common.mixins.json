@@ -29,6 +29,7 @@
     "AttributeProbeMixin",
     "ClientLevelDataMixin",
     "ClientLevelMixin",
+    "ClientPacketListenerMixin",
     "ContainerScreenPickMixin",
     "ColorResolverMixin",
     "ContextualBarRendererMixin",
@@ -79,7 +80,7 @@
     "SingleQuadParticleAccessor",
     "SkyRendererMixin",
     "SmithingScreenMixin",
-    "SodiumBlockRendererMixin",
+    "compat.SodiumBlockRendererMixin",
     "SodiumChunkRendererMixin",
     "SpatialAttributeInterpolatorMixin",
     "SpriteContentsMixin",
@@ -95,8 +96,8 @@
     "accessor.LevelRendererShadowAccessor",
     "accessor.ParticleAccessor",
     "accessor.PostPassAccessor",
-    "accessor.SodiumRenderSectionManagerAccessor",
-    "accessor.SodiumWorldRendererShadowAccessor"
+    "compat.SodiumRenderSectionManagerAccessor",
+    "compat.SodiumWorldRendererShadowAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
