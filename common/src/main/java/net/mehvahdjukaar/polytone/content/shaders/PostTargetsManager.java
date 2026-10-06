@@ -6,6 +6,9 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.resource.ResourceHandle;
+import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
@@ -18,6 +21,8 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.ExtraCodecs;
+import org.joml.Vector4f;
+import org.joml.Vector4fc;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,6 +39,8 @@ public class PostTargetsManager extends ContentManager<PostTargetsManager.Target
                 i.optional("use_depth", Codec.BOOL, false, TargetSpec::useDepth)
         ).apply(i, TargetSpec::new));
     }
+
+    private static final Vector4fc CLEAR_COLOR = new Vector4f(0, 0, 0, 0);
 
     private volatile Map<Identifier, TargetSpec> specs = Map.of();
     private volatile boolean dirty = false;
@@ -78,9 +85,11 @@ public class PostTargetsManager extends ContentManager<PostTargetsManager.Target
             destroyAll();
             for (var e : specs.entrySet()) {
                 TargetSpec spec = e.getValue();
-                targets.put(e.getKey(), new TextureTarget(e.getKey().toString(),
+                RenderTarget target = new TextureTarget(e.getKey().toString(),
                         spec.width().orElse(frameWidth), spec.height().orElse(frameHeight), spec.useDepth(),
-                        GpuFormat.RGBA8_UNORM));
+                        GpuFormat.RGBA8_UNORM);
+                clear(target);
+                targets.put(e.getKey(), target);
             }
             dirty = false;
         } else {
@@ -89,9 +98,22 @@ public class PostTargetsManager extends ContentManager<PostTargetsManager.Target
                 int width = spec.width().orElse(frameWidth);
                 int height = spec.height().orElse(frameHeight);
                 RenderTarget target = targets.get(e.getKey());
-                if (target != null && (target.width != width || target.height != height)) target.resize(width, height);
+                if (target != null && (target.width != width || target.height != height)) {
+                    target.resize(width, height);
+                    clear(target);
+                }
             }
         }
+    }
+
+    // new textures hold recycled memory, which a target nothing writes any more would show forever
+    private static void clear(RenderTarget target) {
+        GpuTexture color = target.getColorTexture();
+        if (color == null) return;
+        CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
+        GpuTexture depth = target.useDepth ? target.getDepthTexture() : null;
+        if (depth != null) encoder.clearColorAndDepthTextures(color, CLEAR_COLOR, depth, 0.0);
+        else encoder.clearColorTexture(color, CLEAR_COLOR);
     }
 
     // persistent, so they can be imported into any frame graph including the after hand one
