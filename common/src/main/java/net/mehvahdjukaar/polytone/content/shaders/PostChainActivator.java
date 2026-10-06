@@ -25,15 +25,13 @@ public final class PostChainActivator {
                     i.optional("expression_uniforms", ExpressionUniformBuffers.CODEC,
                             new ExpressionUniformBuffers(Map.of()), p -> p.expressionUniforms),
                     i.optional("samplers", Codec.unboundedMap(Codec.STRING, Identifier.CODEC),
-                            Map.of(), p -> p.samplers),
-                    i.optional("use_shadow_map", Codec.BOOL, false, p -> p.useShadowMap)
+                            Map.of(), p -> p.samplers)
             ).apply(i, PostChainActivator::new));
 
     private final Identifier postChainId;
     private final ISimpleExp activationCondition;
     private final ExpressionUniformBuffers expressionUniforms;
     private final Map<String, Identifier> samplers;
-    private final boolean useShadowMap;
 
     private boolean active = false;
     private PostChain cachedPostChain = null;
@@ -41,13 +39,11 @@ public final class PostChainActivator {
     private final List<Identifier> registeredPassPipelines = new ArrayList<>();
 
     public PostChainActivator(Identifier postChainId, ISimpleExp activationCondition,
-                              ExpressionUniformBuffers expressionUniforms, Map<String, Identifier> samplers,
-                              boolean useShadowMap) {
+                              ExpressionUniformBuffers expressionUniforms, Map<String, Identifier> samplers) {
         this.postChainId = postChainId;
         this.activationCondition = activationCondition;
         this.expressionUniforms = expressionUniforms;
         this.samplers = samplers;
-        this.useShadowMap = useShadowMap;
     }
 
     public void refreshActive() {
@@ -56,10 +52,6 @@ public final class PostChainActivator {
 
     public boolean isActive() {
         return active;
-    }
-
-    public boolean wantsShadowMap() {
-        return active && useShadowMap;
     }
 
     public boolean readsMainDepth() {
@@ -98,7 +90,7 @@ public final class PostChainActivator {
         if (expressionUniforms.isEmpty() && samplers.isEmpty()) return;
         for (PostPass pass : chain.passes) {
             Identifier pipelineLocation = ((PostPassAccessor) pass).polytone$getPipeline().getLocation();
-            if (!expressionUniforms.isEmpty()) Polytone.SHADER_EFFECTS.registerOnPostPass(pipelineLocation, expressionUniforms);
+            if (!expressionUniforms.isEmpty()) Polytone.SHADER_UNIFORMS.registerOnPostPass(pipelineLocation, expressionUniforms);
             if (!samplers.isEmpty()) Polytone.POST_CHAINS.registerSamplers(pipelineLocation, samplers);
             registeredPassPipelines.add(pipelineLocation);
         }
@@ -106,7 +98,7 @@ public final class PostChainActivator {
 
     private void unregisterFromPasses() {
         for (Identifier id : registeredPassPipelines) {
-            if (!expressionUniforms.isEmpty()) Polytone.SHADER_EFFECTS.unregisterFromPostPass(id, expressionUniforms);
+            if (!expressionUniforms.isEmpty()) Polytone.SHADER_UNIFORMS.unregisterFromPostPass(id, expressionUniforms);
             if (!samplers.isEmpty()) Polytone.POST_CHAINS.unregisterSamplers(id, samplers);
         }
         registeredPassPipelines.clear();
@@ -123,7 +115,6 @@ public final class PostChainActivator {
         return false;
     }
 
-    // The ShaderManager closes the chain's buffers on reload
     private static boolean isChainClosed(@Nullable PostChain chain) {
         if (chain != null && !chain.passes.isEmpty()) {
             return chain.passes.getFirst().infoUbo.buffers[0].isClosed();

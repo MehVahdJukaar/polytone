@@ -37,6 +37,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
     protected final @Nullable QuadCollection model;
     protected final List<IParticleTickable> tickables;
     protected float oQuadSize;
+    private float renderScale = 1;
     protected double custom;
     // named counterpart of `custom`. Lazy because most particles never declare one, and
     // case-insensitive so "customs": {"Speed": ..}, o.custom("speed") and CUSTOM_SPEED all agree
@@ -180,10 +181,15 @@ public class CustomParticleInstance extends SingleQuadParticle {
         if (this.roll != 0.0F) {
             quaternionf.rotateZ(Mth.lerp(f, this.oRoll, this.roll));
         }
-        var offset = this.type.offset;
+        Vec3 offset = this.type.offset.world();
+        Vec3 cameraPos = camera.position();
+        float relX = (float) (Mth.lerp(f, xo, x) - cameraPos.x + offset.x);
+        float relY = (float) (Mth.lerp(f, yo, y) - cameraPos.y + offset.y);
+        float relZ = (float) (Mth.lerp(f, zo, z) - cameraPos.z + offset.z);
+        renderScale = cameraPullScale(relX, relY, relZ);
         modelParticleRenderState.add(
                 this.type.renderType,
-                (float) (Mth.lerp(f, xo, x) + offset.x), (float) (Mth.lerp(f, yo, y) + offset.y), (float) (Mth.lerp(f, zo, z) + offset.z),
+                (float) (cameraPos.x + relX * renderScale), (float) (cameraPos.y + relY * renderScale), (float) (cameraPos.z + relZ * renderScale),
                 quaternionf.x,
                 quaternionf.y,
                 quaternionf.z,
@@ -193,14 +199,27 @@ public class CustomParticleInstance extends SingleQuadParticle {
                 this.getLightCoords(f),
                 this.model
         );
+        renderScale = 1;
     }
 
     @Override
     protected void extractRotatedQuad(QuadParticleRenderState quadParticleRenderState,
                                       Quaternionf rot, float x, float y, float z, float f) {
-        var offset = this.type.offset;
-        super.extractRotatedQuad(quadParticleRenderState, rot,
-                (float) (x + offset.x), (float) (y + offset.y), (float) (z + offset.z), f);
+        Vec3 offset = this.type.offset.world();
+        x += (float) offset.x;
+        y += (float) offset.y;
+        z += (float) offset.z;
+        renderScale = cameraPullScale(x, y, z);
+        super.extractRotatedQuad(quadParticleRenderState, rot, x * renderScale, y * renderScale, z * renderScale, f);
+        renderScale = 1;
+    }
+
+    //move along z and shrink to match so screen size stays the same
+    private float cameraPullScale(float x, float y, float z) {
+        float pull = this.type.offset.camera();
+        if (pull == 0) return 1;
+        float dist = Mth.sqrt(x * x + y * y + z * z);
+        return dist == 0 ? 1 : Math.max(dist - pull, 0.05f) / dist;
     }
 
     @Override
@@ -351,7 +370,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     @Override
     public float getQuadSize(float scaleFactor) {
-        return Mth.lerp(scaleFactor, this.oQuadSize, this.quadSize);
+        return Mth.lerp(scaleFactor, this.oQuadSize, this.quadSize) * renderScale;
     }
 
     @Override

@@ -8,7 +8,8 @@ import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.content.particle.PreviewRenderTarget;
-import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTrack;
+import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTracker;
+import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -51,20 +52,19 @@ public class LevelRendererMixin {
                                Vector4f fogColor,
                                boolean shouldRenderSky,
                                CallbackInfo ci) {
-        // no render pass is open here, which the UBO writes below need
-        Polytone.SHADER_EFFECTS.updateAll();
-        //a second camera from some other mod. shadows and post chains only care about the main one
-        if (!LevelRenderPassTrack.pushAndIsMain()) return;
-        Polytone.POST_CHAINS.updateGlobalUniforms(cameraState.projectionMatrix, modelViewMatrix,
-                deltaTracker.getGameTimeDeltaTicks());
-        // shadow map goes first so the post chains built into this frame's graph sample this frame's map
-        Polytone.SHADOWS.renderer().renderShadowPassIfNeeded(terrainFog, Minecraft.getInstance().gameRenderer.mainCamera(),
-                modelViewMatrix, cameraState.projectionMatrix);
+        Polytone.SHADER_UNIFORMS.updateAll();
+        Camera camera = Minecraft.getInstance().gameRenderer.mainCamera();
+        if (!LevelRenderPassTracker.pushAndIsMain(camera)) return;
+        Polytone.GLOBAL_UNIFORMS.capture(cameraState.projectionMatrix, modelViewMatrix, deltaTracker.getGameTimeDeltaTicks());
+        Polytone.SHADOW_MAP.updateBeforeRenderLevel(terrainFog, camera, modelViewMatrix, cameraState.projectionMatrix);
     }
 
+    //the frame graph already ran here, no pass is open
     @Inject(method = "render", at = @At("RETURN"))
     public void poly$popLevelRenderPass(CallbackInfo ci) {
-        LevelRenderPassTrack.pop();
+        Camera camera = LevelRenderPassTracker.currentCamera();
+        if (!LevelRenderPassTracker.popAndWasMain()) return;
+        Polytone.VOXEL_VOLUME.updateAfterRenderLevel(camera);
     }
 
     // after weather, the last world pass that depth tests
@@ -88,7 +88,6 @@ public class LevelRendererMixin {
                 deltaTracker.getGameTimeDeltaPartialTick(false));
     }
 
-    // 26.2: addLateDebugPass(...) was removed; inject our post passes into the frame graph right before it executes.
     @Inject(method = "render", at = @At(value = "INVOKE",
             target = "Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;execute(Lcom/mojang/blaze3d/resource/GraphicsResourceAllocator;Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder$Inspector;)V",
             shift = At.Shift.BEFORE))
@@ -102,7 +101,6 @@ public class LevelRendererMixin {
                                     boolean shouldRenderSky,
                                     CallbackInfo ci,
                                     @Local FrameGraphBuilder frameGraphBuilder) {
-        // with post_chains_after_hand (default) GameRendererMixin runs the chains after the hand instead
         if (Polytone.CONFIGS.postChainsAfterHand.get()) return;
         RenderTarget mainTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
         Polytone.POST_CHAINS.addChainsToFrameGraph(mainTarget.width, mainTarget.height, this.targets, frameGraphBuilder,

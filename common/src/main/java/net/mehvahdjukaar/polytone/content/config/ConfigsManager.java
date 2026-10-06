@@ -30,6 +30,7 @@ import net.minecraft.server.packs.repository.PackCompatibility;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.flag.FeatureFlagSet;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -49,9 +50,15 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     public final OptionHolder<Boolean> autoParticleRateLimit = builtinConfig("auto_particle_rate_limit", "particles", false);
     public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", "particles", false);
     public final OptionHolder<Boolean> showConfigButton = builtinConfig("show_config_button", null, true);
-    public final OptionHolder<Boolean> postChainsAfterHand = builtinConfig("post_chains_after_hand", null, true);
+    public final OptionHolder<Boolean> postChainsAfterHand = builtinConfig("post_chains_after_hand", "shaders", true);
     public final OptionHolder<Boolean> skyDepthWrite = builtinConfig("sky_depth_write", null, false);
     public final OptionHolder<Float> attributeTimeSmoothing = builtinConfig("attribute_time_smoothing", null, 0.4f, 2, 0.05f);
+    public final OptionHolder<ColoredLightsBackend> coloredLightsBackend = builtinConfig("colored_lights_backend", "shaders", ColoredLightsBackend.BUILT_IN);
+    public final OptionHolder<Float> voxelVolumeWidth = builtinConfig("voxel_volume_width", "shaders", 128, 32, 384, 16);
+    public final OptionHolder<Float> voxelVolumeHeight = builtinConfig("voxel_volume_height", "shaders", 128, 64, 256, 16);
+    public final OptionHolder<Float> farLightRange = builtinConfig("far_light_range", "shaders", 512, 0, 1024, 64);
+    public final OptionHolder<Float> lightSpreadSteps = builtinConfig("light_spread_steps", "shaders", 3, 1, 15, 1);
+    public final OptionHolder<SmoothEntityLighting> smoothEntityLighting = builtinConfig("smooth_entity_lighting", "shaders", SmoothEntityLighting.LOCAL_PLAYER);
 
     public final ConfigBubbleManager bubbleManager = new ConfigBubbleManager();
 
@@ -66,8 +73,17 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
 
     private static @NonNull OptionHolder<Float> builtinConfig(String id, @Nullable String section, float def,
                                                               float max, float step) {
+        return builtinConfig(id, section, def, 0, max, step);
+    }
+
+    private static @NonNull OptionHolder<Float> builtinConfig(String id, @Nullable String section, float def,
+                                                              float min, float max, float step) {
         return OptionHolder.create(new NumberConfig(Optional.empty(), Map.of(), Map.of(), 1,
-                Optional.ofNullable(section), Optional.empty(), Optional.empty(), false, Map.of(), def, 0, max, step), Polytone.res(id));
+                Optional.ofNullable(section), Optional.empty(), Optional.empty(), false, Map.of(), def, min, max, step), Polytone.res(id));
+    }
+
+    private static <E extends Enum<E> & StringRepresentable> @NonNull OptionHolder<E> builtinConfig(String id, @Nullable String section, E def) {
+        return OptionHolder.create(new EnumConfig<>(def, Optional.ofNullable(section)), Polytone.res(id));
     }
 
     private final MapRegistry<OptionHolder<?>> configs = new MapRegistry<>("Configs");
@@ -94,7 +110,7 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
 
     private void registerBuiltins(MapRegistry<OptionHolder<?>> reg) {
         for (OptionHolder<?> b : List.of(lenientLoading, legacyParsing, particlesThrottle, autoParticleRateLimit,
-                particlesOffThread, showConfigButton, postChainsAfterHand, skyDepthWrite, attributeTimeSmoothing)) {
+                particlesOffThread, showConfigButton, postChainsAfterHand, skyDepthWrite, attributeTimeSmoothing, coloredLightsBackend, voxelVolumeWidth, voxelVolumeHeight, farLightRange, lightSpreadSteps, smoothEntityLighting)) {
             b.loadFromJson(configFileSnapshot);
             reg.unregister(b.fileId);
             reg.register(b.fileId, b);
@@ -228,7 +244,8 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         OptionHolder<?> value = reg.getValue(configKey);
         if (value == null) value = configs.getValue(configKey);
         if (value != null) {
-            return value.get();
+            //special case for our enums
+            return value.get() instanceof StringRepresentable sr ? sr.getSerializedName() : value.get();
         } else {
             Polytone.LOGGER.warn("Tried to get config value for unknown key: {}", configKey);
             return 0;
@@ -347,6 +364,28 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
 
     public void beforeRepositoryRefresh() {
         loadConfigFromDisk();
+    }
+
+    public enum ColoredLightsBackend implements StringRepresentable {
+        OFF, BUILT_IN, HYBRID, VEIL;
+
+        public boolean tintsVanillaBlockLight() {
+            return this == BUILT_IN || this == HYBRID;
+        }
+
+        @Override
+        public String getSerializedName() {
+            return name().toLowerCase(Locale.ROOT);
+        }
+    }
+
+    public enum SmoothEntityLighting implements StringRepresentable {
+        OFF, LOCAL_PLAYER, ALL;
+
+        @Override
+        public String getSerializedName() {
+            return name().toLowerCase(Locale.ROOT);
+        }
     }
 
     public enum ButtonPosition {

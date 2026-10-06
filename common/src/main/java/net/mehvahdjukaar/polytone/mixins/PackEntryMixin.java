@@ -42,7 +42,8 @@ public abstract class PackEntryMixin extends  ObjectSelectionList.Entry<Transfer
     @Unique
     private @Nullable PackInfo polytone$info() {
         if (!this.pack.isSelected()) return null;
-        return PackInfos.get(this.pack.getId());
+        PackInfo info = PackInfos.get(this.pack.getId());
+        return info != null && info.hasInfoPage() ? info : null;
     }
 
     @Unique

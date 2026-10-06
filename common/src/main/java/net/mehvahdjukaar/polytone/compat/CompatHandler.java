@@ -11,7 +11,11 @@ public class CompatHandler {
     public static final boolean EMF = PlatStuff.isModLoaded("entity_model_features");
     public static final boolean ETF = PlatStuff.isModLoaded("entity_texture_features");
     public static final boolean SODIUM = PlatStuff.isModLoaded("sodium");
+    public static final boolean VEIL = PlatStuff.isModLoaded("veil");
     public static final boolean NAUTILUS = PlatStuff.isModLoaded("nautilus_studio");
     public static final boolean DISTANT_HORIZONS = PlatStuff.isModLoaded("distanthorizons");
 
+    public static boolean irisShaderPackActive() {
+        return IRIS && IrisCompat.isIrisShaderFuckeryActive();
+    }
 }

@@ -9,9 +9,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 
-// When the sky_depth_write config is enabled, swaps the sky-disc draw for a pipeline variant that writes depth
-// (see PolytoneRenderTypes#SKY_DEPTH_WRITE_PIPELINE). This only affects the top sky disc (renderSkyDisc); the
-// dark disc is left alone.
 @Mixin(SkyRenderer.class)
 public class SkyRendererMixin {
 

@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.content.shaders;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.systems.RenderPass;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
@@ -11,6 +10,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL20C;
 
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffers> {
+public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffers> implements IShaderModifier {
 
     private final List<ExpressionUniformBuffers> owned = new ArrayList<>();
     private final Map<Identifier, List<ExpressionUniformBuffers>> byShader = new HashMap<>();
@@ -83,6 +83,7 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
             byShader.clear();
             byPostPassPipeline.clear();
         }
+        IShaderModifier.invalidateEnabledLists();
     }
 
     public void onClose() {
@@ -93,6 +94,7 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
 
     public void registerExternal(Identifier shaderId, ExpressionUniformBuffers buffers) {
         byShader.computeIfAbsent(shaderId, k -> new ArrayList<>()).add(buffers);
+        IShaderModifier.invalidateEnabledLists();
     }
 
     public void unregisterExternal(Identifier shaderId, ExpressionUniformBuffers buffers) {
@@ -101,6 +103,7 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
 
     public void registerOnPostPass(Identifier pipelineLocation, ExpressionUniformBuffers buffers) {
         byPostPassPipeline.computeIfAbsent(pipelineLocation, k -> new ArrayList<>()).add(buffers);
+        IShaderModifier.invalidateEnabledLists();
     }
 
     public void unregisterFromPostPass(Identifier pipelineLocation, ExpressionUniformBuffers buffers) {
@@ -114,6 +117,7 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
             list.remove(buffers);
             if (list.isEmpty()) map.remove(key);
         }
+        IShaderModifier.invalidateEnabledLists();
     }
 
     //MUST be called once per frame from a point where no render pass is open
@@ -149,19 +153,33 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
         return !byShader.isEmpty() || !byPostPassPipeline.isEmpty();
     }
 
-    public void tryApply(RenderPass pass, RenderPipeline pipeline, Set<String> declaredUniforms) {
-        if (!byPostPassPipeline.isEmpty()) {
-            List<ExpressionUniformBuffers> postPassBuffers = byPostPassPipeline.get(pipeline.getLocation());
-            if (postPassBuffers != null) {
-                for (ExpressionUniformBuffers b : postPassBuffers) b.bind(pass, declaredUniforms);
-            }
+    @Override
+    public List<String> getEnablingUniforms() {
+        return List.of();
+    }
+
+    @Override
+    public boolean isEnabledFor(IShader shader) {
+        return buffersFor(shader.pipeline()) != null || byPostPassPipeline.containsKey(shader.pipeline().getLocation());
+    }
+
+    @Override
+    public void bindTo(IShader shader) {
+        RenderPipeline pipeline = shader.pipeline();
+        List<ExpressionUniformBuffers> postPassBuffers = byPostPassPipeline.get(pipeline.getLocation());
+        if (postPassBuffers != null) {
+            for (ExpressionUniformBuffers b : postPassBuffers) b.bind(shader);
         }
-        if (byShader.isEmpty()) return;
-        List<ExpressionUniformBuffers> list = byShader.get(pipeline.getFragmentShader());
-        if (list == null) list = byShader.get(pipeline.getVertexShader());
+        List<ExpressionUniformBuffers> list = buffersFor(pipeline);
         if (list == null) return;
         for (ExpressionUniformBuffers b : list) {
-            b.bind(pass, declaredUniforms);
+            b.bind(shader);
         }
+    }
+
+    @Nullable
+    private List<ExpressionUniformBuffers> buffersFor(RenderPipeline pipeline) {
+        List<ExpressionUniformBuffers> list = byShader.get(pipeline.getFragmentShader());
+        return list != null ? list : byShader.get(pipeline.getVertexShader());
     }
 }

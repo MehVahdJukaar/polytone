@@ -123,7 +123,6 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
         if (shaderFailed) return null;
         if (pipeline == null) {
             Identifier shader = Identifier.fromNamespaceAndPath(type.shader().getNamespace(), "core/" + type.shader().getPath());
-            // 26.2 declares samplers and uniform blocks through bind group layouts instead of on the pipeline
             BindGroupLayout.Builder ownBlocks = BindGroupLayout.builder()
                     .withUniform("ParticleInfo", UniformType.UNIFORM_BUFFER);
             for (String name : type.uniforms().keySet()) {
@@ -222,7 +221,7 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
         pass.bindTexture("Sampler2", Minecraft.getInstance().gameRenderer.lightmap(),
                 RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
         pass.setUniform("ParticleInfo", infoUbo);
-        customUniforms.bind(pass, type.uniforms().keySet());
+        customUniforms.bind(pass);
         pass.setVertexBuffer(0, vertices.slice());
         pass.setIndexBuffer(indexBuffer, indexType);
         pass.drawIndexed(indexCount(), 1, 0, 0, 0);

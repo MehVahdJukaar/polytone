@@ -16,9 +16,7 @@ import org.lwjgl.system.MemoryStack;
 import java.nio.ByteBuffer;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
-// A map of block name -> expression; each entry becomes a single-float UBO block of that name
 public final class ExpressionUniformBuffers {
 
     public static final Codec<ExpressionUniformBuffers> CODEC =
@@ -68,17 +66,22 @@ public final class ExpressionUniformBuffers {
         }
     }
 
-    public void bind(RenderPass pass, Set<String> declaredUniforms) {
+    //for pipelines that declare all of them
+    public void bind(RenderPass pass) {
         if (buffers == null) return;
         for (var e : buffers.entrySet()) {
-            // undeclared binds make Iris/Sodium log errors
-            if (declaredUniforms.contains(e.getKey())) {
-                pass.setUniform(e.getKey(), e.getValue());
-            }
+            pass.setUniform(e.getKey(), e.getValue());
         }
     }
 
-    // raw GL bind for programs not driven through RenderPass (Sodium chunk shaders); only declared blocks are bound
+    public void bind(IShader shader) {
+        if (buffers == null) return;
+        for (var e : buffers.entrySet()) {
+            shader.setUniform(e.getKey(), e.getValue().slice());
+        }
+    }
+
+    //raw GL bind for programs that dont go through RenderPass
     public int bindBlocksToProgram(int program, int nextBindingPoint) {
         if (buffers == null){
             return nextBindingPoint;

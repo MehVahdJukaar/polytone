@@ -11,8 +11,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 public class IrisCompat {
 
     public static void init() {
-        // TODO: leashes need their own pipeline under Iris. Copying vanilla TEXT gets us a GLYPH program that
-        // doesn't shade leashes right, so for now we just fall back to vanilla leashes while shaders are on.
+        //TODO: leashes need their own iris pipeline, copying TEXT gives a GLYPH program that shades them wrong
         IrisPipelines.copyPipeline(RenderPipelines.TEXT, PolytoneRenderTypes.LEASH_PIPELINE);
         IrisPipelines.copyPipeline(RenderPipelines.TRANSLUCENT_PARTICLE, PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE);
         IrisPipelines.copyPipeline(RenderPipelines.TRANSLUCENT_BLOCK, PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_BLOCK_PIPELINE);
@@ -24,7 +23,7 @@ public class IrisCompat {
         ImmediateState.bypass = bypass;
     }
 
-    public static boolean isIrisRenderOn() {
+    public static boolean isIrisShaderFuckeryActive() {
         WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
         if (pipeline instanceof ShaderRenderingPipeline s) {
             return s.shouldOverrideShaders();

@@ -149,10 +149,8 @@ public class PolytoneRenderTypes {
                     .createRenderSetup());
 
 
-    // TODO: leashes need their own pipeline under Iris. Copying vanilla TEXT gets us a GLYPH program that
-    // doesn't shade leashes right, so for now we just fall back to vanilla leashes while shaders are on.
     private static boolean isLeashRenderOn() {
-        return !CompatHandler.IRIS || !IrisCompat.isIrisRenderOn();
+        return !CompatHandler.IRIS || !IrisCompat.isIrisShaderFuckeryActive();
     }
 
     public static RenderType getLeashRenderType() {

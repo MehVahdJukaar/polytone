@@ -10,8 +10,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 @Mixin(RenderSetup.class)
 public class RenderSetupMixin {
 
-    // 26.2: getTextures() -> prepareTextures(TextureManager, SamplerCache, GpuTextureView overlay, GpuTextureView lightmap).
-    // The lightmap is now passed in as the 2nd GpuTextureView arg (ordinal 1) instead of fetched via GameRenderer.lightmap().
+    //ordinal 1 is the lightmap
     @ModifyVariable(method = "prepareTextures", at = @At("HEAD"), argsOnly = true, ordinal = 1)
     public GpuTextureView polytone$onGetGuiLightTexture(GpuTextureView lightmapTexture) {
         if (Polytone.LIGHTMAPS.isGui()) {

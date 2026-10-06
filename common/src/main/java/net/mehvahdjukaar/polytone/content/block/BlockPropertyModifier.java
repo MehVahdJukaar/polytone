@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.content.block;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.codecui.Schema;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
@@ -49,7 +50,8 @@ public record BlockPropertyModifier(
         Optional<BlockSetTypeProvider> blockSetType,
         Boolean disableParticles,
         @NotNull Targets targets,
-        boolean tintHack) {
+        boolean tintHack,
+        List<String> voxelFlags) {
     public BlockPropertyModifier merge(BlockPropertyModifier newMod) {
         return new BlockPropertyModifier(
                 newMod.tintGetter.isPresent() ? newMod.tintGetter() : this.tintGetter(),
@@ -66,7 +68,8 @@ public record BlockPropertyModifier(
                 newMod.blockSetType().isPresent() ? newMod.blockSetType() : this.blockSetType(),
                 newMod.disableParticles || this.disableParticles,
                 newMod.targets.merge(this.targets),
-                newMod.tintHack || this.tintHack
+                newMod.tintHack || this.tintHack,
+                mergeList(newMod.voxelFlags, this.voxelFlags)
         );
     }
 
@@ -76,7 +79,7 @@ public record BlockPropertyModifier(
                 Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), List.of(),
                 List.of(), Optional.empty(), Optional.empty(),
-                false, Targets.EMPTY, false);
+                false, Targets.EMPTY, false, List.of());
     }
 
     public static BlockPropertyModifier coloringBlocks(IColorGetter colormap, Block... blocks) {
@@ -97,7 +100,7 @@ public record BlockPropertyModifier(
                 Optional.empty(), Optional.empty(), Optional.empty(),
                 java.util.Optional.empty(), Optional.empty(), List.of(),
                 List.of(), Optional.empty(), Optional.empty(),
-                false, t, false);
+                false, t, false, List.of());
     }
 
     // returns the old ones
@@ -205,7 +208,7 @@ public record BlockPropertyModifier(
                 Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight),
                 List.of(), List.of(), Optional.empty(),
                 Optional.ofNullable(oldType),
-                false, Targets.EMPTY, false);
+                false, Targets.EMPTY, false, List.of());
     }
 
     private static List<BlockTintSource> toLayersList(BlockTintSource src) {
@@ -219,6 +222,10 @@ public record BlockPropertyModifier(
     public static final Codec<ChunkSectionLayer> SECTION_LAYER_CODEC = SchemaCodec.of(
             Codec.STRING.xmap(s -> ChunkSectionLayer.valueOf(s.toUpperCase(Locale.ROOT)), ChunkSectionLayer::label),
             new Schema.Enum<>(List.of(ChunkSectionLayer.values()), ChunkSectionLayer::label));
+
+    //ends up in shader uniform names
+    private static final Codec<String> VOXEL_FLAG = Codec.STRING.validate(s -> s.matches("[a-z0-9_]+") ?
+            DataResult.success(s) : DataResult.error(() -> "Voxel flag names can only use a-z, 0-9 and _: " + s));
 
     public static final SchemaCodec<BlockPropertyModifier> CODEC = SchemaRecord.create(BlockPropertyModifier.class, i ->
             i.group(
@@ -238,7 +245,8 @@ public record BlockPropertyModifier(
                     i.optional("disable_particles", Codec.BOOL, false, BlockPropertyModifier::disableParticles),
                     i.optional("targets", Targets.CODEC, Targets.EMPTY, BlockPropertyModifier::targets),
                     //dont use
-                    i.optional("force_tint_hack", Codec.BOOL, false, BlockPropertyModifier::tintHack)
+                    i.optional("force_tint_hack", Codec.BOOL, false, BlockPropertyModifier::tintHack),
+                    i.optional("voxel_flags", VOXEL_FLAG.listOf(), List.of(), BlockPropertyModifier::voxelFlags)
             ).apply(i, BlockPropertyModifier::new));
 
     public static final SchemaCodec<BlockPropertyModifier> PARTIAL_CODEC = SchemaRecord.create(BlockPropertyModifier.class, i ->

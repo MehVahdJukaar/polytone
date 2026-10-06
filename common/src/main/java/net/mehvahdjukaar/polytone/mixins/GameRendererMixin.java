@@ -5,7 +5,7 @@ import com.mojang.blaze3d.resource.CrossFrameResourcePool;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.content.particle.PreviewRenderTarget;
-import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTrack;
+import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTracker;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
@@ -33,17 +33,17 @@ public abstract class GameRendererMixin {
     @Inject(method = "render", at = @At(value = "TAIL"))
     private void polytone$resetGuiLightmap(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
         Polytone.LIGHTMAPS.setupForGUI(false);
-        LevelRenderPassTrack.onEndRenderLevel();
+        LevelRenderPassTracker.onEndRenderLevel();
     }
 
     @Inject(method = "renderLevel", at = @At("HEAD"))
     private void polytone$startVanillaLevelRender(DeltaTracker deltaTracker, CallbackInfo ci) {
-        LevelRenderPassTrack.onStartRenderLevel();
+        LevelRenderPassTracker.onStartRenderLevel();
     }
 
     @Inject(method = "renderLevel", at = @At("RETURN"))
     private void polytone$endVanillaLevelRender(DeltaTracker deltaTracker, CallbackInfo ci) {
-        LevelRenderPassTrack.onEndRenderLevel();
+        LevelRenderPassTracker.onEndRenderLevel();
     }
 
     @Inject(method = "mainRenderTarget", at = @At("HEAD"), cancellable = true)
@@ -56,11 +56,13 @@ public abstract class GameRendererMixin {
     @Inject(method = "close", at = @At(value = "TAIL"))
     private void polytone$closeShaderStuff(CallbackInfo ci) {
         Polytone.POST_CHAINS.onClose();
-        Polytone.SHADER_EFFECTS.onClose();
-        Polytone.SHADOWS.renderer().close();
+        Polytone.SHADER_UNIFORMS.onClose();
+        Polytone.SHADOW_MAP.close();
+        Polytone.GLOBAL_UNIFORMS.close();
+        Polytone.VOXEL_VOLUME.close();
     }
 
-    // post_chains_after_hand: save the world depth right before vanilla clears it to draw the hand...
+    //world depth, saved before vanilla clears it for the hand
     @Inject(method = "renderLevel", at = @At(value = "INVOKE",
             target = "Lcom/mojang/blaze3d/systems/CommandEncoder;clearDepthTexture(Lcom/mojang/blaze3d/textures/GpuTexture;D)V"))
     private void polytone$snapshotWorldDepth(DeltaTracker deltaTracker, CallbackInfo ci) {
@@ -68,7 +70,7 @@ public abstract class GameRendererMixin {
         Polytone.POST_CHAINS.snapshotWorldDepth(Minecraft.getInstance().gameRenderer.mainRenderTarget());
     }
 
-    // ...then run the chains after the hand, so held items occlude depth effects like godrays
+    //fold it back in after the hand so held items occlude depth effects like godrays
     @Inject(method = "render", at = @At(value = "INVOKE", shift = At.Shift.AFTER,
             target = "Lnet/minecraft/client/renderer/GameRenderer;renderLevel(Lnet/minecraft/client/DeltaTracker;)V"))
     private void polytone$runPostChainsAfterHand(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {

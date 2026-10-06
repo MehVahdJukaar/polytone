@@ -4,7 +4,7 @@ import com.mojang.blaze3d.textures.GpuSampler;
 import net.caffeinemc.mods.sodium.client.render.chunk.ShaderChunkRenderer;
 import net.caffeinemc.mods.sodium.client.render.chunk.terrain.TerrainRenderPass;
 import net.caffeinemc.mods.sodium.client.util.FogParameters;
-import net.mehvahdjukaar.polytone.content.shaders.sodium.SodiumShadowRenderer;
+import net.mehvahdjukaar.polytone.content.shaders.shadow.sodium.SodiumShadowRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;

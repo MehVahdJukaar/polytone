@@ -3,13 +3,12 @@ package net.mehvahdjukaar.polytone.mixins;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import net.caffeinemc.mods.sodium.client.render.chunk.DefaultChunkRenderer;
-import net.mehvahdjukaar.polytone.content.shaders.sodium.SodiumShadowRenderer;
+import net.mehvahdjukaar.polytone.content.shaders.shadow.sodium.SodiumShadowRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-// swaps the shadow map attachments in while a shadow replay is running
 @Pseudo
 @Mixin(DefaultChunkRenderer.class)
 public abstract class SodiumDefaultChunkRendererMixin {

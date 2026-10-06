@@ -13,6 +13,7 @@ import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.StringRepresentable;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -62,7 +63,8 @@ public class OptionHolder<T> {
 
         OptionInstance.CaptionBasedToString<T> toStr = (name, value) -> {
             MutableComponent valueName;
-            String perValueKey = id.toLanguageKey("config") + "." + value;
+            String valueKey = value instanceof StringRepresentable sr ? sr.getSerializedName() : String.valueOf(value);
+            String perValueKey = id.toLanguageKey("config") + "." + valueKey;
             if (Language.getInstance().has(perValueKey)) {
                 valueName = Component.translatable(perValueKey);
             } else if (config.getValueTranslationKey().isPresent()) {

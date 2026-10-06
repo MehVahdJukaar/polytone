@@ -41,12 +41,13 @@ public abstract class ParticleEngineMixin {
     @ModifyReturnValue(method = "makeParticle", at = @At("RETURN"))
     public @Nullable <T extends ParticleOptions> Particle polytone$applyModifiers(@Nullable Particle original,
                                                                                   @Local(argsOnly = true) T particleData) {
-        if (original != null) Polytone.PARTICLE_MODIFIERS.maybeModify(particleData, this.level, original);
+        if (original != null) {
+            Polytone.PARTICLE_MODIFIERS.maybeModify(particleData, this.level, original);
+            Polytone.COLORED_LIGHTS.onParticleCreated(particleData.getType(), original);
+        }
         return original;
     }
 
-    // Batch dispatched at tick() TAIL overlaps the rest of the game tick and early frame render,
-    // joined before anything reads (extract) or mutates (next tick, level change) particle state.
     @Inject(method = "tick", at = @At("HEAD"))
     private void polytone$joinBeforeTick(CallbackInfo ci) {
         PolytoneAsyncParticles.awaitTicks();
@@ -67,11 +68,13 @@ public abstract class ParticleEngineMixin {
     @Inject(method = "setLevel", at = @At("HEAD"))
     private void polytone$joinBeforeLevelChange(CallbackInfo ci) {
         PolytoneAsyncParticles.awaitTicks();
+        Polytone.COLORED_LIGHTS.onParticlesCleared();
     }
 
     @Inject(method = "clearParticles", at = @At("HEAD"))
     private void polytone$joinBeforeClear(CallbackInfo ci) {
         PolytoneAsyncParticles.awaitTicks();
+        Polytone.COLORED_LIGHTS.onParticlesCleared();
     }
 
 }

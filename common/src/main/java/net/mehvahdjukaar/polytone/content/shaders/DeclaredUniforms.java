@@ -16,24 +16,24 @@ import java.util.Set;
 
 public final class DeclaredUniforms {
 
-    private static final Map<VulkanRenderPipeline, Set<String>> VULKAN_CACHE = new IdentityHashMap<>();
+    private static final Map<VulkanRenderPipeline, VulkanProgram> VULKAN_PROGRAMS = new IdentityHashMap<>();
 
-    public static @Nullable Set<String> forBackend(RenderPassBackend backend) {
+    public static @Nullable IProgramWithModifiers boundProgram(RenderPassBackend backend) {
         if (backend instanceof GlRenderPassAccessor gl) {
             GlRenderPipeline pipeline = gl.polytone$getPipeline();
             if (pipeline == null) return null;
-            return pipeline.program().getUniforms().keySet();
+            return (IProgramWithModifiers) pipeline.program();
         }
         if (backend instanceof VulkanRenderPassAccessor vulkan) {
             VulkanRenderPipeline pipeline = vulkan.polytone$getPipeline();
             if (pipeline == null) return null;
-            return VULKAN_CACHE.computeIfAbsent(pipeline, p -> namesOf(p.layout()));
+            return VULKAN_PROGRAMS.computeIfAbsent(pipeline, p -> new VulkanProgram(namesOf(p.layout())));
         }
         return null;
     }
 
     public static void clearCache() {
-        VULKAN_CACHE.clear();
+        VULKAN_PROGRAMS.clear();
     }
 
     private static Set<String> namesOf(VulkanBindGroupLayout layout) {
@@ -41,5 +41,34 @@ public final class DeclaredUniforms {
         Set<String> names = new HashSet<>(entries.size());
         for (var e : entries) names.add(e.name());
         return names;
+    }
+
+    private static final class VulkanProgram implements IProgramWithModifiers {
+        private final Set<String> uniformNames;
+        private EnabledModifiers modifiers = null;
+
+        private VulkanProgram(Set<String> uniformNames) {
+            this.uniformNames = uniformNames;
+        }
+
+        @Override
+        public @Nullable EnabledModifiers polytone$getModifiers() {
+            return modifiers;
+        }
+
+        @Override
+        public void polytone$setModifiers(EnabledModifiers modifiers) {
+            this.modifiers = modifiers;
+        }
+
+        @Override
+        public Set<String> polytone$getUniformNames() {
+            return uniformNames;
+        }
+
+        @Override
+        public int polytone$getProgramId() {
+            return -1;
+        }
     }
 }
