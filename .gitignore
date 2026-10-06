@@ -27,7 +27,6 @@ run/
 /research/
 /wiki/
 /resourcepacks/*
-!/resourcepacks/build.sh
 !/resourcepacks/builds/
 /resourcepacks/builds/*
 !/resourcepacks/builds/polytone_sample_pack-*.zip
