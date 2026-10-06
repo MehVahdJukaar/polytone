@@ -94,7 +94,7 @@ public class ClientFrameTicker {
         Polytone.COLORED_LIGHTS.onRenderTick(partialTicks);
 
         deltaTime = Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
-        playerSpeed =  mc.player.getDeltaMovement().lengthSqr();
+        if (mc.player != null) playerSpeed = mc.player.getDeltaMovement().lengthSqr();
 
       if ( mc.screen != lastScreen) {
             lastScreen = mc.screen;
