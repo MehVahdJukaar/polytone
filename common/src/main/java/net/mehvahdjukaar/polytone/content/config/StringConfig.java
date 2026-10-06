@@ -10,7 +10,7 @@ import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -35,7 +35,12 @@ public class StringConfig extends PolyConfig<String> implements OptionInstance.C
                            String defaultValue, List<String> allowedValues) {
         super(valueTranslation, presets, sectionPresets, order, section, sectionOrder,
                 performanceImpact, wide, tooltipImages, defaultValue);
-        this.allowedValues = List.copyOf(new HashSet<>(allowedValues));
+        this.allowedValues = List.copyOf(new LinkedHashSet<>(allowedValues));
+    }
+
+    public StringConfig(Optional<String> valueTranslation, String defaultValue, List<String> allowedValues) {
+        this(valueTranslation, Map.of(), Map.of(), 0, Optional.empty(), Optional.empty(),
+                Optional.empty(), false, Map.of(), defaultValue, allowedValues);
     }
 
     @Override

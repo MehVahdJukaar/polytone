@@ -6,7 +6,7 @@ import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 
 public class IrisCompat {
 
-    public static boolean isIrisShaderFuckerActive() {
+    public static boolean isIrisShaderFuckeryActive() {
         WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
         if (pipeline instanceof ShaderRenderingPipeline s) {
             return s.shouldOverrideShaders();

@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 public class CodecUtils {
 
     public static Codec<String> STR_OR_DOUBLE_CODEC = Codec.withAlternative(Codec.STRING,
-            Codec.DOUBLE.xmap( d->d+"", s->0.0));
+            Codec.DOUBLE.xmap(d -> d + "", s -> 0.0));
 
     public static final Codec<Double> LENIENT_DOUBLE = Codec.withAlternative(Codec.DOUBLE,
             Codec.STRING.comapFlatMap(CodecUtils::parseDouble, s -> Double.toString(s)));
@@ -68,11 +68,11 @@ public class CodecUtils {
 
     public static Codec<Holder<SoundEvent>> forwardAwareSoundEventHolder() {
         return forwardAwareHolderByNameCodec(BuiltInRegistries.SOUND_EVENT,
-                ()->BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.EMPTY));
+                () -> BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.EMPTY));
     }
 
     @SafeVarargs
-    public static <A> Codec<A> withAlternatives(Codec<A> primary, Codec<? extends A> ...secondary) {
+    public static <A> Codec<A> withAlternatives(Codec<A> primary, Codec<? extends A>... secondary) {
         Codec<? super A> codec = primary;
         for (Codec<? extends A> c : secondary) {
             codec = Codec.withAlternative(codec, c);

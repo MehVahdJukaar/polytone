@@ -294,8 +294,7 @@ public class PlatStuff {
 
     }
 
-    // forge's enableStencil() changes the depth format, and copyDepthFrom between mismatched
-    // targets fails with INVALID_OPERATION. No-op on fabric, where depth is always plain.
+    // forge's enableStencil() changes the depth format, and copyDepthFrom between mismatched targets fails with INVALID_OPERATION.
     @PlatformImpl
     public static void matchStencil(RenderTarget main, RenderTarget snapshot) {
         throw new AssertionError();

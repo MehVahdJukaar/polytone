@@ -1,0 +1,12 @@
+{
+    "vertex": "polytone:depth_combine",
+    "fragment": "polytone:depth_combine",
+    "attributes": [
+        "Position",
+        "UV0"
+    ],
+    "samplers": [
+        { "name": "InSampler" }
+    ],
+    "uniforms": []
+}

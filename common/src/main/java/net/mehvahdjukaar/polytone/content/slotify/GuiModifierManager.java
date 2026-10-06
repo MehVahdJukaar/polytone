@@ -246,8 +246,6 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
         return o.slotModifiers().stream().filter(m -> m.matches(slot)).toList();
     }
 
-    // Idempotent: snapshots the slot's pristine position on first call, resets to it before each apply,
-    // so it can be re-run on an already-built menu (live editor preview) without drifting.
     public void maybeModifySlot(AbstractContainerMenu menu, Slot slot) {
         if (slot instanceof SlotifySlot ss) {
             ss.polytone$captureBase();

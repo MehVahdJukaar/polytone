@@ -107,7 +107,7 @@ public class GuiOverlayManager extends ContentManager<BlitModifier> {
         active = true;
     }
 
-    public void onEndRenderingOverlay() {
+    public void onEndRenderLevel() {
         active = false;
     }
 

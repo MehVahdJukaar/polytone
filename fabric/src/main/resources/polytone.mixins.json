@@ -29,7 +29,7 @@
     "ModelRendererMixin",
     "ParticleEngineAccessor",
     "RegistrySyncManagerMixin",
-    "SectionLightScanMixin",
+    "compat.VeilSectionLightScanMixin",
     "TerrainParticleMixin"
   ],
   "injectors": {

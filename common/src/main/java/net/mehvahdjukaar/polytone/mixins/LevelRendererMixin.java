@@ -5,7 +5,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.particle.custom.ParticleLightCache;
-import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTrack;
+import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTracker;
 import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticleHandler;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -56,7 +56,7 @@ public class LevelRendererMixin {
                                                net.minecraft.client.renderer.LightTexture lightTexture,
                                                org.joml.Matrix4f frustumMatrix, org.joml.Matrix4f projectionMatrix,
                                                CallbackInfo ci) {
-        LevelRenderPassTrack.push();
+        LevelRenderPassTracker.push(camera);
     }
 
     // before GameRenderer clears depth for first-person hand rendering
@@ -68,10 +68,11 @@ public class LevelRendererMixin {
                                             CallbackInfo ci) {
         Polytone.CUSTOM_PARTICLES.gpuParticles.render(camera, gameRenderer, lightTexture, frustumMatrix, projectionMatrix,
                 deltaTracker.getGameTimeDeltaPartialTick(false));
-        if (!LevelRenderPassTrack.popAndWasMain()) return;
+        if (!LevelRenderPassTracker.popAndWasMain()) return;
 
-        Polytone.POST_SHADERS.captureLevelDepthSnapshot();
-        Polytone.SHADOWS.renderer().renderShadowPassIfNeeded(camera, frustumMatrix, projectionMatrix);
+        Polytone.POST_CHAINS.captureLevelDepthSnapshot();
+        Polytone.SHADOW_MAP.updateAfterRenderLevel(camera, frustumMatrix, projectionMatrix);
+        Polytone.VOXEL_VOLUME.updateAfterRenderLevel(camera);
     }
 
     // Join the async particle tick batch

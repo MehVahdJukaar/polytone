@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone;
 
+import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.compat.nautilus.PolytoneNautilus;
 import net.mehvahdjukaar.polytone.content.biome.BiomeEffectsManager;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapperManager;
@@ -8,17 +9,20 @@ import net.mehvahdjukaar.polytone.content.block.BlockSetManager;
 import net.mehvahdjukaar.polytone.content.color.ColorManager;
 import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.content.config.ConfigsManager;
-import net.mehvahdjukaar.polytone.content.shaders.PostShadersManager;
-import net.mehvahdjukaar.polytone.content.shaders.PostTargetsManager;
+import net.mehvahdjukaar.polytone.content.shaders.IShaderModifier;
+import net.mehvahdjukaar.polytone.content.shaders.PolyGlobalUniforms;
+import net.mehvahdjukaar.polytone.content.shaders.post.PostChainsManager;
+import net.mehvahdjukaar.polytone.content.shaders.post.PostTargetsManager;
 import net.mehvahdjukaar.polytone.content.shaders.ShaderUniformsManager;
-import net.mehvahdjukaar.polytone.content.shaders.ShadowMapManager;
+import net.mehvahdjukaar.polytone.content.shaders.shadow.ShadowMapManager;
+import net.mehvahdjukaar.polytone.content.shaders.voxel.VoxelVolumeManager;
 import net.mehvahdjukaar.polytone.content.dimension.DimensionEffectsManager;
 import net.mehvahdjukaar.polytone.content.entity.EntityModifiersManager;
 import net.mehvahdjukaar.polytone.content.fluid.FluidPropertiesManager;
 import net.mehvahdjukaar.polytone.content.item.CustomItemModelsManager;
 import net.mehvahdjukaar.polytone.content.item.ItemModifiersManager;
 import net.mehvahdjukaar.polytone.content.model.CustomModelsManager;
-import net.mehvahdjukaar.polytone.content.light.ColoredLightsManager;
+import net.mehvahdjukaar.polytone.content.shaders.light.ColoredLightsManager;
 import net.mehvahdjukaar.polytone.content.lightmap.LightmapsManager;
 import net.mehvahdjukaar.polytone.content.global_expressions.GlobalExpressionsManager;
 import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
@@ -32,13 +36,11 @@ import net.mehvahdjukaar.polytone.content.texture.VariantTextureManager;
 import net.mehvahdjukaar.polytone.content.biome.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.common.reloader.PolytoneReloadManager;
 import net.mehvahdjukaar.polytone.common.GenericDirectorySpriteSource;
-import net.minecraft.FileUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -92,10 +94,14 @@ public class Polytone {
     public static final BlockSetManager BLOCK_SET = new BlockSetManager();
     public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
     public static final PostTargetsManager POST_TARGETS = new PostTargetsManager();
-    public static final PostShadersManager POST_SHADERS = new PostShadersManager();
-    public static final ShadowMapManager SHADOWS = new ShadowMapManager();
-    public static final ShaderUniformsManager SHADER_EFFECTS = new ShaderUniformsManager();
+    public static final PostChainsManager POST_CHAINS = new PostChainsManager();
+    public static final ShadowMapManager SHADOW_MAP = new ShadowMapManager();
+    public static final VoxelVolumeManager VOXEL_VOLUME = new VoxelVolumeManager();
+    public static final ShaderUniformsManager SHADER_UNIFORMS = new ShaderUniformsManager();
     public static final ConfigsManager CONFIGS = new ConfigsManager();
+
+    public static final PolyGlobalUniforms GLOBAL_UNIFORMS = new PolyGlobalUniforms();
+    public static final List<IShaderModifier> SHADER_MODIFIERS = List.of(GLOBAL_UNIFORMS, VOXEL_VOLUME, COLORED_LIGHTS, SHADOW_MAP, SHADER_UNIFORMS);
 
     private static final Set<ModelResourceLocation> EXTRA_MODELS = new HashSet<>();
 
@@ -105,10 +111,9 @@ public class Polytone {
 
     public static boolean isDevEnv = false;
     public static boolean isForge = false;
-    public static boolean iris = false;
 
     //todo: cutout not working. splash color not working, 1.20 color accessor crash
-    public static void init(boolean devEnv, boolean forge, boolean iris) {
+    public static void init(boolean devEnv, boolean forge) {
         PolytoneStub.initialized= true;
 
         ResourceLocation.tryParse("#invalid:ResourceLocation");
@@ -120,20 +125,19 @@ public class Polytone {
                 BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, CUSTOM_MODELS, ITEM_MODIFIERS, ITEM_MODELS,
                 BIOME_MODIFIERS, VARIANT_TEXTURES, LIGHTMAPS, DIMENSION_MODIFIERS,
                 PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,
-                CREATIVE_TABS_MODIFIERS, POST_TARGETS, POST_SHADERS, SHADOWS, SHADER_EFFECTS);
+                CREATIVE_TABS_MODIFIERS, POST_TARGETS, POST_CHAINS, SHADOW_MAP, VOXEL_VOLUME, SHADER_UNIFORMS);
         PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
                 res("polytone_stuff"));
 
-        if (PlatStuff.isModLoaded("nautilus_studio")) {
+        if (CompatHandler.NAUTILUS) {
             PolytoneNautilus.init();
         }
         isDevEnv = devEnv;
         isForge = forge;
-        Polytone.iris = iris;
 
         //ItemModelOverrideList.testTrie();
         GenericDirectorySpriteSource.init();
-        PolytoneRenderTypes.init();
+        PolytoneCoreShaders.init();
 
         PlatStuff.addSpecialModelRegistration(Polytone::addSpecialModels);
         //TODO: cache fog and d sky color

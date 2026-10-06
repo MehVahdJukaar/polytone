@@ -1,19 +1,16 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
-import com.mojang.blaze3d.shaders.AbstractUniform;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
 import java.util.List;
-import java.util.function.Function;
 
-public class PolyGlobalUniforms {
+public class PolyGlobalUniforms implements IShaderModifier {
 
     public static final String PROJ_MAT = "PolyProjMat";
     public static final String MODEL_VIEW_MAT = "PolyModelViewMat";
@@ -51,27 +48,22 @@ public class PolyGlobalUniforms {
 
         Vec3 playerPos = mc.player == null ? Vec3.ZERO : mc.player.getPosition(partial);
         playerBlockPos = BlockPos.containing(playerPos);
-        playerOffset = new Vec3(
-                playerBlockPos.getX() - playerPos.x,
-                playerBlockPos.getY() - playerPos.y,
-                playerBlockPos.getZ() - playerPos.z);
+        playerOffset = playerBlockPos.getBottomCenter().subtract(playerPos);
     }
 
-    public static boolean isAnyDeclaredBy(ShaderInstance shader) {
-        for (String name : NAMES) {
-            if (shader.getUniform(name) != null) return true;
-        }
-        return false;
+    @Override
+    public List<String> getEnablingUniforms() {
+        return NAMES;
     }
 
-    //undeclared names come back as a dummy uniform so its fine to set them all
-    public void applyTo(Function<String, AbstractUniform> uniforms) {
-        uniforms.apply(PROJ_MAT).set(projMat);
-        uniforms.apply(MODEL_VIEW_MAT).set(modelViewMat);
-        uniforms.apply(SUN_ANGLE).set(sunAngle);
-        uniforms.apply(DAY_TIME).set(dayTime);
-        uniforms.apply(DELTA_TIME).set(deltaTime);
-        uniforms.apply(PLAYER_BLOCK_POS).set(playerBlockPos.getX(), playerBlockPos.getY(), playerBlockPos.getZ());
-        uniforms.apply(PLAYER_OFFSET).set((float) playerOffset.x, (float) playerOffset.y, (float) playerOffset.z);
+    @Override
+    public void bindTo(IShader inputs) {
+        inputs.getUniform(PROJ_MAT).set(projMat);
+        inputs.getUniform(MODEL_VIEW_MAT).set(modelViewMat);
+        inputs.getUniform(SUN_ANGLE).set(sunAngle);
+        inputs.getUniform(DAY_TIME).set(dayTime);
+        inputs.getUniform(DELTA_TIME).set(deltaTime);
+        inputs.getUniform(PLAYER_BLOCK_POS).set(playerBlockPos.getX(), playerBlockPos.getY(), playerBlockPos.getZ());
+        inputs.getUniform(PLAYER_OFFSET).set((float) playerOffset.x, (float) playerOffset.y, (float) playerOffset.z);
     }
 }

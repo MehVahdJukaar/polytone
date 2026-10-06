@@ -7,6 +7,10 @@ import net.mehvahdjukaar.polytone.content.packinfo.PackInfo;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfoScreen;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfos;
 import net.minecraft.client.Minecraft;
+import net.mehvahdjukaar.polytone.content.shaders.GLHelper;
+import net.mehvahdjukaar.polytone.content.packinfo.PackInfo.OpenGLVersion;
+import net.minecraft.server.packs.repository.PackCompatibility;
+import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ObjectSelectionList;
@@ -53,6 +57,10 @@ public abstract class PackEntryMixin extends ObjectSelectionList.Entry<Transfera
     @Final
     private FormattedCharSequence nameDisplayCache;
 
+    @Shadow
+    @Final
+    private MultiLineLabel incompatibleDescriptionDisplayCache;
+
     // the row box is only handed to render(), so remember where the heart landed for the click test
     @Unique
     private int polytone$badgeX = Integer.MIN_VALUE;
@@ -60,11 +68,14 @@ public abstract class PackEntryMixin extends ObjectSelectionList.Entry<Transfera
     private int polytone$badgeY;
     @Unique
     private @Nullable FormattedCharSequence polytone$narrowedName;
+    @Unique
+    private @Nullable MultiLineLabel polytone$missingOpenGLLabel;
 
     @Unique
     private @Nullable PackInfo polytone$info() {
         if (!this.pack.isSelected()) return null;
-        return PackInfos.get(this.pack.getId());
+        PackInfo info = PackInfos.get(this.pack.getId());
+        return info != null && info.hasInfoPage() ? info : null;
     }
 
     @Unique
@@ -74,8 +85,6 @@ public abstract class PackEntryMixin extends ObjectSelectionList.Entry<Transfera
                 && mouseY >= this.polytone$badgeY && mouseY < this.polytone$badgeY + POLYTONE$BADGE_SIZE;
     }
 
-    // long pack names would otherwise run straight under the heart. the same call also draws the
-    // "incompatible" label, so only the pack's own name cache gets swapped
     @WrapOperation(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;III)I"))
     private int polytone$narrowTitleForBadge(GuiGraphics graphics, Font font, FormattedCharSequence text,
@@ -131,5 +140,38 @@ public abstract class PackEntryMixin extends ObjectSelectionList.Entry<Transfera
         minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
         minecraft.setScreen(new PackInfoScreen(minecraft.screen, this.pack.getTitle(), info));
         cir.setReturnValue(true);
+    }
+
+    @WrapOperation(method = {"render", "handlePackSelection"}, at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/server/packs/repository/PackCompatibility;isCompatible()Z"))
+    private boolean polytone$incompatibleWithoutOpenGL(PackCompatibility compatibility, Operation<Boolean> original) {
+        return original.call(compatibility) && PackInfos.missingOpenGL(this.pack.getId()) == null;
+    }
+
+    @WrapOperation(method = "render", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/components/MultiLineLabel;renderLeftAligned(Lnet/minecraft/client/gui/GuiGraphics;IIII)V"))
+    private void polytone$explainMissingOpenGL(MultiLineLabel label, GuiGraphics graphics, int x, int y, int lineHeight, int color,
+                                               Operation<Void> original) {
+        if (label == this.incompatibleDescriptionDisplayCache && this.pack.getCompatibility().isCompatible()) {
+            OpenGLVersion missing = PackInfos.missingOpenGL(this.pack.getId());
+            if (missing != null) {
+                if (this.polytone$missingOpenGLLabel == null) {
+                    this.polytone$missingOpenGLLabel = MultiLineLabel.create(Minecraft.getInstance().font, POLYTONE$MAX_NAME_WIDTH, 2,
+                            Component.translatable("pack.polytone.needs_opengl", missing.toString(), GLHelper.getContextVersionStr()));
+                }
+                label = this.polytone$missingOpenGLLabel;
+            }
+        }
+        original.call(label, graphics, x, y, lineHeight, color);
+    }
+
+    @WrapOperation(method = "handlePackSelection", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/server/packs/repository/PackCompatibility;getConfirmation()Lnet/minecraft/network/chat/Component;"))
+    private Component polytone$confirm(PackCompatibility compatibility, Operation<Component> original) {
+        OpenGLVersion missing = PackInfos.missingOpenGL(this.pack.getId());
+        if (compatibility.isCompatible() && missing != null) {
+            return Component.translatable("pack.polytone.needs_opengl.confirm", missing.toString(), GLHelper.getContextVersionStr());
+        }
+        return original.call(compatibility);
     }
 }

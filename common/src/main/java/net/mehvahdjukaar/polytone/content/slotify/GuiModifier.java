@@ -2,10 +2,10 @@ package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.common.expressions.impl.SimpleExp;
-import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
@@ -56,38 +56,38 @@ public record GuiModifier(Type type, String target,
         }
     }
 
-    public static final Codec<GuiModifier> CODEC =
-            RecordCodecBuilder.<GuiModifier>create(i -> BiggerCodecs.group(i,
-                    StringRepresentable.fromEnum(Type::values).fieldOf("target_type").forGetter(GuiModifier::type),
-                    Codec.STRING.xmap(PlatStuff::maybeRemapName, PlatStuff::maybeRemapName).fieldOf("target").forGetter(GuiModifier::target),
-                    SlotModifier.CODEC.listOf().optionalFieldOf("slot_modifiers", List.of()).forGetter(GuiModifier::slotModifiers),
-                    Codec.INT.optionalFieldOf("title_x_offset", 0).forGetter(GuiModifier::titleX),
-                    Codec.INT.optionalFieldOf("title_y_offset", 0).forGetter(GuiModifier::titleY),
-                    Codec.INT.optionalFieldOf("label_x_offset", 0).forGetter(GuiModifier::labelX),
-                    Codec.INT.optionalFieldOf("label_y_offset", 0).forGetter(GuiModifier::labelY),
-                    Codec.INT.optionalFieldOf("x_offset", 0).forGetter(GuiModifier::xOff),
-                    Codec.INT.optionalFieldOf("y_offset", 0).forGetter(GuiModifier::yOff),
-                    Codec.INT.optionalFieldOf("width_offset", 0).forGetter(GuiModifier::wOff),
-                    Codec.INT.optionalFieldOf("height_offset", 0).forGetter(GuiModifier::hOff),
-                    ColorUtils.CODEC.optionalFieldOf("title_color").forGetter(g -> Optional.ofNullable(g.titleColor)),
-                    ColorUtils.CODEC.optionalFieldOf("label_color").forGetter(g -> Optional.ofNullable(g.labelColor)),
-                    SimpleSprite.CODEC.listOf().optionalFieldOf("sprites", List.of()).forGetter(GuiModifier::sprites),
-                    SimpleText.CODEC.listOf().optionalFieldOf("texts", List.of()).forGetter(GuiModifier::textList),
-                    WidgetModifier.CODEC.listOf().optionalFieldOf("widget_modifiers", List.of()).forGetter(GuiModifier::widgetModifiers),
-                    Codec.unboundedMap(Codec.STRING, SpecialOffset.CODEC).optionalFieldOf("special_offsets", Map.of()).forGetter(GuiModifier::specialOffsets),
-                    SimpleExp.TYPE.codec().optionalFieldOf("condition").forGetter(g -> Optional.ofNullable(g.condition))
+    private static final SchemaCodec<GuiModifier> RECORD_CODEC = SchemaRecord.create(GuiModifier.class, i -> i.group(
+            i.field("target_type", StringRepresentable.fromEnum(Type::values), GuiModifier::type),
+            i.field("target", Codec.STRING.xmap(PlatStuff::maybeRemapName, PlatStuff::maybeRemapName), GuiModifier::target),
+            i.optional("slot_modifiers", SlotModifier.CODEC.listOf(), List.of(), GuiModifier::slotModifiers),
+            i.optional("title_x_offset", Codec.INT, 0, GuiModifier::titleX),
+            i.optional("title_y_offset", Codec.INT, 0, GuiModifier::titleY),
+            i.optional("label_x_offset", Codec.INT, 0, GuiModifier::labelX),
+            i.optional("label_y_offset", Codec.INT, 0, GuiModifier::labelY),
+            i.optional("x_offset", Codec.INT, 0, GuiModifier::xOff),
+            i.optional("y_offset", Codec.INT, 0, GuiModifier::yOff),
+            i.optional("width_offset", Codec.INT, 0, GuiModifier::wOff),
+            i.optional("height_offset", Codec.INT, 0, GuiModifier::hOff),
+            i.optional("title_color", ColorUtils.CODEC, g -> Optional.ofNullable(g.titleColor)),
+            i.optional("label_color", ColorUtils.CODEC, g -> Optional.ofNullable(g.labelColor)),
+            i.optional("sprites", SimpleSprite.CODEC.listOf(), List.of(), GuiModifier::sprites),
+            i.optional("texts", SimpleText.CODEC.listOf(), List.of(), GuiModifier::textList),
+            i.optional("widget_modifiers", WidgetModifier.CODEC.listOf(), List.of(), GuiModifier::widgetModifiers),
+            i.optional("special_offsets", Codec.unboundedMap(Codec.STRING, SpecialOffset.CODEC), Map.of(), GuiModifier::specialOffsets),
+            i.optional("condition", SimpleExp.TYPE.codec(), g -> Optional.ofNullable(g.condition))
+    ).apply(i, GuiModifier::new));
 
-            ).apply(i, GuiModifier::new)).comapFlatMap((instance) -> {
-                if (instance.type == Type.MENU_ID) {
-                    var error = ResourceLocation.read(instance.target).error();
-                    if (error.isPresent()) return DataResult.error(() -> error.get().message());
-                }
-                if ((instance.type == Type.SCREEN_CLASS || instance.type == Type.SCREEN_TITLE) &&
-                        instance.slotModifiers.stream().anyMatch(SlotModifier::hasOffset)) {
-                    return DataResult.error(() -> "Slot modifiers cannot alter position when using a screen_class or screen_title target_type. Use menu_id or menu_class instead");
-                }
-                return DataResult.success(instance);
-            }, Function.identity());
+    public static final SchemaCodec<GuiModifier> CODEC = SchemaCodec.lazy(RECORD_CODEC.comapFlatMap((instance) -> {
+        if (instance.type == Type.MENU_ID) {
+            var error = ResourceLocation.read(instance.target).error();
+            if (error.isPresent()) return DataResult.error(() -> error.get().message());
+        }
+        if ((instance.type == Type.SCREEN_CLASS || instance.type == Type.SCREEN_TITLE) &&
+                instance.slotModifiers.stream().anyMatch(SlotModifier::hasOffset)) {
+            return DataResult.error(() -> "Slot modifiers cannot alter position when using a screen_class or screen_title target_type. Use menu_id or menu_class instead");
+        }
+        return DataResult.success(instance);
+    }, Function.identity()), RECORD_CODEC::schema);
 
 
     public boolean targetsClass() {

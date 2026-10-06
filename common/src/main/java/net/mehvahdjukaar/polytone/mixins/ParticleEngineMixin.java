@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.mixins;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.content.light.ColoredLightsTracker;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.content.block.TickSource;
 import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticleHandler;
@@ -42,7 +41,7 @@ public abstract class ParticleEngineMixin {
                                                                                   @Local(argsOnly = true) T particleData) {
         if (original != null) {
             Polytone.PARTICLE_MODIFIERS.maybeModify(particleData, this.level, original);
-            ColoredLightsTracker.onParticleCreated(particleData.getType(), original);
+            Polytone.COLORED_LIGHTS.onParticleCreated(particleData.getType(), original);
         }
         return original;
     }
@@ -90,10 +89,12 @@ public abstract class ParticleEngineMixin {
     @Inject(method = "setLevel", at = @At("HEAD"))
     private void polytone$joinBeforeLevelChange(CallbackInfo ci) {
         PolytoneAsyncParticleHandler.awaitTicks();
+        Polytone.COLORED_LIGHTS.onParticlesCleared();
     }
 
     @Inject(method = "clearParticles", at = @At("HEAD"))
     private void polytone$joinBeforeClear(CallbackInfo ci) {
         PolytoneAsyncParticleHandler.awaitTicks();
+        Polytone.COLORED_LIGHTS.onParticlesCleared();
     }
 }

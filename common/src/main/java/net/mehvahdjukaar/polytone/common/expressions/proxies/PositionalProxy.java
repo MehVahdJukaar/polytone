@@ -56,8 +56,9 @@ public abstract class PositionalProxy {
     private BlockPos updatedPos() {
         BlockPos newPos = getPosInternal();
         if (newPos == posCache) return posCache;
-        if (posCache == null || !posCache.equals(newPos)) {
-            posCache = newPos;
+        boolean moved = posCache != null && !posCache.equals(newPos);
+        posCache = newPos;
+        if (moved) {
             //invalidate caches
             stateCache = null;
             beCache = null;
@@ -113,9 +114,10 @@ public abstract class PositionalProxy {
     }
 
     public Object blockStateValue(Object input) {
-        //return a String or primitive value representing the state property and turn the input into the best known state prop
-        Property<?> property = getStateInternal().getBlock().getStateDefinition().getProperty(input.toString());
-        var value = getStateInternal().getValue(property);
+        BlockState state = getStateInternal();
+        Property<?> property = state.getBlock().getStateDefinition().getProperty(input.toString());
+        if (property == null) return false;
+        var value = state.getValue(property);
         if (ClassUtils.isPrimitiveOrWrapper(value.getClass())) {
             return value;
         }

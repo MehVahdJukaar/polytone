@@ -82,6 +82,11 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
         return modifier != null && modifier.offsetType().isPresent();
     }
 
+    public List<String> getVoxelFlags(Block block) {
+        BlockPropertyModifier modifier = modifiers.get(block);
+        return modifier == null ? List.of() : modifier.voxelFlags();
+    }
+
     @Nullable
     public Boolean getTerrainTintOverride(Block block) {
         return terrainParticleTintOverrides.get(block);

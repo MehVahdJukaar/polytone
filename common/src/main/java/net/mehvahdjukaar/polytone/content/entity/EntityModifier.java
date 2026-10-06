@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
-import net.mehvahdjukaar.polytone.content.light.ColoredLight;
+import net.mehvahdjukaar.polytone.content.shaders.light.ColoredLight;
 import net.mehvahdjukaar.polytone.common.Targets;
 import net.minecraft.world.entity.Entity;
 

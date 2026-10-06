@@ -23,7 +23,6 @@ dependencies {
     implementation("org.ow2.asm:asm:9.5")
     implementation("org.ow2.asm:asm-commons:9.5")
 
-    // Declarative codec->schema engine, bundled (JiJ) into polytone
     implementation("net.mehvahdjukaar:codecui-neoforge:${codecui_version}")
     jarJar("net.mehvahdjukaar:codecui-neoforge:${codecui_version}")
 
@@ -47,11 +46,6 @@ dependencies {
     localRuntime(":fabric-block-view-api-v2:1.0.10")
     localRuntime(":fabric-renderer-api-v1:3.4.1")
     localRuntime(":fabric-rendering-data-attachment-v1:0.3.48")
-    clientAdditionalRuntimeClasspath(":sodium-neoforge-mod:0.8.12")
-    clientAdditionalRuntimeClasspath(":fabric-api-base:0.4.42")
-    clientAdditionalRuntimeClasspath(":fabric-block-view-api-v2:1.0.10")
-    clientAdditionalRuntimeClasspath(":fabric-renderer-api-v1:3.4.1")
-    clientAdditionalRuntimeClasspath(":fabric-rendering-data-attachment-v1:0.3.48")
 
     modCompileOnly("curse.maven:curios-continuation-1037991:5546342")
     modCompileOnly("curse.maven:embeddium-908741:6118392")

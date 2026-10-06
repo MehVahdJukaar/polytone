@@ -7,7 +7,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
 import org.jetbrains.annotations.NotNull;
@@ -23,14 +22,6 @@ import java.util.function.Supplier;
 import static com.mojang.blaze3d.vertex.DefaultVertexFormat.PARTICLE;
 
 public class PolytoneRenderTypes extends RenderType {
-
-    private static ShaderInstance noAlphaCutoffShader;
-
-    public static void init() {
-        PlatStuff.registerShaders(Polytone.res("particle_translucent"), DefaultVertexFormat.POSITION_TEX,
-                s -> noAlphaCutoffShader = s);
-    }
-
 
     //kind of not used since particle render type modify buffer replaces it
     public static final ParticleRenderType PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE = new ParticleRenderType() {
@@ -75,7 +66,7 @@ public class PolytoneRenderTypes extends RenderType {
     });
 
     private static final TextureStateShard PARTICLE_SHEET = new TextureStateShard(TextureAtlas.LOCATION_PARTICLES, false, false);
-    protected static final ShaderStateShard PARTICLE_SHADER_STATE = new ShaderStateShard(() -> noAlphaCutoffShader);
+    protected static final ShaderStateShard PARTICLE_SHADER_STATE = new ShaderStateShard(() -> PolytoneCoreShaders.particleTranslucent);
 
     public static final RenderType ADDITIVE_TRANSLUCENT_PARTICLE = RenderType.create(
             Polytone.MOD_ID + ":additive_translucent_particle",

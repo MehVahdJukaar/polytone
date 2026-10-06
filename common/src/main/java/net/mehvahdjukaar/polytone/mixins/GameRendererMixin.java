@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTrack;
+import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTracker;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
@@ -33,8 +33,8 @@ public abstract class GameRendererMixin {
     private void polytone$resetGuiLightmap(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
         Polytone.LIGHTMAPS.setupForGUI(false);
         lightTexture.turnOnLightLayer();
-        Polytone.OVERLAY_MODIFIERS.onEndRenderingOverlay();
-        LevelRenderPassTrack.onEndRenderLevel();
+        Polytone.OVERLAY_MODIFIERS.onEndRenderLevel();
+        LevelRenderPassTracker.onEndRenderLevel();
     }
 
     @Inject(method = "render",
@@ -43,17 +43,17 @@ public abstract class GameRendererMixin {
                      ordinal = 0,
                      shift = At.Shift.AFTER))
     private void polytone$renderPolytonePostEffects(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
-        Polytone.POST_SHADERS.renderAfterMainPostEffect(deltaTracker.getGameTimeDeltaTicks());
+        Polytone.POST_CHAINS.renderAfterMainPostEffect(deltaTracker.getGameTimeDeltaTicks());
     }
 
     @Inject(method = "renderLevel", at = @At("HEAD"))
     private void polytone$startVanillaLevelRender(DeltaTracker deltaTracker, CallbackInfo ci) {
-        LevelRenderPassTrack.onStartRenderLevel();
+        LevelRenderPassTracker.onStartRenderLevel();
     }
 
     @Inject(method = "renderLevel", at = @At("RETURN"))
     private void polytone$endVanillaLevelRender(DeltaTracker deltaTracker, CallbackInfo ci) {
-        LevelRenderPassTrack.onEndRenderLevel();
+        LevelRenderPassTracker.onEndRenderLevel();
     }
 
     @Inject(method = "renderLevel",
@@ -62,13 +62,13 @@ public abstract class GameRendererMixin {
     private void polytone$capturePostShaderMatrices(DeltaTracker deltaTracker, CallbackInfo ci,
                                                     @Local(ordinal = 0) Matrix4f projectionMatrix,
                                                     @Local(ordinal = 1) Matrix4f viewMatrix) {
-        Polytone.POST_SHADERS.captureGlobals(projectionMatrix, viewMatrix);
-        Polytone.SHADER_EFFECTS.updateAll();
+        Polytone.GLOBAL_UNIFORMS.capture(projectionMatrix, viewMatrix);
+        Polytone.SHADER_UNIFORMS.updateAll();
     }
 
     @Inject(method = "resize", at = @At("TAIL"))
     private void polytone$resizePostShaders(int width, int height, CallbackInfo ci) {
-        Polytone.POST_SHADERS.resize(width, height);
+        Polytone.POST_CHAINS.resize(width, height);
     }
 
 }

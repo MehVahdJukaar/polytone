@@ -1,13 +1,15 @@
 package net.mehvahdjukaar.polytone.content.block;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.color.MapColorHelper;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
-import net.mehvahdjukaar.polytone.content.light.ColoredLight;
+import net.mehvahdjukaar.polytone.content.shaders.light.ColoredLight;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.content.particle.BlockParticleEmitter;
@@ -49,7 +51,8 @@ public record BlockPropertyModifier(
         Optional<BlockSetTypeProvider> blockSetType,
         Boolean disableParticles,
         @NotNull Targets targets,
-        boolean tintHack) {
+        boolean tintHack,
+        List<String> voxelFlags) {
     //TODO: add is soid for occlusion
     // Other has priority
     public BlockPropertyModifier merge(BlockPropertyModifier newMod) {
@@ -69,7 +72,8 @@ public record BlockPropertyModifier(
                 newMod.blockSetType().isPresent() ? newMod.blockSetType() : this.blockSetType(),
                 newMod.disableParticles || this.disableParticles,
                 newMod.targets.merge(this.targets),
-                newMod.tintHack || this.tintHack
+                newMod.tintHack || this.tintHack,
+                mergeList(newMod.voxelFlags, this.voxelFlags)
         );
     }
 
@@ -79,7 +83,7 @@ public record BlockPropertyModifier(
                 Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(), List.of(),
                 List.of(), Optional.empty(), Optional.empty(),
-                false, Targets.EMPTY, false);
+                false, Targets.EMPTY, false, List.of());
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Block... blocks) {
@@ -100,7 +104,7 @@ public record BlockPropertyModifier(
                 Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(), List.of(),
                 List.of(), Optional.empty(), Optional.empty(),
-                false, t, false);
+                false, t, false, List.of());
     }
 
     private static final BlockColor NO_VANILLA_TINT_DUMMY = (state, level, pos, tintIndex) -> -1;
@@ -223,34 +227,36 @@ public record BlockPropertyModifier(
                Optional.empty(), Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight),
                 Optional.empty(), List.of(), List.of(), Optional.empty(),
                 Optional.ofNullable(oldType),
-                false, Targets.EMPTY, false);
+                false, Targets.EMPTY, false, List.of());
     }
 
 
-    public static final Codec<BlockPropertyModifier> CODEC = RecordCodecBuilder.create(instance ->
-            instance.group(
-                    IndexCompoundColorGetter.SINGLE_OR_MULTIPLE.optionalFieldOf("colormap").forGetter(b -> b.tintGetter.flatMap(t -> Optional.ofNullable(t instanceof IndexCompoundColorGetter c ? c : null))),
+    //ends up in shader uniform names
+    private static final Codec<String> VOXEL_FLAG = Codec.STRING.validate(s -> s.matches("[a-z0-9_]+") ?
+            DataResult.success(s) : DataResult.error(() -> "Voxel flag names can only use a-z, 0-9 and _: " + s));
+
+    public static final Codec<BlockPropertyModifier> CODEC = SchemaRecord.create(BlockPropertyModifier.class, i ->
+            i.group(
+                    i.optional("colormap", IndexCompoundColorGetter.SINGLE_OR_MULTIPLE, b -> b.tintGetter.flatMap(t -> Optional.ofNullable(t instanceof IndexCompoundColorGetter c ? c : null))),
                     //normal opt so it can fail when using modded sounds
-                    PolytoneSoundType.CODEC.optionalFieldOf("sound_type").forGetter(BlockPropertyModifier::soundType),
-                    MapColorHelper.CODEC.xmap(c -> (Function<BlockState, MapColor>) (a) -> c, f -> MapColor.NONE).optionalFieldOf(
-                            "map_color").forGetter(BlockPropertyModifier::mapColor),
-                    Codec.BOOL.optionalFieldOf("can_occlude").forGetter(BlockPropertyModifier::canOcclude),
-                    Codec.BOOL.optionalFieldOf("spawn_particles_on_break").forGetter(BlockPropertyModifier::spawnParticlesOnBreak),
-                    Codec.BOOL.optionalFieldOf("tinted_breaking_particles").forGetter(BlockPropertyModifier::breakingParticlesTinted),
-                    IRenderProperties.CODEC.optionalFieldOf("render_type").forGetter(BlockPropertyModifier::renderType),
-                    Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0)
-                            .optionalFieldOf("client_light").forGetter(BlockPropertyModifier::clientLight),
-                    ColoredLight.codec(IBlockExp.CODEC, IBlockExp::constant)
-                            .optionalFieldOf("colored_light").forGetter(BlockPropertyModifier::coloredLight),
-                    BlockParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(BlockPropertyModifier::particleEmitters),
-                    BlockSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters", List.of()).forGetter(BlockPropertyModifier::soundEmitters),
-                    BlockOffsets.CODEC.optionalFieldOf("offset_type").forGetter(BlockPropertyModifier::offsetType),
-                    BlockSetTypeProvider.CODEC.optionalFieldOf("block_set_type").forGetter(BlockPropertyModifier::blockSetType),
-                    Codec.BOOL.optionalFieldOf("disable_particles", false).forGetter(BlockPropertyModifier::disableParticles),
-                    Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(BlockPropertyModifier::targets),
+                    i.optional("sound_type", PolytoneSoundType.CODEC, BlockPropertyModifier::soundType),
+                    i.optional("map_color", MapColorHelper.CODEC.xmap(c -> (Function<BlockState, MapColor>) (a) -> c, f -> MapColor.NONE), BlockPropertyModifier::mapColor),
+                    i.optional("can_occlude", Codec.BOOL, BlockPropertyModifier::canOcclude),
+                    i.optional("spawn_particles_on_break", Codec.BOOL, BlockPropertyModifier::spawnParticlesOnBreak),
+                    i.optional("tinted_breaking_particles", Codec.BOOL, BlockPropertyModifier::breakingParticlesTinted),
+                    i.optional("render_type", IRenderProperties.CODEC, BlockPropertyModifier::renderType),
+                    i.optional("client_light", Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0), BlockPropertyModifier::clientLight),
+                    i.optional("colored_light", ColoredLight.codec(IBlockExp.CODEC, IBlockExp::constant), BlockPropertyModifier::coloredLight),
+                    i.optional("particle_emitters", BlockParticleEmitter.CODEC.listOf(), List.of(), BlockPropertyModifier::particleEmitters),
+                    i.optional("sound_emitters", BlockSoundEmitter.CODEC.listOf(), List.of(), BlockPropertyModifier::soundEmitters),
+                    i.optional("offset_type", BlockOffsets.CODEC, BlockPropertyModifier::offsetType),
+                    i.optional("block_set_type", BlockSetTypeProvider.CODEC, BlockPropertyModifier::blockSetType),
+                    i.optional("disable_particles", Codec.BOOL, false, BlockPropertyModifier::disableParticles),
+                    i.optional("targets", Targets.CODEC, Targets.EMPTY, BlockPropertyModifier::targets),
                     //dont use
-                    Codec.BOOL.optionalFieldOf("force_tint_hack", false).forGetter(BlockPropertyModifier::tintHack)
-            ).apply(instance, BlockPropertyModifier::new));
+                    i.optional("force_tint_hack", Codec.BOOL, false, BlockPropertyModifier::tintHack),
+                    i.optional("voxel_flags", VOXEL_FLAG.listOf(), List.of(), BlockPropertyModifier::voxelFlags)
+            ).apply(i, BlockPropertyModifier::new));
 
     public static final Decoder<BlockPropertyModifier> PARTIAL_CODEC = RecordCodecBuilder.create(instance ->
             instance.group(

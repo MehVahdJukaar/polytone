@@ -2,7 +2,6 @@ package net.mehvahdjukaar.polytone.common;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PlatStuff;
-import net.mehvahdjukaar.polytone.content.light.ColoredLightsTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
@@ -92,7 +91,7 @@ public class ClientFrameTicker {
         cameraPos = mc.gameRenderer.getMainCamera().getBlockPosition();
         cameraBiome = level.getBiome(cameraPos);
 
-        ColoredLightsTracker.onRenderTick(partialTicks);
+        Polytone.COLORED_LIGHTS.onRenderTick(partialTicks);
 
         deltaTime = Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
         playerSpeed =  mc.player.getDeltaMovement().lengthSqr();
@@ -104,11 +103,7 @@ public class ClientFrameTicker {
     }
 
     public static void onTick(Level level) {
-        // Client-only ticker (drives GL post-shader loading). Guard against being called with a
-        // non-client level on a non-render thread (NeoForge's LevelTickEvent fires for the integrated
-        // server level too) - otherwise off-thread GL calls poison the post shader chains.
         if (level != Minecraft.getInstance().level) return;
-        // keep the async player-stats cache in step with the tick (cleared to null when no player)
         refreshPlayerSnapshot();
         if (cameraPos != null) {
             skyLight = level.getBrightness(LightLayer.SKY, cameraPos);
@@ -119,8 +114,8 @@ public class ClientFrameTicker {
         }
         screenTime++;
         Polytone.GLOBAL_EXPRESSION.tick(level);
-        if (level instanceof net.minecraft.client.multiplayer.ClientLevel c) ColoredLightsTracker.onTick(c, cameraPos);
-        Polytone.POST_SHADERS.tick();
+        if (level instanceof net.minecraft.client.multiplayer.ClientLevel c) Polytone.COLORED_LIGHTS.onTick(c, cameraPos);
+        Polytone.POST_CHAINS.tick();
         TokenBucketTracker.tick();
     }
 

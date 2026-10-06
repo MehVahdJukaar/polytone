@@ -29,6 +29,7 @@ import net.minecraft.server.packs.repository.PackCompatibility;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.flag.FeatureFlagSet;
 
 import java.io.BufferedReader;
@@ -38,6 +39,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -45,14 +47,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ConfigsManager extends ContentManager<PolyConfig<?>> {
 
-    public final OptionHolder<Boolean> lenientLoading = builtinConfig("lenient_loading", false);
-    public final OptionHolder<Boolean> legacyParsing = builtinConfig("legacy_parsing", true);
-    public final OptionHolder<Float> particlesThrottle = builtinConfig("particles_throttle", 1f);
-    public final OptionHolder<Boolean> autoParticleRateLimit = builtinConfig("auto_particle_rate_limit", false);
-    public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", false);
-    public final OptionHolder<Boolean> showConfigButton = builtinConfig("show_config_button", true);
-    public final OptionHolder<Boolean> postShadersOccludeHeldItems = builtinConfig("post_shaders_occlude_held_items", true);
-    public final OptionHolder<Boolean> coloredLights = builtinConfig("colored_lights", true);
+    public final OptionHolder<Boolean> lenientLoading = builtinConfig("lenient_loading", false, null);
+    public final OptionHolder<Boolean> legacyParsing = builtinConfig("legacy_parsing", true, null);
+    public final OptionHolder<Float> particlesThrottle = builtinConfig("particles_throttle", 1f, "particles");
+    public final OptionHolder<Boolean> autoParticleRateLimit = builtinConfig("auto_particle_rate_limit", false, "particles");
+    public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", false, "particles");
+    public final OptionHolder<Boolean> showConfigButton = builtinConfig("show_config_button", true, null);
+    public final OptionHolder<Boolean> postShadersOccludeHeldItems = builtinConfig("post_shaders_occlude_held_items", true, "shaders");
+    public final OptionHolder<ColoredLightsBackend> coloredLightsBackend = builtinConfig("colored_lights_backend", ColoredLightsBackend.BUILT_IN, "shaders");
+    public final OptionHolder<Float> voxelVolumeWidth = builtinConfig("voxel_volume_width", 128, 32, 384, 16, "shaders");
+    public final OptionHolder<Float> voxelVolumeHeight = builtinConfig("voxel_volume_height", 128, 64, 256, 16, "shaders");
+    public final OptionHolder<Float> farLightRange = builtinConfig("far_light_range", 512, 0, 1024, 64, "shaders");
+    public final OptionHolder<Float> lightSpreadSteps = builtinConfig("light_spread_steps", 3, 1, 15, 1, "shaders");
+    public final OptionHolder<SmoothEntityLighting> smoothEntityLighting = builtinConfig("smooth_entity_lighting", SmoothEntityLighting.LOCAL_PLAYER, "shaders");
 
     public final ConfigBubbleManager bubbleManager = new ConfigBubbleManager();
 
@@ -73,16 +80,24 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         registerBuiltins(configs);
     }
 
-    private static OptionHolder<Boolean> builtinConfig(String id, boolean def) {
-        return OptionHolder.create(new BoolConfig(Optional.empty(), def), Polytone.res(id));
+    private static OptionHolder<Boolean> builtinConfig(String id, boolean def, String section) {
+        return OptionHolder.create(new BoolConfig(Optional.empty(), def, Optional.ofNullable(section)), Polytone.res(id));
     }
 
-    private static OptionHolder<Float> builtinConfig(String id, float def) {
-        return OptionHolder.create(new NumberConfig(Optional.empty(), def, 0, 1, 0.01f), Polytone.res(id));
+    private static OptionHolder<Float> builtinConfig(String id, float def, String section) {
+        return builtinConfig(id, def, 0, 1, 0.01f, section);
+    }
+
+    private static OptionHolder<Float> builtinConfig(String id, float def, float min, float max, float step, String section) {
+        return OptionHolder.create(new NumberConfig(Optional.empty(), def, min, max, step, Optional.ofNullable(section)), Polytone.res(id));
+    }
+
+    private static <E extends Enum<E> & StringRepresentable> OptionHolder<E> builtinConfig(String id, E def, String section) {
+        return OptionHolder.create(new EnumConfig<>(def, Optional.ofNullable(section)), Polytone.res(id));
     }
 
     private void registerBuiltins(MapRegistry<OptionHolder<?>> reg) {
-        for (OptionHolder<?> b : List.of(lenientLoading, legacyParsing, particlesThrottle, autoParticleRateLimit, particlesOffThread, showConfigButton, postShadersOccludeHeldItems, coloredLights)) {
+        for (OptionHolder<?> b : List.of(lenientLoading, legacyParsing, particlesThrottle, autoParticleRateLimit, particlesOffThread, showConfigButton, postShadersOccludeHeldItems, coloredLightsBackend, voxelVolumeWidth, voxelVolumeHeight, farLightRange, lightSpreadSteps, smoothEntityLighting)) {
             b.loadFromJson(configFileSnapshot);
             reg.unregister(b.fileId);
             reg.register(b.fileId, b);
@@ -142,7 +157,6 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         try {
             JsonObject jsonObject = configFileSnapshot.deepCopy();
             for (var option : configs.getValues()) option.saveToJson(jsonObject);
-            // last, so edits made on holders the registry has since replaced win
             for (var option : edited) option.saveToJson(jsonObject);
             Path target = this.optionsFile.toPath();
             FilesUtil.writeTextAtomically(target, writer -> GsonHelper.writeValue(gson.newJsonWriter(writer), jsonObject, null));
@@ -175,7 +189,10 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     public Object getValue(ResourceLocation configKey) {
         OptionHolder<?> value = getActiveRegistry().getValue(configKey);
         if (value == null) value = configs.getValue(configKey);
-        if (value != null) return value.get();
+        if (value != null) {
+            //special case for our enums
+            return value.get() instanceof StringRepresentable sr ? sr.getSerializedName() : value.get();
+        }
         Polytone.LOGGER.warn("Tried to get config value for unknown key: {}", configKey);
         return 0;
     }
@@ -256,6 +273,28 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
 
     public boolean isLenientLoading() {
         return lenientLoading.get();
+    }
+
+    public enum ColoredLightsBackend implements StringRepresentable {
+        OFF, BUILT_IN, HYBRID, VEIL;
+
+        public boolean tintsVanillaBlockLight() {
+            return this == BUILT_IN || this == HYBRID;
+        }
+
+        @Override
+        public String getSerializedName() {
+            return name().toLowerCase(Locale.ROOT);
+        }
+    }
+
+    public enum SmoothEntityLighting implements StringRepresentable {
+        OFF, LOCAL_PLAYER, ALL;
+
+        @Override
+        public String getSerializedName() {
+            return name().toLowerCase(Locale.ROOT);
+        }
     }
 
     public enum ButtonPosition {

@@ -39,6 +39,7 @@ public class CustomParticleInstance extends TextureSheetParticle {
     protected final @Nullable BakedModel model;
     protected final List<IParticleTickable> tickables;
     protected float oQuadSize;
+    private float renderScale = 1;
     protected double custom;
 
     private boolean inFrustumLastTick = true;
@@ -157,7 +158,7 @@ public class CustomParticleInstance extends TextureSheetParticle {
         return !PREVIEW_FORCE_FULL_PATH
                 && this.model == null
                 && this.type.rotationProvider == RotationMode.LOOK_AT_XYZ
-                && this.type.offset.lengthSqr() == 0
+                && this.type.offset.equals(CustomParticleType.RenderOffset.NONE)
                 && this.type.renderType != ParticleRenderMode.TRANSLUCENT
                 && this.type.renderType != ParticleRenderMode.ADDITIVE_TRANSLUCENT;
     }
@@ -174,18 +175,29 @@ public class CustomParticleInstance extends TextureSheetParticle {
 
     @Override
     protected void renderRotatedQuad(VertexConsumer consumer, Quaternionf quaternion, float x, float y, float z, float partialTicks) {
-        Vec3 offset = this.type.offset;
+        Vec3 offset = this.type.offset.world();
+        x += (float) offset.x;
+        y += (float) offset.y;
+        z += (float) offset.z;
+        float pull = this.type.offset.camera();
+        if (pull != 0) {
+            //move along z and shrink to match so screen size stays the same
+            float dist = Mth.sqrt(x * x + y * y + z * z);
+            renderScale = dist == 0 ? 1 : Math.max(dist - pull, 0.05f) / dist;
+            x *= renderScale;
+            y *= renderScale;
+            z *= renderScale;
+        }
         if (model == null) {
             consumer = this.type.renderType.modifyParticleConsumer(consumer);
-            super.renderRotatedQuad(consumer, quaternion, (float) (x + offset.x),
-                    (float) (y + offset.y), (float) (z + offset.z), partialTicks);
+            super.renderRotatedQuad(consumer, quaternion, x, y, z, partialTicks);
         } else {
             consumer = this.type.renderType.modifyBlockConsumer(consumer);
 
             float size = this.getQuadSize(partialTicks);
 
             PoseStack poseStack = new PoseStack();
-            poseStack.translate(x + offset.x, y + offset.y, z + offset.z);
+            poseStack.translate(x, y, z);
             poseStack.scale(size, size, size);
             poseStack.mulPose(quaternion);
             poseStack.translate(-0.5, -0.5, -0.5);
@@ -193,6 +205,7 @@ public class CustomParticleInstance extends TextureSheetParticle {
             putModelBulkData(this.model, this.getLightColor(partialTicks),
                     OverlayTexture.NO_OVERLAY, poseStack, consumer, this.rCol, this.gCol, this.bCol, this.alpha);
         }
+        renderScale = 1;
     }
 
     public static void putModelBulkData(BakedModel model, int combinedLight, int combinedOverlay,
@@ -347,7 +360,7 @@ public class CustomParticleInstance extends TextureSheetParticle {
 
     @Override
     public float getQuadSize(float scaleFactor) {
-        return Mth.lerp(scaleFactor, this.oQuadSize, this.quadSize);
+        return Mth.lerp(scaleFactor, this.oQuadSize, this.quadSize) * renderScale;
     }
 
     @Override

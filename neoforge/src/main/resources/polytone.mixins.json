@@ -13,7 +13,7 @@
     "BuildCreativeModeTabContentsEventAccessor",
     "CreativeModeInventoryScreenMixin",
     "CreativeTabAccessor",
-    "CurioInventoryScreenMixin",
+    "compat.CurioInventoryScreenMixin",
     "GuiGraphicsMixin",
     "IClientFluidTypeExtensionsMixin",
     "IClientItemExtensionsMixin",
@@ -26,8 +26,8 @@
     "ModifiableBiomeInfoBiomeInfoAccessor",
     "ParticleEngineAccessor",
     "ParticleEngineMixin2",
-    "SectionLightScanMixin",
-    "SodiumBlockRendererMixin",
+    "compat.VeilSectionLightScanMixin",
+    "compat.SodiumBlockRendererMixin",
     "TerrainParticleMixin"
   ],
   "injectors": {

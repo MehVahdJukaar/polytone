@@ -12,15 +12,10 @@ public interface SlotifyScreen {
 
     ScreenModifier polytone$getModifier();
 
-    //re-resolves and re-caches the screen modifier, picking up a live preview override. lets the editor
-    //refresh sprites and texts without a resource reload
     void polytone$refreshModifier();
 
-    //re-runs the screen init (rebuildWidgets) so geometry and widget modifiers re-bake idempotently
     void polytone$rebuild();
 
-    //both platform screen render hooks land here, only the event wiring differs. renderExtraSprites
-    //no ops when the screen has no modifier so calling it every frame is fine
     static void renderExtras(GuiGraphics graphics, SlotifyScreen ss, int screenWidth, int screenHeight,
                              int mouseX, int mouseY, float partialTick) {
         if (GuiModifierPreview.isPickingEnabled() && ss instanceof Screen screen) {

@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.colormap;
 
+import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.item.ItemColor;
@@ -8,8 +9,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public interface IColorGetter extends BlockColor, ItemColor {
@@ -99,6 +103,40 @@ public interface IColorGetter extends BlockColor, ItemColor {
         }
     }
 
+
+    record ExpressionColor(IBlockExp exp) implements IColorGetter {
+        @Override
+        public int getColor(BlockState state, @Nullable BlockAndTintGetter reader, @Nullable BlockPos pos, int tintIndex) {
+            if (pos == null) return -1;
+            //RenderChunkRegion when meshing
+            LevelReader level = reader instanceof LevelReader lr ? lr : Minecraft.getInstance().level;
+            if (level == null) return -1;
+            return evaluateColor(level, pos.getCenter(), state);
+        }
+
+        @Override
+        public int getColor(ItemStack stack, int tintIndex) {
+            Level level = Minecraft.getInstance().level;
+            if (level == null) return -1;
+            return evaluateColor(level, Vec3.ZERO, Blocks.AIR.defaultBlockState());
+        }
+
+        @Override
+        public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+            Level level = Minecraft.getInstance().level;
+            if (level == null || pos == null) return -1;
+            return evaluateColor(level, pos.getCenter(), state);
+        }
+
+        @Override
+        public int sampleColorUncached(BlockAndTintGetter level, @Nullable BlockState state, BlockPos pos, @Nullable Biome biome) {
+            return getColor(state, level, pos, 0);
+        }
+
+        private int evaluateColor(LevelReader level, Vec3 pos, @Nullable BlockState state) {
+            return (int) (long) exp.evaluate(level, pos, state);
+        }
+    }
 
     int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item);
 

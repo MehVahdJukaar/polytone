@@ -81,6 +81,7 @@ public final class NautilusGuiModifierOverlay {
                 OverlayHelper.SLOT, OverlayHelper.SLOT, slot.getClass().getName());
     }
 
+    //TODO: translations here too
     private static void drawBanner(GuiGraphics graphics, Screen screen, boolean targeted, int modSlots, int modWidgets) {
         GuiModifierPreview.DetectedTarget t = GuiModifierPreview.targetOf(screen);
         String subject = t == null ? "?" : t.type().getSerializedName() + " = " + t.target();

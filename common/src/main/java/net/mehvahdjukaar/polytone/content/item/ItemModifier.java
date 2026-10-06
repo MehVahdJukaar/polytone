@@ -9,7 +9,7 @@ import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.content.model.WornModel;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
-import net.mehvahdjukaar.polytone.content.light.ColoredLight;
+import net.mehvahdjukaar.polytone.content.shaders.light.ColoredLight;
 import net.mehvahdjukaar.polytone.common.Targets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColor;

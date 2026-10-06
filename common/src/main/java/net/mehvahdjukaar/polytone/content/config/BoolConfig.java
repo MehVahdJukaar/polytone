@@ -36,8 +36,8 @@ public class BoolConfig extends PolyConfig<Boolean> implements OptionInstance.Cy
                 performanceImpact, wide, tooltipImages, defaultValue);
     }
 
-    public BoolConfig(Optional<String> valueTranslation, boolean defaultValue) {
-        this(valueTranslation, Map.of(), Map.of(), 0, Optional.empty(), Optional.empty(),
+    public BoolConfig(Optional<String> valueTranslation, boolean defaultValue, Optional<String> section) {
+        this(valueTranslation, Map.of(), Map.of(), 0, section, Optional.empty(),
                 Optional.empty(), false, Map.of(), defaultValue);
     }
 

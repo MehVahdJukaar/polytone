@@ -11,13 +11,10 @@ public interface ILightmapNumberProvider {
 
     MapRegistry<ILightmapNumberProvider> BUILTIN_PROVIDERS = new MapRegistry<>("Lightmap Number Providers");
 
-    // Same wire codec as always; the labels only name the editor's picker options.
     Codec<ILightmapNumberProvider> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
             SchemaCodecs.referenceOrDirect(BUILTIN_PROVIDERS,
                     SchemaCodecs.alternatives(LightmapContextExpression.CODEC, LightmapExp.TYPE.codec()), true),
             SchemaCodecs.alt("preset", BUILTIN_PROVIDERS),
-            // expression before legacy: both encode as bare strings, so fit-scoring on load should
-            // land on the modern branch, not the deprecated one.
             SchemaCodecs.alt("expression", LightmapExp.TYPE.codec()),
             SchemaCodecs.alt("legacy expression", LightmapContextExpression.CODEC)));
 

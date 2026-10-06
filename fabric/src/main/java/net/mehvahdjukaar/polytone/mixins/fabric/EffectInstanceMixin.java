@@ -2,16 +2,14 @@ package net.mehvahdjukaar.polytone.mixins.fabric;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.mehvahdjukaar.polytone.content.shaders.PostShadersManager;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.renderer.EffectInstance;
 import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 
-// Backports neoforge's vanilla patch letting EffectInstance resolve namespaced shader program names
-// ("sunbathing:godrays"); vanilla 1.21.1 concatenates the raw name into a minecraft: path and throws
-// on the embedded colon. Gated on POLYTONE_LOADING so vanilla and other mods' shader loading is left
-// alone, and it only intervenes when the name actually has a colon, falling back on any parse failure.
+// ports neoforge's vanilla patch to fabric that lets EffectInstance resolve namespaced shader program names
 @Mixin(EffectInstance.class)
 public abstract class EffectInstanceMixin {
 
@@ -29,8 +27,9 @@ public abstract class EffectInstanceMixin {
         return polytone$tryRebuild(fullPath, original);
     }
 
+    @Unique
     private static ResourceLocation polytone$tryRebuild(String fullPath, Operation<ResourceLocation> original) {
-        if (!Boolean.TRUE.equals(PostShadersManager.POLYTONE_LOADING.get())) {
+        if (!Polytone.POST_CHAINS.isLoadingChain()) {
             return original.call(fullPath);
         }
         final String prefix = "shaders/program/";
@@ -43,7 +42,6 @@ public abstract class EffectInstanceMixin {
                     ResourceLocation rl = ResourceLocation.tryBuild(namespace, path);
                     if (rl != null) return rl;
                 } catch (Exception ignored) {
-                    // fall through to original behaviour
                 }
             }
         }

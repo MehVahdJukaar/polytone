@@ -48,7 +48,6 @@ public record GpuParticleInitializer(IBlockExp size,
         v.blue = (float) blue.evaluate(level, pos, state);
         v.alpha = (float) alpha.evaluate(level, pos, state);
         if (colormap.isPresent()) {
-            // sampled here and never again: these particles don't tick, so the color is frozen at spawn
             float[] tint = ColorUtils.unpack(colormap.get().getColor(state, level, BlockPos.containing(pos), 0));
             v.red *= tint[0];
             v.green *= tint[1];

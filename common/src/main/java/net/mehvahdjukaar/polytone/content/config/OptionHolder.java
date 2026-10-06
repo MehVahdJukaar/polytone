@@ -11,6 +11,7 @@ import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -93,7 +94,8 @@ public class OptionHolder<T> {
     // precedence: per-value lang key, then value_translation as a format string, then the type's own
     private static <T> MutableComponent formatValue(ResourceLocation id, PolyConfig<T> config,
                                                     @Nullable String valueTranslationKey, T value) {
-        String perValueKey = id.toLanguageKey("config") + "." + value;
+        String valueName = value instanceof StringRepresentable sr ? sr.getSerializedName() : String.valueOf(value);
+        String perValueKey = id.toLanguageKey("config") + "." + valueName;
         if (I18n.exists(perValueKey)) {
             return Component.translatable(perValueKey);
         }

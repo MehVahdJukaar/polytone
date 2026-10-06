@@ -69,6 +69,7 @@ public final class NautilusCreativeTabOverlay {
         return slot.getItem();
     }
 
+    //TODO: add translations
     private static String bannerDetail(boolean targeted) {
         if (!targeted) return "this modifier doesnt target the open tab";
         int selected = CreativeTabPreview.pendingCount();

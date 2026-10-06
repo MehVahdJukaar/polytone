@@ -3,10 +3,8 @@ package net.mehvahdjukaar.polytone.content.texture;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.mehvahdjukaar.polytone.compat.IrisCompat;
-import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
@@ -34,7 +32,7 @@ public class LeashTexture extends RenderType {
 
     @Nullable
     public static RenderType getRenderType() {
-        if (Polytone.iris && IrisCompat.isIrisShaderFuckerActive()) return null;
+        if (CompatHandler.irisShaderPackActive()) return null;
         return RENDER_TYPE;
     }
 
@@ -44,7 +42,7 @@ public class LeashTexture extends RenderType {
                                         float y0, float y1,
                                         float dx, float dz,
                                         int index, boolean flippedColors) {
-        if (Polytone.iris && IrisCompat.isIrisShaderFuckerActive()) return false;
+        if (CompatHandler.irisShaderPackActive()) return false;
 
         // Calculate segment and interpolate lighting
         float segment = (float) index / 24.0F;

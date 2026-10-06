@@ -72,7 +72,8 @@ public class ColormapsManager extends ContentManager<IColorGetter> {
                         SchemaCodecs.alt("biome compound", BiomeCompoundColorGetter.CODEC),
                         SchemaCodecs.alt("indexed compound", IndexCompoundColorGetter.DIRECT_CODEC),
                         SchemaCodecs.alt("reference", Polytone.COLORMAPS.byNameCodec()),
-                        SchemaCodecs.alt("single color", Colormap.SINGLE_COLOR_CODEC)))
+                        SchemaCodecs.alt("single color", Colormap.SINGLE_COLOR_CODEC),
+                        SchemaCodecs.alt("expression", Colormap.EXPRESSION_CODEC)))
                 .wikiPage("Colormaps")
                 .textureParts(TEXTURE)
                 .folders("colormaps"));

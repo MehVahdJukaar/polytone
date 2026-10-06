@@ -6,6 +6,8 @@ import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
+import net.mehvahdjukaar.polytone.common.expressions.impl.BlockExp;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IColormapExp;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
@@ -27,7 +29,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
-import java.util.function.Function;
 
 public final class Colormap implements IColorGetter, ColorResolver {
 
@@ -70,18 +71,24 @@ public final class Colormap implements IColorGetter, ColorResolver {
     public static final Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
             Colormap::singleColor, c -> c instanceof Colormap cm ? cm.defaultColor : 0);
 
+    public static final Codec<IColorGetter> EXPRESSION_CODEC = IBlockExp.CODEC.xmap(
+            IColorGetter.ExpressionColor::new,
+            g -> g instanceof IColorGetter.ExpressionColor(IBlockExp exp) ? exp : IBlockExp.ZERO);
+
     public static final Codec<IColorGetter> DIRECT_REFERENCE_OR_EXPRESSION = SchemaCodecs.labeled(
-            Codec.withAlternative(SINGLE_COLOR_CODEC,
+            SchemaCodecs.alternatives(SINGLE_COLOR_CODEC,
                     SchemaCodecs.referenceOrDirect(Polytone.COLORMAPS.byNameCodec(), DIRECT_CODEC),
-                    Function.identity()),
+                    EXPRESSION_CODEC),
             SchemaCodecs.alt("single color", ColorUtils.CODEC),
             SchemaCodecs.alt("colormap reference", ResourceLocation.CODEC),
-            SchemaCodecs.alt("inline colormap", DIRECT_CODEC));
+            SchemaCodecs.alt("inline colormap", DIRECT_CODEC),
+            SchemaCodecs.alt("expression", BlockExp.TYPE.codec()));
 
     public static final Codec<IColorGetter> REFERENCE_OR_EXPRESSION = SchemaCodecs.labeled(
-            Codec.withAlternative(SINGLE_COLOR_CODEC, Polytone.COLORMAPS.byNameCodec()),
+            SchemaCodecs.alternatives(SINGLE_COLOR_CODEC, Polytone.COLORMAPS.byNameCodec(), EXPRESSION_CODEC),
             SchemaCodecs.alt("single color", ColorUtils.CODEC),
-            SchemaCodecs.alt("colormap reference", ResourceLocation.CODEC));
+            SchemaCodecs.alt("colormap reference", ResourceLocation.CODEC),
+            SchemaCodecs.alt("expression", BlockExp.TYPE.codec()));
 
     public static final Codec<IColorGetter> CODEC = SchemaCodecs.labeled(
             Codec.withAlternative(Colormap.DIRECT_REFERENCE_OR_EXPRESSION, BiomeCompoundColorGetter.CODEC),
@@ -273,8 +280,6 @@ public final class Colormap implements IColorGetter, ColorResolver {
         return image.pixels()[(int) (pixel & 0xFFFFFFFFL)][(int) (pixel >>> 32)];
     }
 
-    // Maps the two axis outputs to a source-image pixel. High 32 bits = column (x/temperature axis),
-    // low 32 bits = row (y/humidity axis). Single source of truth shared by sample() and the sink path.
     private long pixelIndex(float textY, float textX) {
         if (triangular) textY *= textX;
         int wm = image.width() - 1;

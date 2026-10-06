@@ -1,10 +1,13 @@
 package net.mehvahdjukaar.polytone.common;
 
 import net.minecraft.resources.ResourceLocation;
+import org.joml.Vector3i;
 
 import java.util.*;
 
 public class Utils {
+
+    public static final Vector3i VEC3I_ZERO = new Vector3i();
 
     public static <T> Set<T> mergeSet(Set<T> first, Set<T> second) {
         var set = new HashSet<T>();
