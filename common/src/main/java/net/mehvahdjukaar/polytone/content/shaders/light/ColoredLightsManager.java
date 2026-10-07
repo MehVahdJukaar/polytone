@@ -3,9 +3,6 @@ package net.mehvahdjukaar.polytone.content.shaders.light;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import com.google.gson.JsonElement;
-import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
-import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
-import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.compat.VeilCompat;
@@ -100,22 +97,6 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
     }
 
     //mods go through VoxelVolumeApi. these are internals dont use!
-    public void addBlockLight(Block block, ColoredLight<IBlockExp> light, RuleTest predicate) {
-        addBlockLight(block, ColoredLight.forBlocks(light), predicate);
-    }
-
-    public void addEntityLight(EntityType<?> type, ColoredLight<IEntityExp> light) {
-        addEntityLight(type, ColoredLight.forEntities(light));
-    }
-
-    public void addItemLight(Item item, ColoredLight<IEntityExp> light) {
-        addItemLight(item, ColoredLight.forItems(light));
-    }
-
-    public void addParticleLight(ParticleType<?> type, ColoredLight<IParticleExp> light) {
-        addParticleLight(type, ColoredLight.forParticles(light));
-    }
-
     public void addBlockLight(Block block, PointLightProvider.ForBlock light, RuleTest predicate) {
         blocks.computeIfAbsent(block, b -> new ArrayList<>()).add(new BlockRule(light, predicate));
     }

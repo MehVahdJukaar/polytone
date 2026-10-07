@@ -5,6 +5,7 @@ import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.UnboundedMapCodec;
 import net.mehvahdjukaar.polytone.common.Targets;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
@@ -21,7 +22,7 @@ public record VariantTexture(Map<ResourceLocation, Map<ResourceLocation, Resourc
     public static final Decoder<VariantTexture> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     MAP_CODEC.fieldOf("textures").forGetter(VariantTexture::textures),
-                    Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(VariantTexture::targets)
+                    Targets.codec(Registries.BLOCK).optionalFieldOf("targets", Targets.EMPTY).forGetter(VariantTexture::targets)
             ).apply(instance, VariantTexture::new));
 
 

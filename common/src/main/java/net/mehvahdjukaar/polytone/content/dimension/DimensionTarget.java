@@ -3,9 +3,9 @@ package net.mehvahdjukaar.polytone.content.dimension;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.common.Targets;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.dimension.DimensionType;
 
@@ -13,7 +13,7 @@ import java.util.Collection;
 
 public class DimensionTarget {
 
-    public static final Codec<DimensionTarget> CODEC = Codec.either(Targets.CODEC, DimensionTemplate.CODEC)
+    public static final Codec<DimensionTarget> CODEC = Codec.either(Targets.codec(Registries.DIMENSION_TYPE), DimensionTemplate.CODEC)
             .xmap(DimensionTarget::new, d -> d.target);
 
     public static final DimensionTarget EMPTY = new DimensionTarget(Either.left(Targets.EMPTY));

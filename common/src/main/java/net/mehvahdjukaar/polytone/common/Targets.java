@@ -3,17 +3,22 @@ package net.mehvahdjukaar.polytone.common;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.Schema;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 import static net.mehvahdjukaar.polytone.common.Utils.mergeList;
@@ -115,32 +120,47 @@ public record Targets(List<Entry> entries) {
         <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg);
     }
 
-    // tag first cuz SOME mod is making resource locations accept # symbols...
-    private static final Codec<Entry> SIMPLE_TAG_OR_REGEX_ENTRY_CODEC = SchemaCodecs.labeled(
-            Codec.withAlternative(
-                    (Codec<Entry>) (Object) TagLocation.TAG_CODEC,
-                    Codec.withAlternative((Codec<Entry>) (Object) SimpleLocation.SIMPLE_CODEC, RegexLocation.REGEX_CODEC)),
-            SchemaCodecs.alt("tag", TagLocation.TAG_CODEC),
-            SchemaCodecs.alt("id", SimpleLocation.SIMPLE_CODEC),
-            SchemaCodecs.alt("regex", RegexLocation.REGEX_CODEC));
+    private static final Map<ResourceKey<?>, Codec<Targets>> CODECS_BY_REGISTRY = new ConcurrentHashMap<>();
 
-    private static final Codec<Entry> ENTRY_CODEC = SchemaCodecs.labeled(
-            Codec.withAlternative(SIMPLE_TAG_OR_REGEX_ENTRY_CODEC, OptionalEntry.OPTIONAL_CODEC),
-            SchemaCodecs.alt("entry", SIMPLE_TAG_OR_REGEX_ENTRY_CODEC),
-            SchemaCodecs.alt("optional id", OptionalEntry.OPTIONAL_CODEC));
+    //registry is just for the editor pickers really
+    public static Codec<Targets> codec(ResourceKey<? extends Registry<?>> registry) {
+        return CODECS_BY_REGISTRY.computeIfAbsent(registry, r -> buildCodec(registry));
+    }
 
-    // Labeled AnyOf alternatives splice flat, so the selector shows [id, tag, regex, optional id, list].
-    public static final Codec<Targets> CODEC = SchemaCodecs.labeled(
-            Codec.withAlternative(ENTRY_CODEC.xmap(List::of, List::getFirst), ENTRY_CODEC.listOf())
-                    .xmap(Targets::new, t -> t.entries),
-            SchemaCodecs.alt("single", ENTRY_CODEC),
-            SchemaCodecs.alt("list", ENTRY_CODEC.listOf()));
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static Codec<Targets> buildCodec(@Nullable ResourceKey<? extends Registry<?>> registry) {
+        Codec<Entry> tagCodec = SchemaCodec.of((Codec) TagLocation.TAG_CODEC, (Schema) new Schema.TagId(registry, true));
+        Codec<Entry> idCodec = SchemaCodec.of((Codec) SimpleLocation.SIMPLE_CODEC, (Schema) new Schema.ResourceId(registry));
+        Codec<Entry> regexCodec = (Codec<Entry>) (Object) RegexLocation.REGEX_CODEC;
+
+        // tag first cuz SOME mod is making resource locations accept # symbols...
+        Codec<Entry> simpleTagOrRegex = SchemaCodecs.labeled(
+                Codec.withAlternative(tagCodec, Codec.withAlternative(idCodec, regexCodec)),
+                SchemaCodecs.alt("tag", tagCodec),
+                SchemaCodecs.alt("id", idCodec),
+                SchemaCodecs.alt("regex", regexCodec));
+
+        Codec<OptionalEntry> optionalCodec = OptionalEntry.codec(simpleTagOrRegex);
+        Codec<Entry> entryCodec = SchemaCodecs.labeled(
+                Codec.withAlternative(simpleTagOrRegex, optionalCodec),
+                SchemaCodecs.alt("entry", simpleTagOrRegex),
+                SchemaCodecs.alt("optional id", optionalCodec));
+
+        // [id, tag, regex, optional id, list].
+        return SchemaCodecs.labeled(
+                Codec.withAlternative(entryCodec.xmap(List::of, List::getFirst), entryCodec.listOf())
+                        .xmap(Targets::new, t -> t.entries),
+                SchemaCodecs.alt("single", entryCodec),
+                SchemaCodecs.alt("list", entryCodec.listOf()));
+    }
 
     private record OptionalEntry(Entry entry, boolean required) implements Entry {
-        public static final Codec<OptionalEntry> OPTIONAL_CODEC = RecordCodecBuilder.create(i -> i.group(
-                SIMPLE_TAG_OR_REGEX_ENTRY_CODEC.fieldOf("id").forGetter(OptionalEntry::entry),
-                com.mojang.serialization.Codec.BOOL.optionalFieldOf("required", true).forGetter(OptionalEntry::required)
-        ).apply(i, OptionalEntry::new));
+        private static Codec<OptionalEntry> codec(Codec<Entry> entryCodec) {
+            return RecordCodecBuilder.create(i -> i.group(
+                    entryCodec.fieldOf("id").forGetter(OptionalEntry::entry),
+                    com.mojang.serialization.Codec.BOOL.optionalFieldOf("required", true).forGetter(OptionalEntry::required)
+            ).apply(i, OptionalEntry::new));
+        }
 
         @Override
         public <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {

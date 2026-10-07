@@ -8,7 +8,6 @@ import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.color.MapColorHelper;
-import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.content.shaders.light.ColoredLight;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
@@ -16,6 +15,7 @@ import net.mehvahdjukaar.polytone.content.particle.BlockParticleEmitter;
 import net.mehvahdjukaar.polytone.content.sound.BlockSoundEmitter;
 import net.mehvahdjukaar.polytone.content.sound.PolytoneSoundType;
 import net.mehvahdjukaar.polytone.common.Targets;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -44,7 +44,7 @@ public record BlockPropertyModifier(
         Optional<Boolean> breakingParticlesTinted,
         Optional<IRenderProperties> renderType,
         Optional<ToIntFunction<BlockState>> clientLight,
-        Optional<ColoredLight<IBlockExp>> coloredLight,
+        Optional<ColoredLight.BlockLight> coloredLight,
         List<BlockParticleEmitter> particleEmitters,
         List<BlockSoundEmitter> soundEmitters,
         Optional<BlockBehaviour.OffsetFunction> offsetType,
@@ -246,13 +246,13 @@ public record BlockPropertyModifier(
                     i.optional("tinted_breaking_particles", Codec.BOOL, BlockPropertyModifier::breakingParticlesTinted),
                     i.optional("render_type", IRenderProperties.CODEC, BlockPropertyModifier::renderType),
                     i.optional("client_light", Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0), BlockPropertyModifier::clientLight),
-                    i.optional("colored_light", ColoredLight.codec(IBlockExp.CODEC, IBlockExp::constant), BlockPropertyModifier::coloredLight),
+                    i.optional("colored_light", ColoredLight.BlockLight.CODEC, BlockPropertyModifier::coloredLight),
                     i.optional("particle_emitters", BlockParticleEmitter.CODEC.listOf(), List.of(), BlockPropertyModifier::particleEmitters),
                     i.optional("sound_emitters", BlockSoundEmitter.CODEC.listOf(), List.of(), BlockPropertyModifier::soundEmitters),
                     i.optional("offset_type", BlockOffsets.CODEC, BlockPropertyModifier::offsetType),
                     i.optional("block_set_type", BlockSetTypeProvider.CODEC, BlockPropertyModifier::blockSetType),
                     i.optional("disable_particles", Codec.BOOL, false, BlockPropertyModifier::disableParticles),
-                    i.optional("targets", Targets.CODEC, Targets.EMPTY, BlockPropertyModifier::targets),
+                    i.optional("targets", Targets.codec(Registries.BLOCK), Targets.EMPTY, BlockPropertyModifier::targets),
                     //dont use
                     i.optional("force_tint_hack", Codec.BOOL, false, BlockPropertyModifier::tintHack),
                     i.optional("voxel_flags", VOXEL_FLAG.listOf(), List.of(), BlockPropertyModifier::voxelFlags)

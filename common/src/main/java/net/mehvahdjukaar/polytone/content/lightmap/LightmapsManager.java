@@ -13,6 +13,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
@@ -34,7 +35,7 @@ public class LightmapsManager extends ContentManager<Lightmap> {
     public static final ResourceLocation GUI_LIGHTMAP = Polytone.res("lightmaps/gui.png");
     private static final ResourceLocation DEFAULT_LIGHTMAP = ResourceLocation.withDefaultNamespace("default");
 
-    private static final Codec<Targets> TARGET_ONLY_CODEC = Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY)
+    private static final Codec<Targets> TARGET_ONLY_CODEC = Targets.codec(Registries.DIMENSION_TYPE).optionalFieldOf("targets", Targets.EMPTY)
             .codec();
 
     //lightmap id to lightmap

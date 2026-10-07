@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.common.Weather;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.sounds.Music;
@@ -49,7 +50,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
             Music.CODEC.optionalFieldOf("music").forGetter(BiomeEffectModifier::backgroundMusic),
             SchemaCodecs.optionalAlias(FogParam.CODEC, "fog_fade", "fog_start").forGetter(BiomeEffectModifier::fogStart),
             SchemaCodecs.optionalAlias(FogParam.CODEC, "fog_radius", "fog_end").forGetter(BiomeEffectModifier::fogEnd),
-            Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(BiomeEffectModifier::targets)
+            Targets.codec(Registries.BIOME).optionalFieldOf("targets", Targets.EMPTY).forGetter(BiomeEffectModifier::targets)
     ).apply(instance, BiomeEffectModifier::new));
 
     public static BiomeEffectModifier ofWaterColor(int waterColor) {

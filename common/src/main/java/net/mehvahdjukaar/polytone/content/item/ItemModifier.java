@@ -8,9 +8,9 @@ import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.content.model.WornModel;
-import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
 import net.mehvahdjukaar.polytone.content.shaders.light.ColoredLight;
 import net.mehvahdjukaar.polytone.common.Targets;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
@@ -46,7 +46,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                            Optional<ResourceLocation> scopeOverlay,
                            Optional<Boolean> bobAsEntity,
                            Optional<Boolean> spreadAsEntity,
-                           Optional<ColoredLight<IEntityExp>> coloredLight,
+                           Optional<ColoredLight.EntityLight> coloredLight,
                            Targets targets) {
 
     private static final Codec<HumanoidModel.ArmPose> ARM_POSE_CODEC = Codec.STRING.comapFlatMap(
@@ -73,9 +73,9 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
             ResourceLocation.CODEC.optionalFieldOf("scope_overlay").forGetter(ItemModifier::scopeOverlay),
             Codec.BOOL.optionalFieldOf("bob_as_entity").forGetter(ItemModifier::bobAsEntity),
             Codec.BOOL.optionalFieldOf("spread_as_entity").forGetter(ItemModifier::spreadAsEntity),
-            ColoredLight.codec(IEntityExp.CODEC, c -> e -> c)
+            ColoredLight.EntityLight.CODEC
                     .optionalFieldOf("colored_light").forGetter(ItemModifier::coloredLight),
-            Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(ItemModifier::targets)
+            Targets.codec(Registries.ITEM).optionalFieldOf("targets", Targets.EMPTY).forGetter(ItemModifier::targets)
     ).apply(instance, ItemModifier::new));
 
     public record Partial(List<ItemModelOverride.Partial> customModels) {

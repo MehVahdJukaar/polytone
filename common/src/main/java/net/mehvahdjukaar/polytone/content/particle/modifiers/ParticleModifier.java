@@ -6,11 +6,11 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
-import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.mehvahdjukaar.polytone.content.shaders.light.ColoredLight;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
@@ -44,9 +44,9 @@ public class ParticleModifier {
             ParticleContextExpression.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.colorGetter)),
             ParticleContextExpression.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.colorGetter)),
             ParticleContextExpression.CODEC.optionalFieldOf("speed").forGetter(p -> Optional.ofNullable(p.speedGetter)),
-            ColoredLight.codec(IParticleExp.CODEC_LEGACY, c -> (particle, level) -> c)
+            ColoredLight.ParticleLight.CODEC
                     .optionalFieldOf("colored_light").forGetter(p -> Optional.ofNullable(p.coloredLight)),
-            Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(p -> p.targets)
+            Targets.codec(Registries.PARTICLE_TYPE).optionalFieldOf("targets", Targets.EMPTY).forGetter(p -> p.targets)
 
     ).apply(instance, ParticleModifier::new));
 
@@ -77,7 +77,7 @@ public class ParticleModifier {
     @Nullable
     public final ParticleContextExpression alphaGetter;
     @Nullable
-    public final ColoredLight<IParticleExp> coloredLight;
+    public final ColoredLight.ParticleLight coloredLight;
     public final Targets targets;
 
     private ParticleModifier(Optional<Filter> filter, Optional<IColorGetter> colormap,
@@ -85,7 +85,7 @@ public class ParticleModifier {
                              Optional<ParticleContextExpression> size, Optional<ParticleContextExpression> red,
                              Optional<ParticleContextExpression> green, Optional<ParticleContextExpression> blue,
                              Optional<ParticleContextExpression> alpha, Optional<ParticleContextExpression> speed,
-                             Optional<ColoredLight<IParticleExp>> coloredLight,
+                             Optional<ColoredLight.ParticleLight> coloredLight,
                              Targets targets) {
         this(filter.orElse(null), colormap.orElse(null), color.orElse(null), life.orElse(null), size.orElse(null),
                 red.orElse(null), green.orElse(null), blue.orElse(null),
@@ -97,7 +97,7 @@ public class ParticleModifier {
                             @Nullable ParticleContextExpression size, @Nullable ParticleContextExpression red,
                             @Nullable ParticleContextExpression green, @Nullable ParticleContextExpression blue,
                             @Nullable ParticleContextExpression alpha, @Nullable ParticleContextExpression speed,
-                            @Nullable ColoredLight<IParticleExp> coloredLight,
+                            @Nullable ColoredLight.ParticleLight coloredLight,
                             Targets explicitTargets) {
         this.colorGetter = color;
         this.lifeGetter = life;

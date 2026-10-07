@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.client.Camera;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -26,7 +27,7 @@ public record FluidPropertyModifier(Optional<? extends BlockColor> colormap, Opt
                     Colormap.CODEC.optionalFieldOf("fog_colormap").forGetter(FluidPropertyModifier::fogColormap),
                     IBlockExp.CODEC_LEGACY.optionalFieldOf("fog_radius").forGetter(FluidPropertyModifier::fogRadius),
                     IBlockExp.CODEC_LEGACY.optionalFieldOf("fog_fade").forGetter(FluidPropertyModifier::fogFade),
-                    Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(FluidPropertyModifier::targets)
+                    Targets.codec(Registries.FLUID).optionalFieldOf("targets", Targets.EMPTY).forGetter(FluidPropertyModifier::targets)
             ).apply(instance, FluidPropertyModifier::new));
 
     // Other has priority

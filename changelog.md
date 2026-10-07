@@ -1,5 +1,1 @@
-- big release. many internal rewrite and refactors in rendering department
-- added support for native colored/dynamic lights
-- this also provides a voxel grid that can carry arbitrary per position flags to core/post shaders
-- also includes occlusion data & light data
-- added translucent_sun_and_moon to dimension modifiers
+- improved modder facing api allowing to easily register colored lights for block entities entities and blocks and more
