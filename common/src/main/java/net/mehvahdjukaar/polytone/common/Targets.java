@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.common;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import net.mehvahdjukaar.codecui.Schema;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.codecui.SchemaRecord;
@@ -14,9 +15,11 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 import static net.mehvahdjukaar.polytone.common.struc.ListUtils.mergeList;
@@ -123,25 +126,42 @@ public record Targets(List<Entry> entries) {
         <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg);
     }
 
-    // tag first cuz SOME mod is making resource locations accept # symbols...
-    private static final Codec<Entry> SIMPLE_TAG_OR_REGEX_ENTRY_CODEC = SchemaCodecs.alternatives(
-            "tag", TagLocation.TAG_CODEC,
-            "id", SimpleLocation.SIMPLE_CODEC,
-            "regex", RegexLocation.REGEX_CODEC);
+    private static final Map<ResourceKey<?>, Codec<Targets>> CODECS_BY_REGISTRY = new ConcurrentHashMap<>();
 
-    private static final Codec<Entry> ENTRY_CODEC = SchemaCodecs.labeled(
-            Codec.withAlternative(SIMPLE_TAG_OR_REGEX_ENTRY_CODEC, OptionalEntry.OPTIONAL_CODEC),
-            SchemaCodecs.alt("entry", SIMPLE_TAG_OR_REGEX_ENTRY_CODEC),
-            SchemaCodecs.alt("optional id", OptionalEntry.OPTIONAL_CODEC));
+    //registry is just for the editor pickers really
+    public static Codec<Targets> codec(ResourceKey<? extends Registry<?>> registry) {
+        return CODECS_BY_REGISTRY.computeIfAbsent(registry, r -> buildCodec(registry));
+    }
 
-    public static final Codec<Targets> CODEC = SchemaCodecs.singleOrList(ENTRY_CODEC)
-            .xmap(Targets::new, t -> t.entries);
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static Codec<Targets> buildCodec(@Nullable ResourceKey<? extends Registry<?>> registry) {
+        Codec<Entry> tagCodec = SchemaCodec.of((Codec) TagLocation.TAG_CODEC, (Schema) new Schema.TagId(registry, true));
+        Codec<Entry> idCodec = SchemaCodec.of((Codec) SimpleLocation.SIMPLE_CODEC, (Schema) new Schema.ResourceId(registry));
+        Codec<Entry> regexCodec = (Codec<Entry>) (Object) RegexLocation.REGEX_CODEC;
+
+        // tag first cuz SOME mod is making resource locations accept # symbols...
+        Codec<Entry> simpleTagOrRegex = SchemaCodecs.alternatives(
+                "tag", tagCodec,
+                "id", idCodec,
+                "regex", regexCodec);
+
+        Codec<OptionalEntry> optionalCodec = OptionalEntry.codec(simpleTagOrRegex);
+        Codec<Entry> entryCodec = SchemaCodecs.labeled(
+                Codec.withAlternative(simpleTagOrRegex, optionalCodec),
+                SchemaCodecs.alt("entry", simpleTagOrRegex),
+                SchemaCodecs.alt("optional id", optionalCodec));
+
+        return SchemaCodecs.singleOrList(entryCodec)
+                .xmap(Targets::new, t -> t.entries);
+    }
 
     private record OptionalEntry(Entry entry, boolean required) implements Entry {
-        public static final SchemaCodec<OptionalEntry> OPTIONAL_CODEC = SchemaRecord.create(OptionalEntry.class, i -> i.group(
-                i.field("id", SIMPLE_TAG_OR_REGEX_ENTRY_CODEC, OptionalEntry::entry),
-                i.optional("required", Codec.BOOL, true, OptionalEntry::required)
-        ).apply(i, OptionalEntry::new));
+        private static Codec<OptionalEntry> codec(Codec<Entry> entryCodec) {
+            return SchemaRecord.create(OptionalEntry.class, i -> i.group(
+                    i.field("id", entryCodec, OptionalEntry::entry),
+                    i.optional("required", Codec.BOOL, true, OptionalEntry::required)
+            ).apply(i, OptionalEntry::new));
+        }
 
         @Override
         public <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {

@@ -6,9 +6,9 @@ import net.mehvahdjukaar.codecui.SchemaRecord;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
-import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
 import net.mehvahdjukaar.polytone.content.shaders.light.ColoredLight;
 import net.mehvahdjukaar.polytone.common.Targets;
+import net.minecraft.core.registries.Registries;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -25,14 +25,14 @@ import java.util.Optional;
 import static net.mehvahdjukaar.polytone.common.struc.ListUtils.mergeList;
 
 public record EntityModifier(List<EntityParticleEmitter> emitters,
-                             Optional<ColoredLight<IEntityExp>> coloredLight,
+                             Optional<ColoredLight.EntityLight> coloredLight,
                              Targets targets) {
 
 
     public static final SchemaCodec<EntityModifier> CODEC = SchemaRecord.create(EntityModifier.class, i -> i.group(
             i.optional("emitters", SchemaCodecs.singleOrList(EntityParticleEmitter.CODEC), List.of(), em -> em.emitters),
-            i.optional("colored_light", ColoredLight.codec(IEntityExp.CODEC, c -> e -> c), em -> em.coloredLight),
-            i.optional("targets", Targets.CODEC, Targets.EMPTY, em -> em.targets)
+            i.optional("colored_light", ColoredLight.EntityLight.CODEC, em -> em.coloredLight),
+            i.optional("targets", Targets.codec(Registries.ENTITY_TYPE), Targets.EMPTY, em -> em.targets)
     ).apply(i, EntityModifier::new));
 
 
