@@ -67,7 +67,7 @@ public class PaletteGrid extends SectionGrid<PaletteGrid.BlockEntitySlot> {
         if (!holdsSection(sectionPos)) return false;
         BlockEntitySlot slot = getSlotOf(sectionPos);
         //not Level.getBlockEntity, that creates an empty one when the data isnt here yet
-        BlockEntity be = state.hasBlockEntity() && palette.hasBlockEntityData() ? level.getChunkAt(pos).getBlockEntity(pos) : null;
+        BlockEntity be = palette.shouldFetchBlockEntityOf(state) ? level.getChunkAt(pos).getBlockEntity(pos) : null;
         char index = palette.getIndexOf(state, be);
         //a slot that's already stale gets refilled anyway, don't mark it fresh
         if (palette.isDynamic(index) && slot.blockEntityGeneration == HAS_NO_BLOCK_ENTITY_MARKER) {
@@ -106,7 +106,7 @@ public class PaletteGrid extends SectionGrid<PaletteGrid.BlockEntitySlot> {
                     }
                 }
             }
-            if (palette.hasBlockEntityData()) {
+            if (palette.hasAnyBlockEntityData()) {
                 blockEntityGeneration = overlayBlockEntityCells(chunk, sy);
             }
         }

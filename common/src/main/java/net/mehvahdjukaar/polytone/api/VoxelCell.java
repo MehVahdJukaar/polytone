@@ -1,5 +1,6 @@
-package net.mehvahdjukaar.polytone.content.shaders.voxel;
+package net.mehvahdjukaar.polytone.api;
 
+import net.mehvahdjukaar.polytone.content.shaders.voxel.CellPalette;
 import net.minecraft.util.Mth;
 
 public class VoxelCell {
