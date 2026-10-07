@@ -7,10 +7,10 @@ import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
-import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.mehvahdjukaar.polytone.content.shaders.light.ColoredLight;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.Targets;
+import net.minecraft.core.registries.Registries;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.exp.impl.ParticleContextExpression;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -49,8 +49,8 @@ public class ParticleModifier {
             i.optional("blue", ParticleContextExpression.CODEC, p -> Optional.ofNullable(p.colorGetter)),
             i.optional("alpha", ParticleContextExpression.CODEC, p -> Optional.ofNullable(p.colorGetter)),
             i.optional("speed", ParticleContextExpression.CODEC, p -> Optional.ofNullable(p.speedGetter)),
-            i.optional("colored_light", ColoredLight.codec(IParticleExp.CODEC_LEGACY, c -> (particle, level) -> c), p -> Optional.ofNullable(p.coloredLight)),
-            i.optional("targets", Targets.CODEC, Targets.EMPTY, p -> p.targets)
+            i.optional("colored_light", ColoredLight.ParticleLight.CODEC, p -> Optional.ofNullable(p.coloredLight)),
+            i.optional("targets", Targets.codec(Registries.PARTICLE_TYPE), Targets.EMPTY, p -> p.targets)
     ).apply(i, ParticleModifier::new));
 
     public static final SchemaCodec<ParticleModifier> PARTIAL_CODEC = SchemaRecord.create(ParticleModifier.class, i ->
@@ -80,7 +80,7 @@ public class ParticleModifier {
     @Nullable
     public final ParticleContextExpression alphaGetter;
     @Nullable
-    public final ColoredLight<IParticleExp> coloredLight;
+    public final ColoredLight.ParticleLight coloredLight;
     public final Targets targets;
 
     private ParticleModifier(Optional<Filter> filter, Optional<IColorGetter> colormap,
@@ -88,7 +88,7 @@ public class ParticleModifier {
                              Optional<ParticleContextExpression> size, Optional<ParticleContextExpression> red,
                              Optional<ParticleContextExpression> green, Optional<ParticleContextExpression> blue,
                              Optional<ParticleContextExpression> alpha, Optional<ParticleContextExpression> speed,
-                             Optional<ColoredLight<IParticleExp>> coloredLight,
+                             Optional<ColoredLight.ParticleLight> coloredLight,
                              Targets targets) {
         this(filter.orElse(null), colormap.orElse(null), color.orElse(null), life.orElse(null), size.orElse(null),
                 red.orElse(null), green.orElse(null), blue.orElse(null),
@@ -100,7 +100,7 @@ public class ParticleModifier {
                             @Nullable ParticleContextExpression size, @Nullable ParticleContextExpression red,
                             @Nullable ParticleContextExpression green, @Nullable ParticleContextExpression blue,
                             @Nullable ParticleContextExpression alpha, @Nullable ParticleContextExpression speed,
-                            @Nullable ColoredLight<IParticleExp> coloredLight,
+                            @Nullable ColoredLight.ParticleLight coloredLight,
                             Targets explicitTargets) {
         this.colorGetter = color;
         this.lifeGetter = life;

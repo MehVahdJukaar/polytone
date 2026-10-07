@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.Targets;
+import net.minecraft.core.registries.Registries;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -54,7 +55,7 @@ public record CreativeTabModifier(
                             ItemPredicate.CODEC.listOf().optionalFieldOf("removals", List.of()).forGetter(CreativeTabModifier::removals),
                             ItemAddition.CODEC.listOf().optionalFieldOf("additions", List.of()).forGetter(CreativeTabModifier::additions),
                             Codec.BOOL.optionalFieldOf("create_new", false).forGetter(CreativeTabModifier::registerTab),
-                            Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(CreativeTabModifier::targets)
+                            Targets.codec(Registries.CREATIVE_MODE_TAB).optionalFieldOf("targets", Targets.EMPTY).forGetter(CreativeTabModifier::targets)
                     ).apply(i, CreativeTabModifier::new))
                     .validate(
                             m -> {
