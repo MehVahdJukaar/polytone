@@ -103,6 +103,7 @@ public record Targets(List<Entry> entries) {
         return ResourceKey.create((ResourceKey<? extends Registry<T>>) registry.key(), fileId);
     }
 
+
     public Targets merge(Targets other) {
         return new Targets(mergeList(entries, other.entries));
     }
