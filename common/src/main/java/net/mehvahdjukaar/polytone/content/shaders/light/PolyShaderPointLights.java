@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.shaders.light;
 
+import net.mehvahdjukaar.polytone.api.ResolvedPointLight;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;

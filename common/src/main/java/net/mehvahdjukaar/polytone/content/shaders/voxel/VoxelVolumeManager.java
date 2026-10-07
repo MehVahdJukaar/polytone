@@ -1,19 +1,25 @@
 package net.mehvahdjukaar.polytone.content.shaders.voxel;
 
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.api.VoxelDataProvider;
+import net.mehvahdjukaar.polytone.api.VoxelVolumeApi;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.content.shaders.GLHelper;
 import net.mehvahdjukaar.polytone.content.shaders.IShaderModifier;
 import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTracker;
 import net.mehvahdjukaar.polytone.content.shaders.IShader;
+import com.google.gson.JsonElement;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -21,10 +27,13 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3i;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 
 //TODO: this only works for main render pass. add support (via configs) for secondary (far away) passes
 public class VoxelVolumeManager extends ContentManager<Void> implements IShaderModifier {
@@ -50,7 +59,9 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
     private static final int FAR_LIGHT_UNIT = 29;
 
     private final Map<BlockEntityType<?>, VoxelDataProvider<?>> blockEntityData = new ConcurrentHashMap<>();
-    private final CellPalette palette = new CellPalette(blockEntityData);
+    private final List<RegisterCallback> registerCallbacks = new CopyOnWriteArrayList<>();
+    private final Map<Block, List<String>> modBlockFlags = new ConcurrentHashMap<>();
+    private final CellPalette palette = new CellPalette(blockEntityData, modBlockFlags);
     private final NearLightSpreadComputeShader nearLightSpread = new NearLightSpreadComputeShader();
     private final FarLightSpreadComputeShader farLightSpread = new FarLightSpreadComputeShader();
     //volatile so its in sync with its palette
@@ -63,6 +74,20 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
 
     public VoxelVolumeManager() {
         super("Voxel Volume");
+    }
+
+    //after colored lights parsed the packs but before they apply, so mod lights get picked up
+    @Override
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+        blockEntityData.clear();
+        modBlockFlags.clear();
+        var event = new VoxelVolumeApi.RegisterEvent();
+        boolean packsHaveColoredLights = Polytone.COLORED_LIGHTS.hasAnyLights();
+        for (var c : registerCallbacks) {
+            if (c.activation() == VoxelVolumeApi.Activation.ALWAYS || packsHaveColoredLights) {
+                c.callback().accept(event);
+            }
+        }
     }
 
     @Override
@@ -83,10 +108,16 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
         boundThisFrame = false;
     }
 
-    // TODO: moving pistons when we add per entity off grid lights. pushed glowstone goes dark for 2 ticks rn
-    //mods call this during client setup
-    public <T extends BlockEntity> void registerBlockEntityData(BlockEntityType<T> type, VoxelDataProvider<T> data) {
+    public <T extends BlockEntity> void addBlockEntityData(BlockEntityType<T> type, VoxelDataProvider<T> data) {
         blockEntityData.put(type, data);
+    }
+
+    public void addVoxelFlag(Block block, String flag) {
+        modBlockFlags.computeIfAbsent(block, b -> new ArrayList<>()).add(flag);
+    }
+
+    public void registerCallback(VoxelVolumeApi.Activation activation, Consumer<VoxelVolumeApi.RegisterEvent> callback) {
+        registerCallbacks.add(new RegisterCallback(activation, callback));
     }
 
     //For block entity data that changed on the client without a block update. any thread
@@ -102,7 +133,7 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
     //queued since the upload needs the render thread and any thread can call this
     public void onBlockChanged(BlockPos pos, BlockState oldState, BlockState newState) {
         if (volume == null) return;
-        boolean isDynamic = palette.hasBlockEntityData() && (oldState.hasBlockEntity() || newState.hasBlockEntity());
+        boolean isDynamic = palette.shouldFetchBlockEntityOf(oldState) || palette.shouldFetchBlockEntityOf(newState);
         char oldIndex = palette.getBlockStateIndexOf(oldState);
         char newIndex = palette.getBlockStateIndexOf(newState);
         if (!isDynamic && oldIndex == newIndex) return;
@@ -263,5 +294,8 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
     }
 
     private record BlockChange(long pos, boolean changesLight) {
+    }
+
+    private record RegisterCallback(VoxelVolumeApi.Activation activation, Consumer<VoxelVolumeApi.RegisterEvent> callback) {
     }
 }

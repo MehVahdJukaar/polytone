@@ -1,5 +1,7 @@
 package net.mehvahdjukaar.polytone.content.shaders.light;
 
+import net.mehvahdjukaar.polytone.api.ResolvedPointLight;
+
 // keys are the lit thing itself: an Entity, a Particle, a BlockPos
 public interface PointLightStorage {
 

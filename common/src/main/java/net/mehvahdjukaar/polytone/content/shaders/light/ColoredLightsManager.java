@@ -27,6 +27,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
@@ -40,16 +41,16 @@ import java.util.Map;
 
 public class ColoredLightsManager extends ContentManager<ColoredLightEntry> implements IShaderModifier {
 
-    public record BlockRule(ColoredLight<IBlockExp> light, RuleTest predicate) {
+    public record BlockRule(PointLightProvider.ForBlock light, RuleTest predicate) {
         public boolean matches(BlockState state, net.minecraft.util.RandomSource random) {
             return predicate == AlwaysTrueTest.INSTANCE || predicate.test(state, random);
         }
     }
 
     private final Map<Block, List<BlockRule>> blocks = new IdentityHashMap<>();
-    private final Map<EntityType<?>, ColoredLight<IEntityExp>> entities = new IdentityHashMap<>();
-    private final Map<Item, ColoredLight<IEntityExp>> items = new IdentityHashMap<>();
-    private final Map<ParticleType<?>, ColoredLight<IParticleExp>> particles = new IdentityHashMap<>();
+    private final Map<EntityType<?>, PointLightProvider<Entity>> entities = new IdentityHashMap<>();
+    private final Map<Item, PointLightProvider.ForItem> items = new IdentityHashMap<>();
+    private final Map<ParticleType<?>, PointLightProvider<Particle>> particles = new IdentityHashMap<>();
 
     private final PolyShaderPointLights shaderPointLights = new PolyShaderPointLights();
     @Nullable
@@ -59,7 +60,7 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
     @Nullable
     private volatile BlockLightSource blockLights;
     @Nullable
-    private volatile MovingLightSource<Particle, IParticleExp> particleLights;
+    private volatile MovingLightSource<Particle> particleLights;
 
     public ColoredLightsManager() {
         super(Spec.of("Colored Light", () -> ColoredLightEntry.CODEC)
@@ -98,24 +99,36 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
         }
     }
 
-    /**
-     * PUBLIC API FOR MODDERS BELOW HERE.
-     * all else might change, these 4 methods should say stable
-     */
-
+    //mods go through VoxelVolumeApi. these are internals dont use!
     public void addBlockLight(Block block, ColoredLight<IBlockExp> light, RuleTest predicate) {
-        blocks.computeIfAbsent(block, b -> new ArrayList<>()).add(new BlockRule(light, predicate));
+        addBlockLight(block, ColoredLight.forBlocks(light), predicate);
     }
 
     public void addEntityLight(EntityType<?> type, ColoredLight<IEntityExp> light) {
-        entities.put(type, light);
+        addEntityLight(type, ColoredLight.forEntities(light));
     }
 
     public void addItemLight(Item item, ColoredLight<IEntityExp> light) {
-        items.put(item, light);
+        addItemLight(item, ColoredLight.forItems(light));
     }
 
     public void addParticleLight(ParticleType<?> type, ColoredLight<IParticleExp> light) {
+        addParticleLight(type, ColoredLight.forParticles(light));
+    }
+
+    public void addBlockLight(Block block, PointLightProvider.ForBlock light, RuleTest predicate) {
+        blocks.computeIfAbsent(block, b -> new ArrayList<>()).add(new BlockRule(light, predicate));
+    }
+
+    public void addEntityLight(EntityType<?> type, PointLightProvider<Entity> light) {
+        entities.put(type, light);
+    }
+
+    public void addItemLight(Item item, PointLightProvider.ForItem light) {
+        items.put(item, light);
+    }
+
+    public void addParticleLight(ParticleType<?> type, PointLightProvider<Particle> light) {
         particles.put(type, light);
     }
 
@@ -125,35 +138,27 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
     }
 
     @Nullable
-    public ColoredLight<IEntityExp> getEntityLight(EntityType<?> type) {
-        return entities.get(type);
-    }
-
-    @Nullable
-    public ColoredLight<IEntityExp> getItemLight(Item item) {
-        return items.get(item);
-    }
-
-    @Nullable
-    public ColoredLight<IParticleExp> getParticleLight(ParticleType<?> type) {
-        return particles.get(type);
-    }
-
-    @Nullable
-    public ColoredLight<IEntityExp> getLightFor(Entity entity) {
-        if (entity instanceof ItemEntity item) {
-            var light = items.get(item.getItem().getItem());
+    public PointLightProvider<Entity> getLightFor(Entity entity) {
+        if (entity instanceof ItemEntity itemEntity) {
+            var light = lightOfStack(itemEntity.getItem());
             if (light != null) return light;
         }
         var light = entities.get(entity.getType());
         if (light != null) return light;
         if (entity instanceof LivingEntity living) {
             for (InteractionHand hand : InteractionHand.values()) {
-                var held = items.get(living.getItemInHand(hand).getItem());
+                var held = lightOfStack(living.getItemInHand(hand));
                 if (held != null) return held;
             }
         }
         return null;
+    }
+
+    @Nullable
+    private PointLightProvider<Entity> lightOfStack(ItemStack stack) {
+        var light = items.get(stack.getItem());
+        if (light == null) return null;
+        return (holder, level, r) -> light.resolve(stack, holder, level, r);
     }
 
     public boolean hasBlockLights() {
@@ -164,10 +169,14 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
         return !entities.isEmpty() || !items.isEmpty();
     }
 
+    public boolean hasAnyLights() {
+        return hasBlockLights() || hasEntityLights() || !particles.isEmpty();
+    }
+
     @Override
     protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
         // block rules stay even without Veil, the voxel volme reads them too
-        if (blocks.isEmpty() && entities.isEmpty() && items.isEmpty() && particles.isEmpty()) return;
+        if (!hasAnyLights()) return;
         var backend = Polytone.CONFIGS.coloredLightsBackend.get();
         PointLightStorage storage = storageFor(backend);
         if (storage == null) return;

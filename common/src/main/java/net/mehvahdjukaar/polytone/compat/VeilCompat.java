@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.compat;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.light.data.PointLightData;
 import foundry.veil.api.client.render.light.renderer.LightRenderHandle;
-import net.mehvahdjukaar.polytone.content.shaders.light.ResolvedPointLight;
+import net.mehvahdjukaar.polytone.api.ResolvedPointLight;
 import net.mehvahdjukaar.polytone.content.shaders.light.PointLightStorage;
 
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.shaders.voxel;
+package net.mehvahdjukaar.polytone.api;
 
 import net.minecraft.world.level.block.entity.BlockEntity;
 

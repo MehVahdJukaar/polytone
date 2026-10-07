@@ -1,8 +1,7 @@
 package net.mehvahdjukaar.polytone.content.shaders.light;
 
+import net.mehvahdjukaar.polytone.api.ResolvedPointLight;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
-import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.util.Mth;
@@ -14,30 +13,30 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public abstract class MovingLightSource<T, E> extends LightSource {
+public abstract class MovingLightSource<T> extends LightSource {
 
     //TODO: mgith want to deacrease tbh seems crazy high
     private static final int MAX_LIGHTS = 256;
 
     //async particle ticks can spawn apricles too
-    private final Queue<LitEntry<T, E>> spawned = new ConcurrentLinkedQueue<>();
-    private final List<LitEntry<T, E>> tracked = new ArrayList<>();
-    private List<LitEntry<T, E>> followed = List.of();
+    private final Queue<LitEntry<T>> spawned = new ConcurrentLinkedQueue<>();
+    private final List<LitEntry<T>> tracked = new ArrayList<>();
+    private List<LitEntry<T>> followed = List.of();
     private long ticks;
 
     private MovingLightSource(PointLightStorage storage) {
         super(storage);
     }
 
-    public static MovingLightSource<Entity, IEntityExp> entities(PointLightStorage storage) {
+    public static MovingLightSource<Entity> entities(PointLightStorage storage) {
         return new Entities(storage);
     }
 
-    public static MovingLightSource<Particle, IParticleExp> particles(PointLightStorage storage) {
+    public static MovingLightSource<Particle> particles(PointLightStorage storage) {
         return new Particles(storage);
     }
 
-    protected void findEachTick(ClientLevel level, List<LitEntry<T, E>> found) {
+    protected void findEachTick(ClientLevel level, List<LitEntry<T>> found) {
     }
 
     protected boolean isAlive(T thing, long ticksTracked) {
@@ -46,36 +45,37 @@ public abstract class MovingLightSource<T, E> extends LightSource {
 
     protected abstract Vec3 position(T thing, float partialTicks);
 
-    protected abstract double evaluate(E expression, T thing, ClientLevel level);
-
     // for things with a spawn hook. they stay lit until they die
-    public void track(T thing, ColoredLight<E> light) {
+    public void track(T thing, PointLightProvider<T> light) {
         spawned.add(new LitEntry<>(thing, light, -1));
     }
 
     @Override
     public void tick(ClientLevel level, Vec3 camera) {
         ticks++;
-        LitEntry<T, E> polled;
+        LitEntry<T> polled;
         while ((polled = spawned.poll()) != null) tracked.add(new LitEntry<>(polled.owner, polled.light, ticks));
         tracked.removeIf(lit -> !isAlive(lit.owner, ticks - lit.trackedAtTick));
 
-        List<LitEntry<T, E>> found = new ArrayList<>(tracked);
+        List<LitEntry<T>> found = new ArrayList<>(tracked);
         findEachTick(level, found);
         keepNearest(found, MAX_LIGHTS, lit -> position(lit.owner, 1).distanceToSqr(camera));
 
-        for (LitEntry<T, E> lit : found) {
-            Vec3 pos = position(lit.owner, 1);
-            ResolvedPointLight resolved = lit.light.resolve(exp -> evaluate(exp, lit.owner, level), DEFAULT_LIGHT_RADIUS);
-            set(lit.owner, pos.x, pos.y, pos.z, resolved);
+        List<LitEntry<T>> lit = new ArrayList<>(found.size());
+        for (LitEntry<T> entry : found) {
+            ResolvedPointLight resolved = entry.light.resolve(entry.owner, level, DEFAULT_LIGHT_RADIUS);
+            if (resolved == null) continue;
+            Vec3 pos = position(entry.owner, 1);
+            set(entry.owner, pos.x, pos.y, pos.z, resolved);
+            lit.add(entry);
         }
         removeUnset();
-        followed = found;
+        followed = lit;
     }
 
     @Override
     public void renderTick(float partialTicks) {
-        for (LitEntry<T, E> lit : followed) {
+        for (LitEntry<T> lit : followed) {
             Vec3 pos = position(lit.owner, partialTicks);
             move(lit.owner, pos.x, pos.y, pos.z);
         }
@@ -94,14 +94,14 @@ public abstract class MovingLightSource<T, E> extends LightSource {
     }
 
 
-    private static class Entities extends MovingLightSource<Entity, IEntityExp> {
+    private static class Entities extends MovingLightSource<Entity> {
 
         private Entities(PointLightStorage storage) {
             super(storage);
         }
 
         @Override
-        protected void findEachTick(ClientLevel level, List<LitEntry<Entity, IEntityExp>> found) {
+        protected void findEachTick(ClientLevel level, List<LitEntry<Entity>> found) {
             for (Entity entity : level.entitiesForRendering()) {
                 var light = Polytone.COLORED_LIGHTS.getLightFor(entity);
                 if (light != null) found.add(new LitEntry<>(entity, light, -1));
@@ -112,14 +112,9 @@ public abstract class MovingLightSource<T, E> extends LightSource {
         protected Vec3 position(Entity entity, float partialTicks) {
             return entity.getPosition(partialTicks).add(0, entity.getBbHeight() * 0.5, 0);
         }
-
-        @Override
-        protected double evaluate(IEntityExp expression, Entity entity, ClientLevel level) {
-            return expression.evaluate(entity);
-        }
     }
 
-    private static class Particles extends MovingLightSource<Particle, IParticleExp> {
+    private static class Particles extends MovingLightSource<Particle> {
 
         private Particles(PointLightStorage storage) {
             super(storage);
@@ -138,13 +133,8 @@ public abstract class MovingLightSource<T, E> extends LightSource {
                     Mth.lerp(partialTicks, p.yo, p.y),
                     Mth.lerp(partialTicks, p.zo, p.z));
         }
-
-        @Override
-        protected double evaluate(IParticleExp expression, Particle particle, ClientLevel level) {
-            return expression.evaluate(particle, level);
-        }
     }
 
-    protected record LitEntry<T, E>(T owner, ColoredLight<E> light, long trackedAtTick) {
+    protected record LitEntry<T>(T owner, PointLightProvider<T> light, long trackedAtTick) {
     }
 }

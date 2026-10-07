@@ -1,8 +1,10 @@
 package net.mehvahdjukaar.polytone.content.shaders.voxel;
 
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.api.VoxelCell;
+import net.mehvahdjukaar.polytone.api.VoxelDataProvider;
 import net.mehvahdjukaar.polytone.content.shaders.light.ColoredLightsManager;
-import net.mehvahdjukaar.polytone.content.shaders.light.ResolvedPointLight;
+import net.mehvahdjukaar.polytone.api.ResolvedPointLight;
 import net.mehvahdjukaar.polytone.content.shaders.GLHelper;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -13,8 +15,10 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.BeaconBeamBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -25,6 +29,7 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -46,11 +51,13 @@ public class CellPalette implements AutoCloseable {
     private static final PaletteEntry OPAQUE = new PaletteEntry(0, 0, 15, 0xFFFFFF, 0, 0);
 
     private final Map<BlockEntityType<?>, VoxelDataProvider<?>> blockEntityData;
+    private final Map<Block, List<String>> modBlockFlags;
     //mutable instance cuz its faster
     private final VoxelCell cell = new VoxelCell(this);
     private final ByteBuffer singleTexel = MemoryUtil.memAlloc(BYTES_PER_ENTRY);
 
     private char[] indexByStateId = new char[0];
+    private final BitSet statesIdsThatWeShouldFetchBEsFor = new BitSet();
     private final List<PaletteEntry> allEntries = new ArrayList<>();
     private final Map<PaletteEntry, Integer> indexOfEntry = new HashMap<>();
     private final Map<String, Integer> flagBitByName = new LinkedHashMap<>();
@@ -59,8 +66,9 @@ public class CellPalette implements AutoCloseable {
     private int dynamicGeneration = 0;
     private int textureId = 0;
 
-    public CellPalette(Map<BlockEntityType<?>, VoxelDataProvider<?>> blockEntityData) {
+    public CellPalette(Map<BlockEntityType<?>, VoxelDataProvider<?>> blockEntityData, Map<Block, List<String>> modBlockFlags) {
         this.blockEntityData = blockEntityData;
+        this.modBlockFlags = modBlockFlags;
     }
 
     public int textureId() {
@@ -79,8 +87,21 @@ public class CellPalette implements AutoCloseable {
         return index >= staticCount;
     }
 
-    public boolean hasBlockEntityData() {
+    public boolean hasAnyBlockEntityData() {
         return !blockEntityData.isEmpty();
+    }
+
+    public boolean shouldFetchBlockEntityOf(BlockState state) {
+        return statesIdsThatWeShouldFetchBEsFor.get(Block.BLOCK_STATE_REGISTRY.getId(state));
+    }
+
+    private boolean computeShouldFetchBlockEntity(BlockState state) {
+        if (!state.hasBlockEntity()) return false;
+        if (state.is(Blocks.MOVING_PISTON)) return true;
+        for (BlockEntityType<?> type : blockEntityData.keySet()) {
+            if (type.isValid(state)) return true;
+        }
+        return false;
     }
 
     public char getBlockStateIndexOf(BlockState state) {
@@ -112,6 +133,8 @@ public class CellPalette implements AutoCloseable {
     public char getIndexOf(BlockState state, @Nullable BlockEntity blockEntity) {
         char stateIndex = getBlockStateIndexOf(state);
         if (blockEntity == null) return stateIndex;
+        //so pushed blocks dont go dark for 2 ticks
+        if (blockEntity instanceof PistonMovingBlockEntity piston) return getBlockStateIndexOf(piston.getMovedState());
         //dynamic stuff ahead
         var data = (VoxelDataProvider<BlockEntity>) blockEntityData.get(blockEntity.getType());
         if (data == null || staticCount >= MAX_ENTRIES) return stateIndex;
@@ -177,6 +200,9 @@ public class CellPalette implements AutoCloseable {
         for (String name : Polytone.BLOCK_MODIFIERS.getVoxelFlags(block)) {
             flags |= flagMask(name);
         }
+        for (String name : modBlockFlags.getOrDefault(block, List.of())) {
+            flags |= flagMask(name);
+        }
         return flags;
     }
 
@@ -193,6 +219,7 @@ public class CellPalette implements AutoCloseable {
         flagBitByName.clear();
         RandomSource random = RandomSource.create();
         indexByStateId = new char[Block.BLOCK_STATE_REGISTRY.size()];
+        statesIdsThatWeShouldFetchBEsFor.clear();
         boolean warned = false;
         for (BlockState state : Block.BLOCK_STATE_REGISTRY) {
             PaletteEntry entry = entryFor(state, level, random);
@@ -210,7 +237,9 @@ public class CellPalette implements AutoCloseable {
                     index = indexOfEntry.get(entry.opacity >= 15 ? OPAQUE : CLEAR);
                 }
             }
-            indexByStateId[Block.BLOCK_STATE_REGISTRY.getId(state)] = (char) (int) index;
+            int stateId = Block.BLOCK_STATE_REGISTRY.getId(state);
+            indexByStateId[stateId] = (char) (int) index;
+            if (computeShouldFetchBlockEntity(state)) statesIdsThatWeShouldFetchBEsFor.set(stateId);
         }
         staticCount = allEntries.size();
         dynamicGeneration++;
@@ -228,8 +257,8 @@ public class CellPalette implements AutoCloseable {
                 if (!rule.matches(state, random)) continue;
                 try {
                     // same defaults as the Veil lights. no position here, one entry per state for the whole volume
-                    ResolvedPointLight props = rule.light().resolve(exp -> exp.evaluate(level, Vec3.ZERO, state),
-                            emission > 0 ? emission : 8);
+                    ResolvedPointLight props = rule.light().resolve(state, Vec3.ZERO, level, emission > 0 ? emission : 8);
+                    if (props == null) continue;
                     emission = Mth.clamp(Math.round(props.radius()), 0, 15);
                     lightColor = scaleColor(props.color(), props.brightness());
                 } catch (Exception e) {
