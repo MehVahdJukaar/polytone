@@ -267,8 +267,13 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
 
         if (worldDepthCaptured) combineWorldDepthIntoMain(main);
         worldDepthCaptured = false;
+        //not chain.process(): its bundle only holds main, so pack post_targets would be missing
+        Polytone.POST_TARGETS.ensureAllocated(main.width, main.height);
         for (PostChain chain : active) {
-            chain.process(main, resourceAllocator);
+            FrameGraphBuilder frameGraph = new FrameGraphBuilder();
+            PostChain.TargetBundle mainOnly = PostChain.TargetBundle.of(PostChain.MAIN_TARGET_ID, frameGraph.importExternal("main", main));
+            chain.addToFrame(frameGraph, main.width, main.height, Polytone.POST_TARGETS.wrap(mainOnly, frameGraph));
+            frameGraph.execute(resourceAllocator);
         }
     }
 

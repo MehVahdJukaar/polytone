@@ -26,21 +26,8 @@ run/
 
 /research/
 /wiki/
-/resourcepacks/NOTES.md
-/resourcepacks/builds/
-/resourcepacks/config_test/
-/resourcepacks/shadowmap_debug/
-/resourcepacks/smooth_shadows/
-/resourcepacks/sunbathing/
-/resourcepacks/shadowmap/
-/resourcepacks/gpu_particles/
-/resourcepacks/colored_lights/
+/resourcepacks/*
+!/resourcepacks/builds/
+/resourcepacks/builds/*
+!/resourcepacks/builds/polytone_sample_pack-*.zip
 /fabric/mods/
-/resourcepacks/polytone_sample_pack/
-/resourcepacks/light_volume/
-/resourcepacks/shadowmap/
-/resourcepacks/light_volume_core/
-/resourcepacks/sunbathing/
-/resourcepacks/water_mist/
-/resourcepacks/colored_lights_logo/
-/resourcepacks/wavy_terrain/
