@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.shaders.light;
 
+import net.mehvahdjukaar.polytone.api.ResolvedPointLight;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.phys.Vec3;
