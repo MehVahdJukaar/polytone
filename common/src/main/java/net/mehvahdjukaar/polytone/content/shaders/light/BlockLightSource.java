@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.shaders.light;
 
+import net.mehvahdjukaar.polytone.api.ResolvedPointLight;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -77,9 +78,8 @@ public class BlockLightSource extends LightSource {
 
         for (LitBlock lit : found) {
             Vec3 center = lit.pos.getCenter();
-            ResolvedPointLight resolved = lit.rule.light().resolve(
-                    exp -> exp.evaluate(level, center, lit.state), defaultRadius(lit.state));
-            set(lit.pos, center.x, center.y, center.z, resolved);
+            ResolvedPointLight resolved = lit.rule.light().resolve(lit.state, center, level, defaultRadius(lit.state));
+            if (resolved != null) set(lit.pos, center.x, center.y, center.z, resolved);
         }
         removeUnset();
     }
