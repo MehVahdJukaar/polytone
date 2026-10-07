@@ -13,7 +13,7 @@ import java.util.Collection;
 
 public class DimensionTarget {
 
-    public static final Codec<DimensionTarget> CODEC = Codec.either(Targets.CODEC, DimensionTemplate.CODEC)
+    public static final Codec<DimensionTarget> CODEC = Codec.either(Targets.codec(Registries.DIMENSION_TYPE), DimensionTemplate.CODEC)
             .xmap(DimensionTarget::new, d -> d.target);
 
     public static final DimensionTarget EMPTY = new DimensionTarget(Either.left(Targets.EMPTY));

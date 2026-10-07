@@ -8,6 +8,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.Targets;
+import net.minecraft.core.registries.Registries;
 import net.mehvahdjukaar.polytone.common.Weather;
 import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributeMapMod;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
@@ -45,7 +46,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
             i.optional("grass_color_modifier", BiomeSpecialEffects.GrassColorModifier.CODEC, BiomeEffectModifier::grassColorModifier),
             i.optional("attributes_modifiers", BiomeEnvAttributeModifications.CODEC,
                     BiomeEnvAttributeModifications.EMPTY, BiomeEffectModifier::attributeModifications),
-            i.optional("targets", Targets.CODEC, Targets.EMPTY, BiomeEffectModifier::targets)
+            i.optional("targets", Targets.codec(Registries.BIOME), Targets.EMPTY, BiomeEffectModifier::targets)
     ).apply(i, BiomeEffectModifier::new));
 
     public static final Codec<BiomeEffectModifier> CODEC = SchemaCodecs.withExtra(DIRECT_CODEC,

@@ -7,9 +7,9 @@ import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.model.WornModel;
-import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
 import net.mehvahdjukaar.polytone.content.shaders.light.ColoredLight;
 import net.mehvahdjukaar.polytone.common.Targets;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
@@ -41,7 +41,7 @@ public record ItemModifier(Optional<IColorGetter> barColor,
                            Optional<Identifier> scopeOverlay,
                            Optional<Boolean> bobAsEntity,
                            Optional<Boolean> spreadAsEntity,
-                           Optional<ColoredLight<IEntityExp>> coloredLight,
+                           Optional<ColoredLight.EntityLight> coloredLight,
                            Targets targets) {
 
     private static final Codec<HumanoidModel.ArmPose> ARM_POSE_CODEC = Codec.STRING.comapFlatMap(
@@ -69,8 +69,8 @@ public record ItemModifier(Optional<IColorGetter> barColor,
             i.optional("scope_overlay", Identifier.CODEC, ItemModifier::scopeOverlay),
             i.optional("bob_as_entity", Codec.BOOL, ItemModifier::bobAsEntity),
             i.optional("spread_as_entity", Codec.BOOL, ItemModifier::spreadAsEntity),
-            i.optional("colored_light", ColoredLight.codec(IEntityExp.CODEC, c -> e -> c), ItemModifier::coloredLight),
-            i.optional("targets", Targets.CODEC, Targets.EMPTY, ItemModifier::targets)
+            i.optional("colored_light", ColoredLight.EntityLight.CODEC, ItemModifier::coloredLight),
+            i.optional("targets", Targets.codec(Registries.ITEM), Targets.EMPTY, ItemModifier::targets)
     ).apply(i, ItemModifier::new));
 
     /*
