@@ -318,46 +318,7 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         for (var entry : parsed.entrySet()) {
             addConfig(entry.getKey(), entry.getValue(), configs, configFileSnapshot);
         }
-        registerDevTestConfigs();
         Polytone.LOGGER.info("Loaded {} Polytone config entries", configs.size());
-    }
-
-    private void registerDevTestConfigs() {
-        if (!Polytone.isDevEnv) return;
-
-        Map<String, Boolean> boolPresets = Map.of("enabled", true, "disabled", false);
-        Map<String, Float> floatPresets = Map.of("low", 0.25f, "high", 0.75f);
-
-        addConfig(Identifier.fromNamespaceAndPath("test_pack_alpha", "dev_alpha_toggle"),
-                new BoolConfig(Optional.empty(), boolPresets, Map.of(), 0,
-                        Optional.of("alpha_group_a"), Optional.of(0), Optional.empty(), false, Map.of(), true),
-                configs, configFileSnapshot);
-        addConfig(Identifier.fromNamespaceAndPath("test_pack_alpha", "dev_alpha_throttle"),
-                new NumberConfig(Optional.empty(), floatPresets, Map.of("section_low", 0.1f), 1,
-                        Optional.of("alpha_group_a"), Optional.of(0), Optional.of(PolyConfig.PerformanceImpact.MEDIUM),
-                        false, Map.of(), 0.5f, 0, 1, 0.05f),
-                configs, configFileSnapshot);
-        addConfig(Identifier.fromNamespaceAndPath("test_pack_alpha", "dev_wide_note"),
-                new StringConfig(Optional.empty(), Map.of(), Map.of(), 0,
-                        Optional.of("alpha_group_b"), Optional.of(1), Optional.empty(), true, Map.of(),
-                        "balanced", List.of("balanced", "fast", "fancy")),
-                configs, configFileSnapshot);
-
-        addConfig(Identifier.fromNamespaceAndPath("test_pack_beta", "dev_sectionless"),
-                new BoolConfig(Optional.empty(), Map.of(), Map.of(), 0,
-                        Optional.empty(), Optional.empty(), Optional.of(PolyConfig.PerformanceImpact.LOW),
-                        false, Map.of(), false),
-                configs, configFileSnapshot);
-        addConfig(Identifier.fromNamespaceAndPath("test_pack_beta", "dev_grouped_flag"),
-                new BoolConfig(Optional.empty(), boolPresets, Map.of("off", false), 0,
-                        Optional.of("beta_misc"), Optional.of(0), Optional.of(PolyConfig.PerformanceImpact.HIGH),
-                        false, Map.of(), true),
-                configs, configFileSnapshot);
-
-        addConfig(Polytone.res("dev_polytone_extra"),
-                new BoolConfig(Optional.empty(), Map.of(), Map.of(), 99,
-                        Optional.of("particles"), Optional.empty(), Optional.empty(), false, Map.of(), false),
-                configs, configFileSnapshot);
     }
 
     public void beforeRepositoryRefresh() {
