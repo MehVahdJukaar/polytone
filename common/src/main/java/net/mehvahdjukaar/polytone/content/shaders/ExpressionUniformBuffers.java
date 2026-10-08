@@ -7,18 +7,12 @@ import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
-import net.mehvahdjukaar.polytone.mixins.accessor.GlBufferAccessor;
-import org.lwjgl.opengl.GL30C;
-import org.lwjgl.opengl.GL31C;
-import org.lwjgl.opengl.GL32C;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-// Shared buffer plumbing for expression-driven uniforms. Each entry becomes a single-float UBO block, named
-// after the map key, and gets bound to the RenderPass under that name.
 public final class ExpressionUniformBuffers {
 
     public static final Codec<ExpressionUniformBuffers> CODEC =
@@ -81,25 +75,6 @@ public final class ExpressionUniformBuffers {
         for (var e : buffers.entrySet()) {
             shader.setUniform(e.getKey(), e.getValue().slice());
         }
-    }
-
-    // Binds our UBO blocks directly to an arbitrary GL program by raw glBindBufferBase, for programs not
-    // driven through Mojang's RenderPass (e.g. Sodium's chunk shader). Only blocks the program actually
-    // declares are bound (gated by glGetUniformBlockIndex), so passing a program without our blocks is a no-
-    // op.
-    public int bindBlocksToProgram(int program, int nextBindingPoint) {
-        if (buffers == null){
-            return nextBindingPoint;
-        }
-        for (var e : buffers.entrySet()) {
-            int blockIndex = GL32C.glGetUniformBlockIndex(program, e.getKey());
-            if (blockIndex < 0) continue; // GL_INVALID_INDEX: block not declared in this program
-            int glId = ((GlBufferAccessor) (Object) e.getValue()).polytone$getHandle();
-            GL32C.glUniformBlockBinding(program, blockIndex, nextBindingPoint);
-            GL30C.glBindBufferBase(GL31C.GL_UNIFORM_BUFFER, nextBindingPoint, glId);
-            nextBindingPoint++;
-        }
-        return nextBindingPoint;
     }
 
     public void close() {

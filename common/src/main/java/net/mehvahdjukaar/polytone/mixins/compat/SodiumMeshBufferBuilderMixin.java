@@ -38,7 +38,7 @@ public abstract class SodiumMeshBufferBuilderMixin {
         Direction face = polytone$faceOf(quad);
         if (face == null) return materialBits;
         //sorry if somebody else was using these
-        return materialBits | (face.ordinal() + 1) << LightShaderPatcher.SODIUM_MATERIAL_DIRECTION_BITS_SHIFT;
+        return materialBits | LightShaderPatcher.faceBits(face) << LightShaderPatcher.SODIUM_MATERIAL_DIRECTION_BITS_SHIFT;
     }
 
     @Unique
@@ -50,6 +50,6 @@ public abstract class SodiumMeshBufferBuilderMixin {
         float ny = az * bx - ax * bz;
         float nz = ax * by - ay * bx;
         if (nx * nx + ny * ny + nz * nz < 1.0e-8f) return null;
-        return Direction.getNearest(nx, ny, nz);
+        return Direction.getApproximateNearest(nx, ny, nz);
     }
 }
