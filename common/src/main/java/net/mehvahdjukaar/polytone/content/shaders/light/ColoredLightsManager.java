@@ -157,7 +157,6 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
             if (light != null) return light;
         }
         var light = entities.get(entity.getType());
-        if (light == null) light = entities.get(entityAliases.get(entity.getType()));
         if (light != null) return light;
         if (entity instanceof LivingEntity living) {
             for (InteractionHand hand : InteractionHand.values()) {
@@ -171,7 +170,7 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
     @Nullable
     private PointLightProvider<Entity> lightOfStack(ItemStack stack) {
         Item item = stack.getItem();
-        var light = items.getOrDefault(item, items.get(itemAliases.get(item)));
+        var light = items.get(item);
         if (light == null) return null;
         return (holder, level, r) -> light.resolve(stack, holder, level, r);
     }
@@ -190,6 +189,7 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
 
     @Override
     protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
+        flattenAliases();
         // block rules stay even without Veil, the voxel volme reads them too
         if (!hasAnyLights()) return;
         var backend = Polytone.CONFIGS.coloredLightsBackend.get();
@@ -205,6 +205,20 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
         if (hasEntityLights()) sources.add(MovingLightSource.entities(storage));
         if (!particles.isEmpty()) sources.add(particleLights = MovingLightSource.particles(storage));
         lightSources = sources;
+    }
+
+    private void flattenAliases() {
+        entityAliases.forEach((type, behavesAs) -> copyLight(entities, type, behavesAs));
+        itemAliases.forEach((item, behavesAs) -> copyLight(items, item, behavesAs));
+        particleAliases.forEach((type, behavesAs) -> copyLight(particles, type, behavesAs));
+        entityAliases.clear();
+        itemAliases.clear();
+        particleAliases.clear();
+    }
+
+    private static <K, V> void copyLight(Map<K, V> lights, K target, K behavesAs) {
+        V light = lights.get(behavesAs);
+        if (light != null) lights.putIfAbsent(target, light);
     }
 
     @Nullable
@@ -267,7 +281,6 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
         var lights = particleLights;
         if (lights == null) return;
         var light = particles.get(type);
-        if (light == null) light = particles.get(particleAliases.get(type));
         if (light != null) lights.track(particle, light);
     }
 
