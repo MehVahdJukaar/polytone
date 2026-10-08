@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.api;
 
 import net.mehvahdjukaar.polytone.content.shaders.voxel.CellPalette;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class VoxelCell {
 
@@ -10,22 +11,40 @@ public class VoxelCell {
     private int lightLevel;
     private int opacity;
     private int filterColor;
+    private int solidFaces;
     private long flags;
 
     public VoxelCell(CellPalette palette) {
         this.palette = palette;
     }
 
-    public void load(int lightColor, int emission, int opacity, int filterColor, long flags) {
+    public void load(int lightColor, int emission, int opacity, int filterColor, int solidFaces, long flags) {
         this.lightColor = lightColor;
         this.lightLevel = emission;
         this.opacity = opacity;
         this.filterColor = filterColor;
+        this.solidFaces = solidFaces;
         this.flags = flags;
+    }
+
+    //makes the cell act like another block, colored lights included. for block entities that hold a block state
+    public VoxelCell copyFrom(BlockState state) {
+        palette.loadCell(this, state);
+        return this;
     }
 
     public VoxelCell setLight(int rgb, int lightLevel) {
         this.lightColor = rgb & 0xFFFFFF;
+        this.lightLevel = Mth.clamp(lightLevel, 0, 15);
+        return this;
+    }
+
+    public VoxelCell setLightColor(int rgb) {
+        this.lightColor = rgb & 0xFFFFFF;
+        return this;
+    }
+
+    public VoxelCell setLightLevel(int lightLevel) {
         this.lightLevel = Mth.clamp(lightLevel, 0, 15);
         return this;
     }
@@ -63,6 +82,10 @@ public class VoxelCell {
 
     public int filterColor() {
         return filterColor;
+    }
+
+    public int solidFaces() {
+        return solidFaces;
     }
 
     public long flags() {

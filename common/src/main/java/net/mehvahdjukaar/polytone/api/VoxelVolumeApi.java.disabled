@@ -79,6 +79,27 @@ public class VoxelVolumeApi {
             Polytone.COLORED_LIGHTS.addBlockLight(block, (state, pos, level, r) -> light.apply(state), AlwaysTrueTest.INSTANCE);
         }
 
+        //copy an existing block, inherits what packs define. Use for block variants
+        public void addBlockAlias(Block block, Block behavesAs) {
+            addBlockAlias(block, behavesAs::withPropertiesOf);
+        }
+
+        public void addBlockAlias(Block block, Function<BlockState, BlockState> behavesAs) {
+            Polytone.COLORED_LIGHTS.addBlockAlias(block, behavesAs);
+        }
+
+        public void addEntityAlias(EntityType<?> type, EntityType<?> behavesAs) {
+            Polytone.COLORED_LIGHTS.addEntityAlias(type, behavesAs);
+        }
+
+        public void addItemAlias(Item item, Item behavesAs) {
+            Polytone.COLORED_LIGHTS.addItemAlias(item, behavesAs);
+        }
+
+        public void addParticleAlias(ParticleType<?> type, ParticleType<?> behavesAs) {
+            Polytone.COLORED_LIGHTS.addParticleAlias(type, behavesAs);
+        }
+
         public void addEntityLight(EntityType<?> type, ResolvedPointLight light) {
             addEntityLight(type, e -> light);
         }
