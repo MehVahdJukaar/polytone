@@ -140,7 +140,7 @@ public class CellPalette implements AutoCloseable {
         if (data == null || staticCount >= MAX_ENTRIES) return stateIndex;
 
         PaletteEntry base = allEntries.get(stateIndex);
-        cell.load(base.lightColor, base.emission, base.opacity, base.filterColor, base.flags);
+        cell.load(base.lightColor, base.emission, base.opacity, base.filterColor, base.solidFaces, base.flags);
         try {
             data.updateVoxelData(blockEntity, cell);
         } catch (Exception e) {
@@ -154,7 +154,7 @@ public class CellPalette implements AutoCloseable {
         //smort, more green cuz humans are more sensitive to it
         int lightColor = lightLevel == 0 ? 0 : cell.lightColor() & 0xF8FCF8;
         int filterColor = lightLevel == 0 ? cell.filterColor() : 0xFFFFFF;
-        PaletteEntry entry = new PaletteEntry(lightColor, lightLevel, cell.opacity(), filterColor, base.solidFaces, cell.flags());
+        PaletteEntry entry = new PaletteEntry(lightColor, lightLevel, cell.opacity(), filterColor, cell.solidFaces(), cell.flags());
 
         Integer index = indexOfEntry.get(entry);
         if (index == null) {
@@ -169,6 +169,11 @@ public class CellPalette implements AutoCloseable {
             uploadEntry(index, entry);
         }
         return (char) (int) index;
+    }
+
+    public void loadCell(VoxelCell cell, BlockState state) {
+        PaletteEntry e = allEntries.get(getBlockStateIndexOf(state));
+        cell.load(e.lightColor, e.emission, e.opacity, e.filterColor, e.solidFaces, e.flags);
     }
 
     private void clearDynamicEntries() {
@@ -251,13 +256,14 @@ public class CellPalette implements AutoCloseable {
         int opacity = state.getLightBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
         int lightColor = 0xFFFFFF;
 
-        var rules = Polytone.COLORED_LIGHTS.getBlockLights(state.getBlock());
+        BlockState lightState = Polytone.COLORED_LIGHTS.lightStateOf(state);
+        var rules = Polytone.COLORED_LIGHTS.getBlockLights(lightState.getBlock());
         if (rules != null) {
             for (ColoredLightsManager.BlockRule rule : rules) {
-                if (!rule.matches(state, random)) continue;
+                if (!rule.matches(lightState, random)) continue;
                 try {
                     // same defaults as the Veil lights. no position here, one entry per state for the whole volume
-                    ResolvedPointLight props = rule.light().resolve(state, Vec3.ZERO, level, emission > 0 ? emission : 8);
+                    ResolvedPointLight props = rule.light().resolve(lightState, Vec3.ZERO, level, emission > 0 ? emission : 8);
                     if (props == null) continue;
                     emission = Mth.clamp(Math.round(props.radius()), 0, 15);
                     lightColor = scaleColor(props.color(), props.brightness());
@@ -272,7 +278,8 @@ public class CellPalette implements AutoCloseable {
         int filterColor = state.getBlock() instanceof BeaconBeamBlock glass ? glass.getColor().getTextureDiffuseColor() & 0xFFFFFF : 0xFFFFFF;
         if (emission == 0) lightColor = 0;
         else filterColor = 0xFFFFFF;
-        return new PaletteEntry(lightColor, emission, opacity, filterColor, solidFacesOf(state), flagsOf(state.getBlock()));
+        long flags = flagsOf(state.getBlock()) | flagsOf(Polytone.COLORED_LIGHTS.aliasOf(state).getBlock());
+        return new PaletteEntry(lightColor, emission, opacity, filterColor, solidFacesOf(state), flags);
     }
 
     //same per face check the vanilla light engine does

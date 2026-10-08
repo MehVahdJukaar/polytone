@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class ColoredLightsManager extends ContentManager<ColoredLightEntry> implements IShaderModifier {
 
@@ -48,6 +49,10 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
     private final Map<EntityType<?>, PointLightProvider<Entity>> entities = new IdentityHashMap<>();
     private final Map<Item, PointLightProvider.ForItem> items = new IdentityHashMap<>();
     private final Map<ParticleType<?>, PointLightProvider<Particle>> particles = new IdentityHashMap<>();
+    private final Map<BlockState, BlockState> blockStateAliases = new IdentityHashMap<>();
+    private final Map<EntityType<?>, EntityType<?>> entityAliases = new IdentityHashMap<>();
+    private final Map<Item, Item> itemAliases = new IdentityHashMap<>();
+    private final Map<ParticleType<?>, ParticleType<?>> particleAliases = new IdentityHashMap<>();
 
     private final PolyShaderPointLights shaderPointLights = new PolyShaderPointLights();
     @Nullable
@@ -113,9 +118,37 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
         particles.put(type, light);
     }
 
+    public void addBlockAlias(Block block, Function<BlockState, BlockState> behavesAs) {
+        for (BlockState state : block.getStateDefinition().getPossibleStates()) {
+            blockStateAliases.put(state, behavesAs.apply(state));
+        }
+    }
+
+    public void addEntityAlias(EntityType<?> type, EntityType<?> behavesAs) {
+        entityAliases.put(type, behavesAs);
+    }
+
+    public void addItemAlias(Item item, Item behavesAs) {
+        itemAliases.put(item, behavesAs);
+    }
+
+    public void addParticleAlias(ParticleType<?> type, ParticleType<?> behavesAs) {
+        particleAliases.put(type, behavesAs);
+    }
+
     @Nullable
     public List<BlockRule> getBlockLights(Block block) {
         return blocks.get(block);
+    }
+
+    public BlockState aliasOf(BlockState state) {
+        return blockStateAliases.getOrDefault(state, state);
+    }
+
+    public BlockState lightStateOf(BlockState state) {
+        BlockState alias = blockStateAliases.get(state);
+        if (alias == null || blocks.containsKey(state.getBlock())) return state;
+        return alias;
     }
 
     @Nullable
@@ -125,6 +158,7 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
             if (light != null) return light;
         }
         var light = entities.get(entity.getType());
+        if (light == null) light = entities.get(entityAliases.get(entity.getType()));
         if (light != null) return light;
         if (entity instanceof LivingEntity living) {
             for (InteractionHand hand : InteractionHand.values()) {
@@ -137,7 +171,8 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
 
     @Nullable
     private PointLightProvider<Entity> lightOfStack(ItemStack stack) {
-        var light = items.get(stack.getItem());
+        Item item = stack.getItem();
+        var light = items.getOrDefault(item, items.get(itemAliases.get(item)));
         if (light == null) return null;
         return (holder, level, r) -> light.resolve(stack, holder, level, r);
     }
@@ -205,6 +240,10 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
         entities.clear();
         items.clear();
         particles.clear();
+        blockStateAliases.clear();
+        entityAliases.clear();
+        itemAliases.clear();
+        particleAliases.clear();
     }
 
     public void onTick(ClientLevel level, BlockPos camera) {
@@ -224,6 +263,7 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
         var lights = particleLights;
         if (lights == null) return;
         var light = particles.get(type);
+        if (light == null) light = particles.get(particleAliases.get(type));
         if (light != null) lights.track(particle, light);
     }
 

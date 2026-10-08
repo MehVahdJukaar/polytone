@@ -44,11 +44,12 @@ public class BlockLightSource extends LightSource {
                         SectionPos.blockToSectionCoord(y), SectionPos.blockToSectionCoord(z));
             }
             seen++;
-            var rules = Polytone.COLORED_LIGHTS.getBlockLights(state.getBlock());
+            BlockState lightState = Polytone.COLORED_LIGHTS.lightStateOf(state);
+            var rules = Polytone.COLORED_LIGHTS.getBlockLights(lightState.getBlock());
             if (rules == null) return;
             for (var rule : rules) {
-                if (rule.matches(state, random)) {
-                    found.add(new LitBlock(new BlockPos(x, y, z), state, rule));
+                if (rule.matches(lightState, random)) {
+                    found.add(new LitBlock(new BlockPos(x, y, z), lightState, rule));
                     return;
                 }
             }
