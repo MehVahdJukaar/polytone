@@ -21,8 +21,8 @@ public class FarLightGrid extends SectionGrid<SectionGrid.Slot> {
     public static final int CELL_SIZE = 4;
     private static final int CELLS_PER_SECTION = SectionPos.SECTION_SIZE / CELL_SIZE;
     private static final int BYTES_PER_CELL = 4;
-    //15 levels at 4 per cell is 4 cells, times 2 for red black
-    private static final int ITERATIONS_TO_SETTLE = 2 * (15 / CELL_SIZE + 1);
+    //15 levels plus a cell of padding at 4 per cell, times 2 for red black
+    private static final int ITERATIONS_TO_SETTLE = 2 * ((15 + CELL_SIZE) / CELL_SIZE + 1);
     private static final int ITERATIONS_PER_FRAME = 2;
 
     private final CellPalette palette;
