@@ -31,7 +31,7 @@ import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticlesManager
 import net.mehvahdjukaar.polytone.content.particle.modifiers.ParticleModifiersManager;
 import net.mehvahdjukaar.polytone.content.shaders.IShaderModifier;
 import net.mehvahdjukaar.polytone.content.shaders.PolyGlobalUniforms;
-import net.mehvahdjukaar.polytone.content.shaders.PostChainsManager;
+import net.mehvahdjukaar.polytone.content.shaders.post.PostChainsManager;
 import net.mehvahdjukaar.polytone.content.shaders.ShaderUniformsManager;
 import net.mehvahdjukaar.polytone.content.shaders.light.ColoredLightsManager;
 import net.mehvahdjukaar.polytone.content.shaders.post.PostTargetsManager;

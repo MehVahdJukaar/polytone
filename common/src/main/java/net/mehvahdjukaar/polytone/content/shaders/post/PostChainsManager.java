@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.shaders;
+package net.mehvahdjukaar.polytone.content.shaders.post;
 
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
@@ -15,6 +15,9 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.content.shaders.IShader;
+import net.mehvahdjukaar.polytone.content.shaders.IShaderModifier;
+import net.mehvahdjukaar.polytone.content.shaders.ShaderUniformsManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelTargetBundle;
 import net.minecraft.client.renderer.PostChain;

@@ -39,7 +39,7 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
         return resources;
     }
 
-    static void registerExpressionUniformNames(Map<Identifier, JsonElement> jsons) {
+    public static void registerExpressionUniformNames(Map<Identifier, JsonElement> jsons) {
         for (var e : jsons.values()) {
             if (e == null || !e.isJsonObject()) continue;
             JsonElement uniforms = e.getAsJsonObject().get("expression_uniforms");
