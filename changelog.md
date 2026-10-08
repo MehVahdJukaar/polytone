@@ -1,1 +1,2 @@
-- improved modder facing api allowing to easily register colored lights for block entities entities and blocks and more
+- fixed an issue with watut
+- improved lights api more adding blokc aliases
