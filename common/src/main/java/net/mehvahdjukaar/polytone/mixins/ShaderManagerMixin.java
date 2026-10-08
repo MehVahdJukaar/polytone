@@ -25,6 +25,11 @@ public abstract class ShaderManagerMixin {
         if (type != ShaderType.VERTEX) return source;
         boolean builtInLights = Polytone.CONFIGS.coloredLightsBackend.get().tintsVanillaBlockLight();
         boolean canPatch = builtInLights && files.containsKey(LightShaderPatcher.INCLUDE_LOCATION);
-        return LightShaderPatcher.onLoadVertexShader(type.idConverter().fileToId(location), source, canPatch);
+        Identifier shaderId = type.idConverter().fileToId(location);
+        //sodium terrain pipelines load their glsl through here too
+        if (shaderId.getNamespace().equals("sodium")) {
+            return canPatch ? LightShaderPatcher.patchSodiumChunkShader(source) : source;
+        }
+        return LightShaderPatcher.onLoadVertexShader(shaderId, source, canPatch);
     }
 }
