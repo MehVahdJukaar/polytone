@@ -116,7 +116,7 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
         }
     }
 
-    // once per frame while no render pass is open; tryApply only binds what this uploaded
+    //MUST be called once per frame from a point where no render pass is open
     public void updateAll() {
         if (!hasAnyRegistered()) return;
         Set<ExpressionUniformBuffers> seen = Collections.newSetFromMap(new IdentityHashMap<>());
