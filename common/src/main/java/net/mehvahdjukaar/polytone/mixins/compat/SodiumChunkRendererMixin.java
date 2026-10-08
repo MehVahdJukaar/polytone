@@ -31,7 +31,7 @@ public abstract class SodiumChunkRendererMixin {
     @Inject(method = "begin", remap = false, at = @At("TAIL"))
     private void polytone$bindExtraUniforms(TerrainRenderPass pass, CallbackInfo ci) {
         IShader shader = IShader.ofGenericProgram(activeProgram.handle());
-        List<IShaderModifier> modifiers = polytone$modifiersByProgram.computeIfAbsent(activeProgram, p -> IShaderModifier.enabledFor(shader));
+        List<IShaderModifier> modifiers = polytone$modifiersByProgram.computeIfAbsent(activeProgram, p -> IShaderModifier.usedBy(shader));
         for (var modifier : modifiers) {
             modifier.bindTo(shader);
         }

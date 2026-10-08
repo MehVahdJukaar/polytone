@@ -1,11 +1,12 @@
 
-//level / 15, like the near volume
+//level / POLY_FAR_LIGHT_MAX_LEVEL, padded by a cell in far_light_spread.csh
 uniform sampler3D InFarLight;
 uniform vec3 PolyFarLightOrigin;
 uniform ivec3 PolyFarLightOriginTexel;
 uniform ivec3 PolyFarLightSize;
 
 const float POLY_FAR_LIGHT_CELL = 4.0;
+const float POLY_FAR_LIGHT_MAX_LEVEL = 15.0 + POLY_FAR_LIGHT_CELL;
 
 float polyFarLightFade(vec3 pos) {
     vec3 halfExtentInBlocks = vec3(PolyFarLightSize) * (POLY_FAR_LIGHT_CELL * 0.5);
@@ -22,5 +23,5 @@ vec3 polyFarLight(vec3 pos) {
     float fade = polyFarLightFade(pos);
     if (fade <= 0.0) return vec3(0.0);
     vec3 cell = (pos - PolyFarLightOrigin) / POLY_FAR_LIGHT_CELL;
-    return texture(InFarLight, (cell + vec3(PolyFarLightOriginTexel)) / vec3(PolyFarLightSize)).rgb * (15.0 * fade);
+    return texture(InFarLight, (cell + vec3(PolyFarLightOriginTexel)) / vec3(PolyFarLightSize)).rgb * (POLY_FAR_LIGHT_MAX_LEVEL * fade);
 }

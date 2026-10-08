@@ -293,7 +293,7 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
 
     //the lightmap patched vanilla shaders get these from the include, not their json
     @Override
-    public boolean isEnabledFor(IShader shader) {
+    public boolean isUsedBy(IShader shader) {
         return GLHelper.usesUniform(shader.programId(), PolyShaderPointLights.COUNT);
     }
 

@@ -55,7 +55,7 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniforms> im
 
     //applied to all
     @Override
-    public boolean isEnabledFor(IShader shader) {
+    public boolean isUsedBy(IShader shader) {
         return true;
     }
 

@@ -25,7 +25,7 @@ public abstract class ShaderInstanceMixin {
         ShaderInstance shader = (ShaderInstance) (Object) this;
         if (polytone$declaredModifiers == null) {
             polytone$instance = IShader.ofShaderInstance(shader);
-            polytone$declaredModifiers = IShaderModifier.enabledFor(polytone$instance);
+            polytone$declaredModifiers = IShaderModifier.usedBy(polytone$instance);
         }
         for (var modifier : polytone$declaredModifiers) {
             modifier.bindTo(polytone$instance);

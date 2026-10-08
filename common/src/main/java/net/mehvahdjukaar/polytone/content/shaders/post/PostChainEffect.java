@@ -74,7 +74,7 @@ public final class PostChainEffect {
 
     public void bindTo(IShader inputs, int depthTextureId) {
         for (IShaderModifier modifier : Polytone.SHADER_MODIFIERS) {
-            if (modifier.isEnabledFor(inputs)){
+            if (modifier.isUsedBy(inputs)){
                 modifier.bindTo(inputs);
             }
         }
