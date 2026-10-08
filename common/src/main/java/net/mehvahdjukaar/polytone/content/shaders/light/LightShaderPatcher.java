@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.content.shaders.light;
 
 import net.mehvahdjukaar.polytone.content.shaders.post.PostProgramImports;
+import net.minecraft.FileUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 
@@ -15,6 +16,7 @@ public class LightShaderPatcher {
     private static final Pattern DECLARES_POSITION = Pattern.compile("\\bin\\s+vec3\\s+Position\\s*;");
     private static final Pattern DECLARES_NORMAL = Pattern.compile("\\bin\\s+vec3\\s+Normal\\s*;");
     private static final Pattern DECLARES_CHUNK_OFFSET = Pattern.compile("\\buniform\\s+vec3\\s+ChunkOffset\\s*;");
+    private static final Pattern INCLUDE_IMPORT = Pattern.compile("^[ \\t]*#moj_import\\s*<([^>]+)>[^\\n]*\\n?", Pattern.MULTILINE);
     private static final Pattern VERSION_LINE = Pattern.compile("^\\s*#version[^\\n]*\\n", Pattern.MULTILINE);
 
     private static final Pattern SODIUM_LIGHTMAP_READ = Pattern.compile("texture\\s*\\(\\s*u_LightTex\\s*,\\s*_vert_tex_light_coord\\s*\\)");
@@ -46,13 +48,24 @@ public class LightShaderPatcher {
         patched = ENTITY_LIGHTMAP_READ.matcher(patched).replaceAll(m -> Matcher.quoteReplacement(
                 wrapWithColoredLight(m.group(), "vec2(UV2 / 16)", "0.5", cameraRelativePos, normal)));
 
-        int afterVersion = versionLine.end();
-        return patched.substring(0, afterVersion) + INCLUDE_IMPORT_LINE + patched.substring(afterVersion);
+        return insertInclude(patched, versionLine.end());
     }
 
     //texel shift matchs how the vanilla read samples: terrain between texels, entities at their centers
     private static String wrapWithColoredLight(String vanillaRead, String lightLevels, String texelShift, String pos, String normal) {
         return "polyColoredLightmap(" + vanillaRead + ", Sampler2, " + lightLevels + ", " + texelShift + ", " + pos + ", " + normal + ")";
+    }
+
+    //its safer not to use moj_import as some mods resource provider might not see ours
+    private static String insertInclude(String shaderText, int afterVersion) {
+        PostProgramImports imports = new PostProgramImports();
+        String include = String.join("", imports.process(INCLUDE_IMPORT_LINE));
+        //vanilla cant tell light.glsl is already pasted in so it would paste it twice
+        String rest = INCLUDE_IMPORT.matcher(shaderText.substring(afterVersion)).replaceAll(m -> {
+            boolean alreadyPasted = imports.importedPaths().contains(FileUtil.normalizeResourcePath("shaders/include/" + m.group(1)));
+            return alreadyPasted ? "" : Matcher.quoteReplacement(m.group());
+        });
+        return shaderText.substring(0, afterVersion) + include + "\n" + rest;
     }
 
     //sodium #import only looks in its own jat and doesnt know #moj_import. paste ours in expanded
@@ -63,14 +76,12 @@ public class LightShaderPatcher {
         }
         Matcher versionLine = VERSION_LINE.matcher(vertexShaderText);
         if (!versionLine.find()) return vertexShaderText;
-        String include = String.join("", new PostProgramImports().process(INCLUDE_IMPORT_LINE));
 
         //_vert_tex_light_coord is UV2 / 256
         String face = "((_material_params >> " + SODIUM_MATERIAL_DIRECTION_BITS_SHIFT + "u) & 7u)";
         String patched = SODIUM_LIGHTMAP_READ.matcher(vertexShaderText).replaceAll(m -> Matcher.quoteReplacement(
                 "polyColoredLightmapForFace(" + m.group() + ", u_LightTex, _vert_tex_light_coord * 16.0, 0.0, position, " + face + ")"));
 
-        int afterVersion = versionLine.end();
-        return patched.substring(0, afterVersion) + include + "\n" + patched.substring(afterVersion);
+        return insertInclude(patched, versionLine.end());
     }
 }

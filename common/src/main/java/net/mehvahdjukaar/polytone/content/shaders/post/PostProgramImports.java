@@ -19,6 +19,10 @@ public class PostProgramImports extends GlslPreprocessor {
 
     private final Set<String> importedPaths = new HashSet<>();
 
+    public Set<String> importedPaths() {
+        return importedPaths;
+    }
+
     @Override
     public @Nullable String applyImport(boolean useFullPath, String directory) {
         String path = FileUtil.normalizeResourcePath((useFullPath ? PROGRAM_DIR : "shaders/include/") + directory);
