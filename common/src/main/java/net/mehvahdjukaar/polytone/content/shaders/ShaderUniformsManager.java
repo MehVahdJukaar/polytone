@@ -144,7 +144,7 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
     }
 
     @Override
-    public boolean isEnabledFor(IShader shader) {
+    public boolean isUsedBy(IShader shader) {
         return buffersFor(shader.pipeline()) != null || byPostPassPipeline.containsKey(shader.pipeline().getLocation());
     }
 

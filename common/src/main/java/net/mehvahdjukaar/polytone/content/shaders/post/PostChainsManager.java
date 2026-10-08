@@ -103,7 +103,7 @@ public class PostChainsManager extends ContentManager<PostChainActivator> implem
     }
 
     @Override
-    public boolean isEnabledFor(IShader shader) {
+    public boolean isUsedBy(IShader shader) {
         return samplersByPassPipeline.containsKey(shader.pipeline().getLocation());
     }
 
