@@ -25,13 +25,9 @@ public class PackMixin {
                                                     PackFormat packFormat, PackType packType,
                                                     CallbackInfoReturnable<Pack.Metadata> cir,
                                                     @Local PackResources packResources) {
-        Polytone.CONFIGS.loadCurrentPackConfigs(packResources, packType);
+        Polytone.CONFIGS.loadCurrentPackConfigs(packResources, resourcesSupplier, packLocationInfo, packFormat, packType);
         PackInfos.readFrom(packResources, packType);
     }
-
-    // The per-pack registry is only meant to be visible while this pack's own overlay conditions are being
-    // evaluated. Leaving it set would make that thread (pack discovery runs on the render thread) keep
-    // resolving config() against the last scanned pack forever.
     @Inject(method = "readPackMetadata", at = @At("RETURN"))
     private static void polytone$afterReadPackMetadata(CallbackInfoReturnable<Pack.Metadata> cir) {
         Polytone.CONFIGS.clearCurrentPackConfigs();

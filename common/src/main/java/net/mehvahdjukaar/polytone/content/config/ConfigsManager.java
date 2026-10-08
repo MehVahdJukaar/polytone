@@ -20,11 +20,17 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.OverlayMetadataSection;
+import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.metadata.pack.PackFormat;
+import net.minecraft.server.packs.repository.Pack;
+import net.minecraft.server.packs.repository.PackCompatibility;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.world.flag.FeatureFlagSet;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -218,6 +224,7 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     public Object getValue(Identifier configKey) {
         var reg = getActiveRegistry();
         OptionHolder<?> value = reg.getValue(configKey);
+        if (value == null) value = configs.getValue(configKey);
         if (value != null) {
             return value.get();
         } else {
@@ -226,24 +233,48 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         }
     }
 
-    public void loadCurrentPackConfigs(PackResources packResources, PackType packType) {
+    //is this pack active or not? we dont know
+    //called one pack at the time. we cant do IO there, we rely on the cache
+    public void loadCurrentPackConfigs(PackResources primary, Pack.ResourcesSupplier resources,
+                                       PackLocationInfo location, PackFormat version, PackType packType) {
         if (packType != PackType.CLIENT_RESOURCES) return;
-        PackSource source = packResources.location().source();
+        PackSource source = primary.location().source();
         if (source == PackSource.BUILT_IN || source == PackSource.FEATURE) return;
-        MultiPackResourceManager resourceManager = new MultiPackResourceManager(packType, List.of(packResources));
-
-        var jsons = this.getJsonsInDirectories(resourceManager);
 
         MapRegistry<OptionHolder<?>> activePackReg = new MapRegistry<>("Active Pack Configs");
         registerBuiltins(activePackReg);
         activeLoadConfigs.set(activePackReg);
+        parsePackConfigsInto(primary, packType, activePackReg);
+
+        List<String> overlays = collectFormatOverlays(primary, packType, version);
+        if (overlays.isEmpty()) return;
+
+        try (PackResources fullPack = resources.openFull(location, new Pack.Metadata(Component.empty(),
+                PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), overlays))) {
+            parsePackConfigsInto(fullPack, packType, activePackReg);
+        }
+    }
+
+    private void parsePackConfigsInto(PackResources pack, PackType packType, MapRegistry<OptionHolder<?>> reg) {
+        MultiPackResourceManager resourceManager = new MultiPackResourceManager(packType, List.of(pack));
+        var jsons = this.getJsonsInDirectories(resourceManager);
         for (var j : parseEnabledJsons(jsons, JsonOps.INSTANCE)) {
             if (j != null) {
-                Identifier id = j.getKey();
-                PolyConfig<?> config = j.getValue();
-                addConfig(id, config, activePackReg, configFileSnapshot);
+                addConfig(j.getKey(), j.getValue(), reg, configFileSnapshot);
             }
         }
+    }
+
+    private static List<String> collectFormatOverlays(PackResources primary, PackType packType, PackFormat version) {
+        List<String> overlays = new ArrayList<>();
+        try {
+            OverlayMetadataSection section = primary.getMetadataSection(OverlayMetadataSection.forPackType(packType));
+            if (section != null) overlays.addAll(section.overlaysForVersion(version));
+        } catch (Exception e) {
+            Polytone.LOGGER.error("Failed to read overlay metadata while loading configs for pack {}",
+                    primary.location().id(), e);
+        }
+        return overlays;
     }
 
     public void clearCurrentPackConfigs() {
