@@ -4,4 +4,5 @@
 - also includes occlusion data & light data
 - added translucent_sun_and_moon to dimension modifiers
 - fixed some issues with particle 3d models, like non emissive not rendering, emissive ones having wrong depth test & model particles having no interpolation in pos
-- improved modder facing api allowing to easily register colored lights for block entities entities and blocks and more
+- fixed an issue with watut
+- improved lights api more adding blokc aliases
