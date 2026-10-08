@@ -16,6 +16,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.content.shaders.DeclaredUniforms;
 import net.mehvahdjukaar.polytone.content.shaders.IShader;
 import net.mehvahdjukaar.polytone.content.shaders.IShaderModifier;
 import net.mehvahdjukaar.polytone.content.shaders.ShaderUniformsManager;

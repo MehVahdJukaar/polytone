@@ -11,8 +11,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.opengl.GL11C;
-import org.lwjgl.opengl.GL20C;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -132,19 +130,6 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
         for (List<ExpressionUniformBuffers> list : byPostPassPipeline.values()) {
             for (ExpressionUniformBuffers b : list) {
                 if (seen.add(b)) b.update();
-            }
-        }
-    }
-
-    public void bindToCurrentGlProgram() {
-        if (byShader.isEmpty()) return;
-        int program = GL11C.glGetInteger(GL20C.GL_CURRENT_PROGRAM);
-        if (program == 0) return;
-        int point = 1;
-        Set<ExpressionUniformBuffers> seen = Collections.newSetFromMap(new IdentityHashMap<>());
-        for (List<ExpressionUniformBuffers> list : byShader.values()) {
-            for (ExpressionUniformBuffers b : list) {
-                if (seen.add(b)) point = b.bindBlocksToProgram(program, point);
             }
         }
     }

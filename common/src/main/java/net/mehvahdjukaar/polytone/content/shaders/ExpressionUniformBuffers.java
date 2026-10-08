@@ -7,10 +7,6 @@ import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
-import net.mehvahdjukaar.polytone.mixins.accessor.GlBufferAccessor;
-import org.lwjgl.opengl.GL30C;
-import org.lwjgl.opengl.GL31C;
-import org.lwjgl.opengl.GL32C;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
@@ -79,22 +75,6 @@ public final class ExpressionUniformBuffers {
         for (var e : buffers.entrySet()) {
             shader.setUniform(e.getKey(), e.getValue().slice());
         }
-    }
-
-    //raw GL bind for programs that dont go through RenderPass
-    public int bindBlocksToProgram(int program, int nextBindingPoint) {
-        if (buffers == null){
-            return nextBindingPoint;
-        }
-        for (var e : buffers.entrySet()) {
-            int blockIndex = GL32C.glGetUniformBlockIndex(program, e.getKey());
-            if (blockIndex < 0) continue;
-            int glId = ((GlBufferAccessor) e.getValue()).polytone$getHandle();
-            GL32C.glUniformBlockBinding(program, blockIndex, nextBindingPoint);
-            GL30C.glBindBufferBase(GL31C.GL_UNIFORM_BUFFER, nextBindingPoint, glId);
-            nextBindingPoint++;
-        }
-        return nextBindingPoint;
     }
 
     public void close() {
