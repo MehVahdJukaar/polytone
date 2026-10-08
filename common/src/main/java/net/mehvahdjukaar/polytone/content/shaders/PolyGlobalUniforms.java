@@ -48,7 +48,7 @@ public class PolyGlobalUniforms implements IShaderModifier {
 
         Vec3 playerPos = mc.player == null ? Vec3.ZERO : mc.player.getPosition(partial);
         playerBlockPos = BlockPos.containing(playerPos);
-        playerOffset = playerBlockPos.getBottomCenter().subtract(playerPos);
+        playerOffset = Vec3.atLowerCornerOf(playerBlockPos).subtract(playerPos);
     }
 
     @Override

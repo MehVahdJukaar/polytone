@@ -172,6 +172,12 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
             contentTexture.fill(textures, orphan.stemId(), modifier, true);
             addModifier(orphan.stemId(), modifier);
         }
+
+        //here and not in apply, COLORED_LIGHTS applies before us. circular dep yay
+        for (var e : modifiers.entrySet()) {
+            e.getValue().coloredLight().ifPresent(l ->
+                    Polytone.COLORED_LIGHTS.addBlockLight(e.getKey(), l, AlwaysTrueTest.INSTANCE));
+        }
     }
 
 
@@ -210,9 +216,6 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
             BlockPropertyModifier modifier = modifierEntry.getValue();
 
             vanillaProperties.put(target, modifier.apply(target));
-
-            modifier.coloredLight().ifPresent(l ->
-                    Polytone.COLORED_LIGHTS.addBlockLight(target, l, AlwaysTrueTest.INSTANCE));
 
             var particle = modifier.particleEmitters();
             if (!particle.isEmpty()) {
