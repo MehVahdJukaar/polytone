@@ -36,7 +36,7 @@ public class RenderPassMixin {
 
         IShader shader = IShader.ofRenderPass((RenderPass) (Object) this, frontend.uniformIndices().keySet(), renderPipeline);
         if (isStale) {
-            enabled = new EnabledModifiers(IShaderModifier.enabledFor(shader), generation);
+            enabled = new EnabledModifiers(IShaderModifier.usedBy(shader), generation);
             poly$enabledByPipeline.put(compiled, enabled);
         }
         for (var modifier : enabled.modifiers()) {

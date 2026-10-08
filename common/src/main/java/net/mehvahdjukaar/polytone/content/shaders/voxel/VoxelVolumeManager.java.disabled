@@ -74,7 +74,7 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
     private volatile VoxelVolume volume = null;
 
     private final ConcurrentLinkedQueue<BlockChange> changedBlocks = new ConcurrentLinkedQueue<>();
-    private boolean boundThisFrame = false;
+    private boolean requestedThisFrame = false;
     private Boolean gpuSupported = null;
     @Nullable
     private GpuBuffer placement = null;
@@ -107,7 +107,7 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
         nearLightSpread.close();
         farLightSpread.close();
         //set by shaders from before the reload, the new ones might not want the volume at all
-        boundThisFrame = false;
+        requestedThisFrame = false;
         flagsVersionByProgram.clear();
     }
 
@@ -117,7 +117,7 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
         if (logOff) palette.close();
         nearLightSpread.close();
         farLightSpread.close();
-        boundThisFrame = false;
+        requestedThisFrame = false;
         flagsVersionByProgram.clear();
     }
 
@@ -180,17 +180,25 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
 
     //raw samplers arent in the program uniforms, ask gl
     @Override
-    public boolean isEnabledFor(IShader shader) {
+    public boolean isUsedBy(IShader shader) {
+        int programId = shader.programId();
         if (!shader.isGlProgram()) return false;
-        return IShaderModifier.super.isEnabledFor(shader) || GLHelper.usesUniform(shader.programId(), SAMPLER)
-                || GLHelper.usesUniform(shader.programId(), CELLS_SAMPLER) || GLHelper.usesUniform(shader.programId(), FAR_SAMPLER)
-                || GLHelper.usesUniform(shader.programId(), PALETTE_SAMPLER);
+        return declaresVolumeUniforms(shader)
+                || GLHelper.usesUniform(programId, SAMPLER)
+                || GLHelper.usesUniform(programId, CELLS_SAMPLER)
+                || GLHelper.usesUniform(programId, FAR_SAMPLER)
+                || GLHelper.usesUniform(programId, PALETTE_SAMPLER);
+    }
+
+    private boolean declaresVolumeUniforms(IShader shader) {
+        return IShaderModifier.super.isUsedBy(shader);
     }
 
     @Override
     public void bindTo(IShader shader) {
         boolean irisOn = CompatHandler.irisShaderPackActive();
-        if (!irisOn) boundThisFrame = true;
+        boolean requestsVolume = Polytone.COLORED_LIGHTS.hasBlockLights() || declaresVolumeUniforms(shader);
+        if (!irisOn && requestsVolume) requestedThisFrame = true;
         //GUI items and the hand use the same core shaders but aren't in world space, size 0 gives them vanilla light
         boolean insideLevelRenderer = LevelRenderPassTracker.isInLevelPass() || Polytone.POST_CHAINS.isProcessing();
         VoxelVolume v = insideLevelRenderer && !irisOn ? volumeForCurrentPass() : null;
@@ -260,8 +268,8 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
     //main pass only, LevelRendererMixin filters the rest
     public void updateAfterRenderLevel(Camera camera) {
         //PostPass binds after this runs so post chains get it a frame late
-        boolean wanted = boundThisFrame;
-        boundThisFrame = false;
+        boolean wanted = requestedThisFrame;
+        requestedThisFrame = false;
 
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
