@@ -117,9 +117,7 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
         }
     }
 
-    // Evaluates all expressions and uploads their UBO buffers. MUST be called once per frame from a point
-    // where no render pass is open (GPU buffer writes are illegal mid-pass), e.g. at renderLevel HEAD.
-    // tryApply then only binds the already-updated buffers.
+    //MUST be called once per frame from a point where no render pass is open
     public void updateAll() {
         if (!hasAnyRegistered()) return;
         Set<ExpressionUniformBuffers> seen = Collections.newSetFromMap(new IdentityHashMap<>());

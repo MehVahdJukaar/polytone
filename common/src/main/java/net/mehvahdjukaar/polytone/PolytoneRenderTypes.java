@@ -126,16 +126,11 @@ public class PolytoneRenderTypes {
             .withSampler("Sampler2")
             .withSampler("Sampler0")
             .withCull(false)
-            // match vanilla RenderPipelines.LEASH: without this the pipeline builds with an empty
-            // depth-stencil state (no depth test/write) and the leash draws on top of everything
+            // match vanilla RenderPipelines.LEASH
             .withDepthStencilState(DepthStencilState.DEFAULT)
             .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.TRIANGLE_STRIP)
             .build());
 
-    // Depth-only fullscreen pass: samples a saved world-depth texture (InSampler) and writes it
-    // back into the bound depth attachment. Depth test LEQUAL + depth-write leaves the per-pixel
-    // minimum; color writes are masked off so the scene color is untouched. Used to fold the
-    // first-person hand's depth back together with the world depth before running post chains.
     public static final RenderPipeline DEPTH_COMBINE_PIPELINE = register(RenderPipeline.builder()
             .withLocation(Polytone.res("pipeline/depth_combine"))
             .withVertexShader("core/screenquad")
