@@ -38,7 +38,7 @@ public class RenderPassMixin {
 
         IShader shader = IShader.ofRenderPass((RenderPass) (Object) this, program, renderPipeline);
         if (isStale) {
-            enabled = new EnabledModifiers(IShaderModifier.enabledFor(shader), generation);
+            enabled = new EnabledModifiers(IShaderModifier.usedBy(shader), generation);
             holder.polytone$setModifiers(enabled);
         }
         for (var modifier : enabled.modifiers()) {

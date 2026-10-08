@@ -12,14 +12,14 @@ public interface IShaderModifier {
 
     void bindTo(IShader inputs);
 
-    default boolean isEnabledFor(IShader shader) {
+    default boolean isUsedBy(IShader shader) {
         for (String name : getEnablingUniforms()) {
             if (shader.hasUniform(name)) return true;
         }
         return false;
     }
 
-    //for modifiers whose isEnabledFor reads registrations that change after programs link
+    //for modifiers whose isUsedBy reads registrations that change after programs link
     static void invalidateEnabledLists() {
         Generation.value++;
     }
@@ -28,10 +28,10 @@ public interface IShaderModifier {
         return Generation.value;
     }
 
-    static List<IShaderModifier> enabledFor(IShader shader) {
+    static List<IShaderModifier> usedBy(IShader shader) {
         List<IShaderModifier> enabled = new ArrayList<>();
         for (var modifier : Polytone.SHADER_MODIFIERS) {
-            if (modifier.isEnabledFor(shader)) enabled.add(modifier);
+            if (modifier.isUsedBy(shader)) enabled.add(modifier);
         }
         return enabled;
     }

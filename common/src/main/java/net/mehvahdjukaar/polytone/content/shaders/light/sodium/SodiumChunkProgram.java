@@ -48,7 +48,7 @@ public class SodiumChunkProgram implements IShader {
 
         int generation = IShaderModifier.enabledListsGeneration();
         if (enabled == null || enabled.generation() != generation) {
-            enabled = new EnabledModifiers(IShaderModifier.enabledFor(this), generation);
+            enabled = new EnabledModifiers(IShaderModifier.usedBy(this), generation);
         }
         for (var modifier : enabled.modifiers()) {
             modifier.bindTo(this);
