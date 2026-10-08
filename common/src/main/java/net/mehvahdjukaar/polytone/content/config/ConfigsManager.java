@@ -226,6 +226,7 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     public Object getValue(Identifier configKey) {
         var reg = getActiveRegistry();
         OptionHolder<?> value = reg.getValue(configKey);
+        if (value == null) value = configs.getValue(configKey);
         if (value != null) {
             return value.get();
         } else {
