@@ -29,7 +29,7 @@ public class PolyShaderPointLights implements PointLightStorage, AutoCloseable {
     private static final int UBO_SIZE;
 
     static {
-        Std140SizeCalculator size = new Std140SizeCalculator().putIVec3().putInt();
+        Std140SizeCalculator size = new Std140SizeCalculator().putIVec4();
         for (int i = 0; i < MAX_LIGHTS * 2; i++) size.putVec4();
         UBO_SIZE = size.get();
     }
@@ -71,8 +71,8 @@ public class PolyShaderPointLights implements PointLightStorage, AutoCloseable {
         }
         try (MemoryStack stack = MemoryStack.stackPush()) {
             Std140Builder builder = Std140Builder.onStack(stack, UBO_SIZE)
-                    .putIVec3(anchor.getX(), anchor.getY(), anchor.getZ())
-                    .putInt(count);
+                    //count sits in the ivec3 padding on the glsl side
+                    .putIVec4(anchor.getX(), anchor.getY(), anchor.getZ(), count);
             for (int i = 0; i < MAX_LIGHTS; i++) {
                 if (i >= count) {
                     builder.putVec4(0, 0, 0, 0);

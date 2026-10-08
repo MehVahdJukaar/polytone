@@ -52,7 +52,7 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
     private static final int LIGHT_UNIT = 30;
     private static final int CELLS_UNIT = 31;
 
-    private static final int UBO_SIZE = new Std140SizeCalculator().putIVec3().putIVec3().putInt().putInt().putIVec3().putIVec3().putIVec3().get();
+    private static final int UBO_SIZE = new Std140SizeCalculator().putIVec3().putIVec4().putInt().putIVec3().putIVec3().putIVec3().get();
 
     private final Map<BlockEntityType<?>, VoxelDataProvider<?>> blockEntityData = new ConcurrentHashMap<>();
     private final CellPalette palette = new CellPalette(blockEntityData);
@@ -207,8 +207,8 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
         try (MemoryStack stack = MemoryStack.stackPush()) {
             ByteBuffer data = Std140Builder.onStack(stack, UBO_SIZE)
                     .putIVec3(origin.getX(), origin.getY(), origin.getZ())
-                    .putIVec3(originTexel.x, originTexel.y, originTexel.z)
-                    .putInt(grid.widthInBlocks())
+                    //glsl packs the int after an ivec3 into its padding, putIVec3 skips that slot
+                    .putIVec4(originTexel.x, originTexel.y, originTexel.z, grid.widthInBlocks())
                     .putInt(grid.heightInBlocks())
                     .putIVec3(farOrigin.getX(), farOrigin.getY(), farOrigin.getZ())
                     .putIVec3(farOriginTexel.x, farOriginTexel.y, farOriginTexel.z)

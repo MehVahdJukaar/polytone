@@ -71,7 +71,8 @@ public class GLHelper {
         int previous = GlStateManager._getInteger(GL20.GL_CURRENT_PROGRAM);
         GlStateManager._glUseProgram(program);
         GL20.glUniform1i(location, x);
-        GlStateManager._glUseProgram(previous);
+        //on reload the old program can be deleted while still bound, switching away frees it
+        GlStateManager._glUseProgram(GL20.glIsProgram(previous) ? previous : 0);
     }
 
     public static boolean usesUniform(int program, String name) {
