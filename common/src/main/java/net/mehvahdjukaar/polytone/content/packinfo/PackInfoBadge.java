@@ -18,8 +18,7 @@ public class PackInfoBadge extends Button {
     public static final Identifier SPRITE_HIGHLIGHTED = Polytone.res("pack_info_highlighted");
     public static final int SIZE = 8;
 
-    //dev only, so no lang entry
-    private static final Component DEV_TOOLTIP = Component.literal("dummy badge (dev env)");
+    public static final Component TOOLTIP = Component.translatable("screen.polytone.pack_info.tooltip");
 
     private final Supplier<@Nullable PackInfo> info;
     private final Component packName;
@@ -33,13 +32,8 @@ public class PackInfoBadge extends Button {
         this.packReload = packReload;
     }
 
-    //in dev we draw it on every pack to check placement, even ones with no info section
     public static boolean shouldShow(@Nullable PackInfo info) {
-        return info != null || Polytone.isDevEnv;
-    }
-
-    public static Component tooltip(@Nullable PackInfo info) {
-        return info == null ? DEV_TOOLTIP : Component.translatable("screen.polytone.pack_info.tooltip");
+        return info != null;
     }
 
     @Override
@@ -49,7 +43,7 @@ public class PackInfoBadge extends Button {
 
         boolean over = this.isHovered();
         if (over) {
-            graphics.setTooltipForNextFrame(tooltip(info), mouseX, mouseY);
+            graphics.setTooltipForNextFrame(TOOLTIP, mouseX, mouseY);
         }
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, over ? SPRITE_HIGHLIGHTED : SPRITE,
                 this.getX(), this.getY(), SIZE, SIZE);

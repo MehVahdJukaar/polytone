@@ -84,7 +84,7 @@ public abstract class PackEntryMixin extends  ObjectSelectionList.Entry<Transfer
 
         boolean over = polytone$isOverBadge(mouseX, mouseY);
         if (over) {
-            graphics.setTooltipForNextFrame(PackInfoBadge.tooltip(info), mouseX, mouseY);
+            graphics.setTooltipForNextFrame(PackInfoBadge.TOOLTIP, mouseX, mouseY);
         }
 
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, over ? PackInfoBadge.SPRITE_HIGHLIGHTED : PackInfoBadge.SPRITE,
