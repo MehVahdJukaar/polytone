@@ -70,13 +70,17 @@ public class VoxelVolumeApi {
          * Point lights here, all but blocks dont have occlusion. Dont add too many
          */
 
+        public void addBlockLight(Block block, int color) {
+            addBlockLight(block, state -> new ResolvedPointLight(color, state.getLightEmission()));
+        }
+
         public void addBlockLight(Block block, ResolvedPointLight light) {
             addBlockLight(block, state -> light);
         }
 
         // baked once per blockstate, null means no light
         public void addBlockLight(Block block, Function<BlockState, @Nullable ResolvedPointLight> light) {
-            Polytone.COLORED_LIGHTS.addBlockLight(block, (state, pos, level, r) -> light.apply(state), AlwaysTrueTest.INSTANCE);
+            Polytone.COLORED_LIGHTS.addBlockLight(block, (state, pos, level) -> light.apply(state), AlwaysTrueTest.INSTANCE);
         }
 
         //copy an existing block, inherits what packs define. Use for block variants
@@ -107,7 +111,7 @@ public class VoxelVolumeApi {
         //called every tick for each lit entity in view
         @SuppressWarnings("unchecked")
         public <T extends Entity> void addEntityLight(EntityType<T> type, Function<T, @Nullable ResolvedPointLight> light) {
-            Polytone.COLORED_LIGHTS.addEntityLight(type, (entity, level, r) -> light.apply((T) entity));
+            Polytone.COLORED_LIGHTS.addEntityLight(type, (entity, level) -> light.apply((T) entity));
         }
 
         public void addItemLight(Item item, ResolvedPointLight light) {
@@ -116,7 +120,7 @@ public class VoxelVolumeApi {
 
         //holder is the item entity or whoever holds it
         public void addItemLight(Item item, BiFunction<ItemStack, Entity, @Nullable ResolvedPointLight> light) {
-            Polytone.COLORED_LIGHTS.addItemLight(item, (stack, holder, level, r) -> light.apply(stack, holder));
+            Polytone.COLORED_LIGHTS.addItemLight(item, (stack, holder, level) -> light.apply(stack, holder));
         }
 
         public void addParticleLight(ParticleType<?> type, ResolvedPointLight light) {
@@ -124,7 +128,7 @@ public class VoxelVolumeApi {
         }
 
         public void addParticleLight(ParticleType<?> type, Function<Particle, @Nullable ResolvedPointLight> light) {
-            Polytone.COLORED_LIGHTS.addParticleLight(type, (particle, level, r) -> light.apply(particle));
+            Polytone.COLORED_LIGHTS.addParticleLight(type, (particle, level) -> light.apply(particle));
         }
     }
 }
