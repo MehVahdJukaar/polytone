@@ -18,6 +18,7 @@ import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -40,7 +41,7 @@ import java.util.function.Function;
 public class ColoredLightsManager extends ContentManager<ColoredLightEntry> implements IShaderModifier {
 
     public record BlockRule(PointLightProvider.ForBlock light, RuleTest predicate) {
-        public boolean matches(BlockState state, net.minecraft.util.RandomSource random) {
+        public boolean matches(BlockState state, RandomSource random) {
             return predicate == AlwaysTrueTest.INSTANCE || predicate.test(state, random);
         }
     }
@@ -173,7 +174,7 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
         Item item = stack.getItem();
         var light = items.get(item);
         if (light == null) return null;
-        return (holder, level, r) -> light.resolve(stack, holder, level, r);
+        return (holder, level) -> light.resolve(stack, holder, level);
     }
 
     public boolean hasBlockLights() {
@@ -191,7 +192,6 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
     @Override
     protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
         flattenAliases();
-        // block rules stay even without Veil, the voxel volme reads them too
         if (!hasAnyLights()) return;
         var backend = Polytone.CONFIGS.coloredLightsBackend.get();
         PointLightStorage storage = storageFor(backend);

@@ -359,7 +359,7 @@ public class CellPalette implements AutoCloseable {
                 if (!rule.matches(lightState, RandomSource.create(42))) continue;
                 try {
                     // same defaults as the Veil lights. no position here, one entry per state for the whole volume
-                    ResolvedPointLight props = rule.light().resolve(lightState, Vec3.ZERO, Minecraft.getInstance().level, emission > 0 ? emission : 8);
+                    ResolvedPointLight props = rule.light().resolve(lightState, Vec3.ZERO, Minecraft.getInstance().level);
                     if (props == null) continue;
                     emission = Mth.clamp(Math.round(props.radius()), 0, 15);
                     lightColor = scaleColor(props.color(), props.brightness());

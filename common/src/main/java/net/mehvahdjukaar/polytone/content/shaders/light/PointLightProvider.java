@@ -12,15 +12,15 @@ import org.jetbrains.annotations.Nullable;
 public interface PointLightProvider<T> {
 
     @Nullable
-    ResolvedPointLight resolve(T thing, ClientLevel level, float defaultRadius);
+    ResolvedPointLight resolve(T thing, ClientLevel level);
 
     interface ForBlock {
         @Nullable
-        ResolvedPointLight resolve(BlockState state, Vec3 pos, ClientLevel level, float defaultRadius);
+        ResolvedPointLight resolve(BlockState state, Vec3 pos, ClientLevel level);
     }
 
     interface ForItem {
         @Nullable
-        ResolvedPointLight resolve(ItemStack stack, Entity holder, ClientLevel level, float defaultRadius);
+        ResolvedPointLight resolve(ItemStack stack, Entity holder, ClientLevel level);
     }
 }

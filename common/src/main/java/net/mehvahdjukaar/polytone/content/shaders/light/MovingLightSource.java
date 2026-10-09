@@ -63,7 +63,7 @@ public abstract class MovingLightSource<T> extends LightSource {
 
         List<LitEntry<T>> lit = new ArrayList<>(found.size());
         for (LitEntry<T> entry : found) {
-            ResolvedPointLight resolved = entry.light.resolve(entry.owner, level, DEFAULT_LIGHT_RADIUS);
+            ResolvedPointLight resolved = entry.light.resolve(entry.owner, level);
             if (resolved == null) continue;
             Vec3 pos = position(entry.owner, 1);
             set(entry.owner, pos.x, pos.y, pos.z, resolved);
