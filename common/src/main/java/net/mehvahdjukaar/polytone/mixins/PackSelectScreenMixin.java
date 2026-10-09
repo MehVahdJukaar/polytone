@@ -13,31 +13,37 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 import net.minecraft.network.chat.Component;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.nio.file.Path;
+
 @Mixin(PackSelectionScreen.class)
 public abstract class PackSelectScreenMixin extends Screen {
+
+    @Shadow
+    @Final
+    private Path packDir;
 
     protected PackSelectScreenMixin(Component component) {
         super(component);
     }
 
-    // RIGHT: append the config button after the Done button (ordinal 3) without shifting the layout.
     @WrapOperation(method = "init", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/layouts/LinearLayout;addChild(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;",
             ordinal = 3))
     public <T extends LayoutElement> T polytone$addButtonRight(LinearLayout footer, T doneButton, Operation<T> original) {
-        if (Polytone.CONFIGS.getButtonPos() != ConfigsManager.ButtonPosition.RIGHT) {
+        if (!polytone$isResourcePackScreen() || Polytone.CONFIGS.getButtonPos() != ConfigsManager.ButtonPosition.RIGHT) {
             return original.call(footer, doneButton);
         }
 
         int buttonW = 20;
         int buttonSpacing = 8;
-        // Under-reports its width by the config button so centering ignores it and Done stays put.
         LinearLayout centerGroup = new ExtraWidthHorizontalLayout(-buttonW - buttonSpacing, 0)
                 .spacing(buttonSpacing);
         centerGroup.defaultCellSetting().alignHorizontallyLeft();
@@ -49,12 +55,11 @@ public abstract class PackSelectScreenMixin extends Screen {
         return doneButton;
     }
 
-    // LEFT: prepend the config button before the first footer button (ordinal 2) without shifting the layout.
     @WrapOperation(method = "init", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/layouts/LinearLayout;addChild(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;",
             ordinal = 2))
     public <T extends LayoutElement> T polytone$addButtonLeft(LinearLayout footer, T firstButton, Operation<T> original) {
-        if (Polytone.CONFIGS.getButtonPos() != ConfigsManager.ButtonPosition.LEFT) {
+        if (!polytone$isResourcePackScreen() || Polytone.CONFIGS.getButtonPos() != ConfigsManager.ButtonPosition.LEFT) {
             return original.call(footer, firstButton);
         }
 
@@ -95,6 +100,11 @@ public abstract class PackSelectScreenMixin extends Screen {
                 .sprite(Polytone.res("paint_brush"), 16, 16).build();
         this.polytone$configButton = button;
         return button;
+    }
+
+    @Unique
+    private boolean polytone$isResourcePackScreen() {
+        return packDir.equals(Minecraft.getInstance().getResourcePackDirectory());
     }
 
     @Unique

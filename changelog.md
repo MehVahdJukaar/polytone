@@ -1,2 +1,2 @@
-- fixed an issue with watut
-- improved lights api more adding blokc aliases
+- other minor fixes related to new light system like added small padidng on far out lights to prevent subtle edge bleeding into vanilla color
+- light volume activation is not properly lazy, only active when needed

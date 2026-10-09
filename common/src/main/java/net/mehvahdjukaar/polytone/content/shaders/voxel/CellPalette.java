@@ -6,7 +6,7 @@ import net.mehvahdjukaar.polytone.api.VoxelDataProvider;
 import net.mehvahdjukaar.polytone.content.shaders.light.ColoredLightsManager;
 import net.mehvahdjukaar.polytone.api.ResolvedPointLight;
 import net.mehvahdjukaar.polytone.content.shaders.GLHelper;
-import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -28,7 +28,7 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -39,6 +39,7 @@ public class CellPalette implements AutoCloseable {
 
     //around 65k 2^16
     public static final int MAX_ENTRIES = 1 << (PaletteGrid.BYTES_PER_CELL * 8);
+    public static final int MAX_DYNAMIC_ENTRIES = 4048;
     private static final int TEXTURE_WIDTH = 256;
     private static final int TEXTURE_HEIGHT = MAX_ENTRIES / TEXTURE_WIDTH;
     //one rgba32ui texel
@@ -56,12 +57,19 @@ public class CellPalette implements AutoCloseable {
     private final VoxelCell cell = new VoxelCell(this);
     private final ByteBuffer singleTexel = MemoryUtil.memAlloc(BYTES_PER_ENTRY);
 
+    //states get an entry the first time the volume sees them. building all upfront forces shape caches of every modded state
+    private static final char UNRESOLVED_MARKER = Character.MAX_VALUE;
+    private static final int DYNAMIC_START = MAX_ENTRIES - MAX_DYNAMIC_ENTRIES;
+
     private char[] indexByStateId = new char[0];
     private final BitSet statesIdsThatWeShouldFetchBEsFor = new BitSet();
-    private final List<PaletteEntry> allEntries = new ArrayList<>();
-    private final Map<PaletteEntry, Integer> indexOfEntry = new HashMap<>();
+    private final PaletteEntry[] entries = new PaletteEntry[MAX_ENTRIES];
+    private final Map<PaletteEntry, Integer> indexOfStaticEntry = new HashMap<>();
+    private final Map<PaletteEntry, Integer> indexOfDynamicEntry = new HashMap<>();
     private final Map<String, Integer> flagBitByName = new LinkedHashMap<>();
     private int staticCount = 0;
+    private int dynamicCount = 0;
+    private boolean warnedStaticFull = false;
     //bumped when the block entity entries get thrown away
     private int dynamicGeneration = 0;
     private int textureId = 0;
@@ -84,7 +92,7 @@ public class CellPalette implements AutoCloseable {
     }
 
     public boolean isDynamic(char index) {
-        return index >= staticCount;
+        return index >= DYNAMIC_START;
     }
 
     public boolean hasAnyBlockEntityData() {
@@ -104,23 +112,35 @@ public class CellPalette implements AutoCloseable {
         return false;
     }
 
+    //safe on any thread. resolve needs render thread
+    public boolean isResolved(BlockState state) {
+        return indexByStateId[Block.BLOCK_STATE_REGISTRY.getId(state)] != UNRESOLVED_MARKER;
+    }
+
+    // render thread only
     public char getBlockStateIndexOf(BlockState state) {
-        return indexByStateId[Block.BLOCK_STATE_REGISTRY.getId(state)];
+        int stateId = Block.BLOCK_STATE_REGISTRY.getId(state);
+        char index = indexByStateId[stateId];
+        if (index == UNRESOLVED_MARKER) {
+            index = addStaticEntry(paletteEntryOf(state));
+            indexByStateId[stateId] = index;
+        }
+        return index;
     }
 
     public boolean emitsLight(BlockState state) {
-        return allEntries.get(getBlockStateIndexOf(state)).emission > 0;
+        return entries[getBlockStateIndexOf(state)].emission > 0;
     }
 
     //rgb already dimmed by the emission level, 0 when it doesnt emit
     public int emittedLightOf(char index) {
-        PaletteEntry e = allEntries.get(index);
+        PaletteEntry e = entries[index];
         return e.emission == 0 ? 0 : scaleColor(e.lightColor, e.emission / 15f);
     }
 
     public boolean spreadsLightLike(char index, char other) {
-        PaletteEntry a = allEntries.get(index);
-        PaletteEntry b = allEntries.get(other);
+        PaletteEntry a = entries[index];
+        PaletteEntry b = entries[other];
         return a.lightColor == b.lightColor &&
                 a.emission == b.emission &&
                 a.filterColor == b.filterColor &&
@@ -137,9 +157,9 @@ public class CellPalette implements AutoCloseable {
         if (blockEntity instanceof PistonMovingBlockEntity piston) return getBlockStateIndexOf(piston.getMovedState());
         //dynamic stuff ahead
         var data = (VoxelDataProvider<BlockEntity>) blockEntityData.get(blockEntity.getType());
-        if (data == null || staticCount >= MAX_ENTRIES) return stateIndex;
+        if (data == null) return stateIndex;
 
-        PaletteEntry base = allEntries.get(stateIndex);
+        PaletteEntry base = entries[stateIndex];
         cell.load(base.lightColor, base.emission, base.opacity, base.filterColor, base.solidFaces, base.flags);
         try {
             data.updateVoxelData(blockEntity, cell);
@@ -156,29 +176,48 @@ public class CellPalette implements AutoCloseable {
         int filterColor = lightLevel == 0 ? cell.filterColor() : 0xFFFFFF;
         PaletteEntry entry = new PaletteEntry(lightColor, lightLevel, cell.opacity(), filterColor, cell.solidFaces(), cell.flags());
 
-        Integer index = indexOfEntry.get(entry);
+        Integer index = indexOfStaticEntry.get(entry);
+        if (index == null) index = indexOfDynamicEntry.get(entry);
         if (index == null) {
-            if (allEntries.size() >= MAX_ENTRIES) {
+            if (DYNAMIC_START + dynamicCount >= MAX_ENTRIES) {
                 //bad. too many entries. what are mods doing to reach this...
-                Polytone.LOGGER.warn("Voxel volume palette ran out of room for block entity data ({} entries), clearing it", MAX_ENTRIES - staticCount);
+                Polytone.LOGGER.warn("Voxel volume palette ran out of room for block entity data ({} entries), clearing it", dynamicCount);
                 clearDynamicEntries();
             }
-            index = allEntries.size();
-            allEntries.add(entry);
-            indexOfEntry.put(entry, index);
+            index = DYNAMIC_START + dynamicCount++;
+            entries[index] = entry;
+            indexOfDynamicEntry.put(entry, index);
             uploadEntry(index, entry);
         }
         return (char) (int) index;
     }
 
     public void loadCell(VoxelCell cell, BlockState state) {
-        PaletteEntry e = allEntries.get(getBlockStateIndexOf(state));
+        PaletteEntry e = entries[getBlockStateIndexOf(state)];
         cell.load(e.lightColor, e.emission, e.opacity, e.filterColor, e.solidFaces, e.flags);
     }
 
+    private char addStaticEntry(PaletteEntry entry) {
+        Integer index = indexOfStaticEntry.get(entry);
+        if (index != null) return (char) (int) index;
+        if (staticCount >= DYNAMIC_START) {
+            if (!warnedStaticFull) {
+                Polytone.LOGGER.warn("Voxel volume palette is full ({} kinds of blocks). Extra colored lights will be ignored", DYNAMIC_START);
+                warnedStaticFull = true;
+            }
+            return (char) (int) indexOfStaticEntry.get(entry.opacity >= 15 ? OPAQUE : CLEAR);
+        }
+        index = staticCount++;
+        entries[index] = entry;
+        indexOfStaticEntry.put(entry, index);
+        uploadEntry(index, entry);
+        return (char) (int) index;
+    }
+
     private void clearDynamicEntries() {
-        allEntries.subList(staticCount, allEntries.size()).clear();
-        indexOfEntry.values().removeIf(i -> i >= staticCount);
+        Arrays.fill(entries, DYNAMIC_START, MAX_ENTRIES, null);
+        indexOfDynamicEntry.clear();
+        dynamicCount = 0;
         dynamicGeneration++;
     }
 
@@ -200,6 +239,36 @@ public class CellPalette implements AutoCloseable {
         return bit < 0 ? 0 : 1L << bit;
     }
 
+
+    public void rebuild() {
+        Arrays.fill(entries, null);
+        indexOfStaticEntry.clear();
+        indexOfDynamicEntry.clear();
+        dynamicCount = 0;
+        warnedStaticFull = false;
+        // 0 has to be air, the volume starts out zeroed
+        entries[0] = CLEAR;
+        entries[1] = OPAQUE;
+        indexOfStaticEntry.put(CLEAR, 0);
+        indexOfStaticEntry.put(OPAQUE, 1);
+        staticCount = 2;
+
+        indexByStateId = new char[Block.BLOCK_STATE_REGISTRY.size()];
+        Arrays.fill(indexByStateId, UNRESOLVED_MARKER);
+        statesIdsThatWeShouldFetchBEsFor.clear();
+        for (BlockState state : Block.BLOCK_STATE_REGISTRY) {
+            if (computeShouldFetchBlockEntity(state)) {
+                statesIdsThatWeShouldFetchBEsFor.set(Block.BLOCK_STATE_REGISTRY.getId(state));
+            }
+        }
+        flagBitByName.clear();
+        for (Block block : BuiltInRegistries.BLOCK) {
+            flagsOf(block);
+        }
+        dynamicGeneration++;
+        uploadTexture();
+    }
+
     private long flagsOf(Block block) {
         long flags = 0;
         for (String name : Polytone.BLOCK_MODIFIERS.getVoxelFlags(block)) {
@@ -209,77 +278,6 @@ public class CellPalette implements AutoCloseable {
             flags |= flagMask(name);
         }
         return flags;
-    }
-
-    public void rebuild(ClientLevel level) {
-        allEntries.clear();
-        indexOfEntry.clear();
-        // 0 has to be air, the volume starts out zeroed
-        allEntries.add(CLEAR);
-        allEntries.add(OPAQUE);
-        indexOfEntry.put(CLEAR, 0);
-        indexOfEntry.put(OPAQUE, 1);
-
-
-        flagBitByName.clear();
-        RandomSource random = RandomSource.create();
-        indexByStateId = new char[Block.BLOCK_STATE_REGISTRY.size()];
-        statesIdsThatWeShouldFetchBEsFor.clear();
-        boolean warned = false;
-        for (BlockState state : Block.BLOCK_STATE_REGISTRY) {
-            PaletteEntry entry = entryFor(state, level, random);
-            Integer index = indexOfEntry.get(entry);
-            if (index == null) {
-                if (allEntries.size() < MAX_ENTRIES) {
-                    index = allEntries.size();
-                    allEntries.add(entry);
-                    indexOfEntry.put(entry, index);
-                } else {
-                    if (!warned) {
-                        Polytone.LOGGER.warn("Voxel volume palette is full ({} kinds of blocks). Extra colored lights will be ignored", MAX_ENTRIES);
-                        warned = true;
-                    }
-                    index = indexOfEntry.get(entry.opacity >= 15 ? OPAQUE : CLEAR);
-                }
-            }
-            int stateId = Block.BLOCK_STATE_REGISTRY.getId(state);
-            indexByStateId[stateId] = (char) (int) index;
-            if (computeShouldFetchBlockEntity(state)) statesIdsThatWeShouldFetchBEsFor.set(stateId);
-        }
-        staticCount = allEntries.size();
-        dynamicGeneration++;
-        uploadTexture();
-    }
-
-    private PaletteEntry entryFor(BlockState state, ClientLevel level, RandomSource random) {
-        int emission = state.getLightEmission();
-        int opacity = state.getLightBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
-        int lightColor = 0xFFFFFF;
-
-        BlockState lightState = Polytone.COLORED_LIGHTS.lightStateOf(state);
-        var rules = Polytone.COLORED_LIGHTS.getBlockLights(lightState.getBlock());
-        if (rules != null) {
-            for (ColoredLightsManager.BlockRule rule : rules) {
-                if (!rule.matches(lightState, random)) continue;
-                try {
-                    // same defaults as the Veil lights. no position here, one entry per state for the whole volume
-                    ResolvedPointLight props = rule.light().resolve(lightState, Vec3.ZERO, level, emission > 0 ? emission : 8);
-                    if (props == null) continue;
-                    emission = Mth.clamp(Math.round(props.radius()), 0, 15);
-                    lightColor = scaleColor(props.color(), props.brightness());
-                } catch (Exception e) {
-                    Polytone.LOGGER.error("Failed to evaluate colored light for {}", state, e);
-                }
-                break;
-            }
-        }
-
-        //only known filter color
-        int filterColor = state.getBlock() instanceof BeaconBeamBlock glass ? glass.getColor().getTextureDiffuseColor() & 0xFFFFFF : 0xFFFFFF;
-        if (emission == 0) lightColor = 0;
-        else filterColor = 0xFFFFFF;
-        long flags = flagsOf(state.getBlock()) | flagsOf(Polytone.COLORED_LIGHTS.aliasOf(state).getBlock());
-        return new PaletteEntry(lightColor, emission, opacity, filterColor, solidFacesOf(state), flags);
     }
 
     //same per face check the vanilla light engine does
@@ -302,8 +300,8 @@ public class CellPalette implements AutoCloseable {
 
     private void uploadTexture() {
         ByteBuffer pixels = MemoryUtil.memCalloc(MAX_ENTRIES * BYTES_PER_ENTRY);
-        for (int i = 0; i < allEntries.size(); i++) {
-            putEntry(pixels, i * BYTES_PER_ENTRY, allEntries.get(i));
+        for (int i = 0; i < MAX_ENTRIES; i++) {
+            if (entries[i] != null) putEntry(pixels, i * BYTES_PER_ENTRY, entries[i]);
         }
         GLHelper.safeDeleteTexture(textureId);
         //each texture texel is a RGBA 32 so 4 integers
@@ -341,6 +339,48 @@ public class CellPalette implements AutoCloseable {
     }
 
 
+    private PaletteEntry paletteEntryOf(BlockState state) {
+        int opacity;
+        int solidFaces;
+        try {
+            opacity = state.getLightBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
+            solidFaces = solidFacesOf(state);
+        } catch (Exception e) {
+            throw new IllegalStateException("Block " + state + " crashed while reading its shape. This is a bug in the mod that adds it (" +
+                    BuiltInRegistries.BLOCK.getKey(state.getBlock()).getNamespace() + "), not in Polytone", e);
+        }
+        int emission = state.getLightEmission();
+        int lightColor = 0xFFFFFF;
+
+        BlockState lightState = Polytone.COLORED_LIGHTS.lightStateOf(state);
+        var rules = Polytone.COLORED_LIGHTS.getBlockLights(lightState.getBlock());
+        if (rules != null) {
+            for (ColoredLightsManager.BlockRule rule : rules) {
+                if (!rule.matches(lightState, RandomSource.create(42))) continue;
+                try {
+                    // same defaults as the Veil lights. no position here, one entry per state for the whole volume
+                    ResolvedPointLight props = rule.light().resolve(lightState, Vec3.ZERO, Minecraft.getInstance().level, emission > 0 ? emission : 8);
+                    if (props == null) continue;
+                    emission = Mth.clamp(Math.round(props.radius()), 0, 15);
+                    lightColor = scaleColor(props.color(), props.brightness());
+                } catch (Exception e) {
+                    Polytone.LOGGER.error("Failed to evaluate colored light for {}", state, e);
+                }
+                break;
+            }
+        }
+
+        //only known filter color
+        int filterColor = state.getBlock() instanceof BeaconBeamBlock glass ? glass.getColor().getTextureDiffuseColor() & 0xFFFFFF : 0xFFFFFF;
+        if (emission == 0) lightColor = 0;
+        else filterColor = 0xFFFFFF;
+        long flags = flagsOf(state.getBlock()) | flagsOf(Polytone.COLORED_LIGHTS.aliasOf(state).getBlock());
+        return new PaletteEntry(lightColor, emission, opacity, filterColor, solidFaces, flags);
+    }
+
     private record PaletteEntry(int lightColor, int emission, int opacity, int filterColor, int solidFaces, long flags) {
+
+
+
     }
 }

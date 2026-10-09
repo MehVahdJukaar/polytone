@@ -134,6 +134,11 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
     public void onBlockChanged(BlockPos pos, BlockState oldState, BlockState newState) {
         if (volume == null) return;
         boolean isDynamic = palette.shouldFetchBlockEntityOf(oldState) || palette.shouldFetchBlockEntityOf(newState);
+        //can't resolve off the render thread, so a state the palette hasnt seen yet just counts as a light change
+        if (!palette.isResolved(oldState) || !palette.isResolved(newState)) {
+            changedBlocks.add(new BlockChange(pos.asLong(), true));
+            return;
+        }
         char oldIndex = palette.getBlockStateIndexOf(oldState);
         char newIndex = palette.getBlockStateIndexOf(newState);
         if (!isDynamic && oldIndex == newIndex) return;
@@ -262,7 +267,7 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
 
         if (volume == null) {
             //requested so we create a new one
-            palette.rebuild(level);
+            palette.rebuild();
             int widthInSections = Mth.positiveCeilDiv(Math.round(Polytone.CONFIGS.voxelVolumeWidth.get()), SectionPos.SECTION_SIZE);
             int heightInSections = Mth.positiveCeilDiv(Math.round(Polytone.CONFIGS.voxelVolumeHeight.get()), SectionPos.SECTION_SIZE);
             //post packs dont read it, only the lightmap patch does
