@@ -10,6 +10,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LayoutElement;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
@@ -21,6 +22,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import java.nio.file.Path;
 
 @Mixin(PackSelectionScreen.class)
 public abstract class PackSelectScreenMixin extends Screen {
@@ -32,11 +34,15 @@ public abstract class PackSelectScreenMixin extends Screen {
     @Shadow
     public abstract void onClose();
 
+    @Shadow
+    @Final
+    private Path packDir;
+
     @WrapOperation(method = "init", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/layouts/LinearLayout;addChild(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;",
             ordinal = 4))
     public <T extends LayoutElement> T polytone$addButtonRight(LinearLayout instance, T doneButton, Operation<T> original) {
-        if (Polytone.CONFIGS.getButtonPos() != ConfigsManager.ButtonPosition.RIGHT) {
+        if (!polytone$isResourcePackScreen() || Polytone.CONFIGS.getButtonPos() != ConfigsManager.ButtonPosition.RIGHT) {
             return original.call(instance, doneButton);
         }
 
@@ -58,7 +64,7 @@ public abstract class PackSelectScreenMixin extends Screen {
             target = "Lnet/minecraft/client/gui/layouts/LinearLayout;addChild(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;",
             ordinal = 3))
     public <T extends LayoutElement> T polytone$addButtonLeft(LinearLayout instance, T doneButton, Operation<T> original) {
-        if (Polytone.CONFIGS.getButtonPos() != ConfigsManager.ButtonPosition.LEFT) {
+        if (!polytone$isResourcePackScreen() || Polytone.CONFIGS.getButtonPos() != ConfigsManager.ButtonPosition.LEFT) {
             return original.call(instance, doneButton);
         }
 
@@ -84,6 +90,11 @@ public abstract class PackSelectScreenMixin extends Screen {
         SpriteIconButton button = Polytone.CONFIGS.makeConfigButton(buttonW, self, self::reload);
         this.polytone$configButton = button;
         return button;
+    }
+
+    @Unique
+    private boolean polytone$isResourcePackScreen() {
+        return packDir.equals(Minecraft.getInstance().getResourcePackDirectory());
     }
 
     @Unique
