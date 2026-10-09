@@ -1,5 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins;
 
+import net.minecraft.util.ARGB;
+import org.joml.Vector3fc;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.renderer.fog.environment.PowderedSnowFogEnvironment;
@@ -10,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.At;
 public class PowderedSnowFogEnvironmentMixin {
 
     @ModifyReturnValue(method = "getBaseColor", at = @At("RETURN"))
-    private int polytone$customPowderSnowFog(int original) {
+    private Vector3fc polytone$customPowderSnowFog(Vector3fc original) {
         Integer custom = Polytone.COLORS.getPowderSnowFogColor();
-        return custom != null ? custom : original;
+        return custom != null ? ARGB.vector3fFromRGB24(custom) : original;
     }
 }

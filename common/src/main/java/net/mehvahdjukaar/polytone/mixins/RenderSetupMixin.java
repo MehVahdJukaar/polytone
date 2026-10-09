@@ -1,6 +1,6 @@
 package net.mehvahdjukaar.polytone.mixins;
 
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import org.spongepowered.asm.mixin.Mixin;

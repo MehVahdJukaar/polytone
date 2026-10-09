@@ -1,22 +1,22 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
-import com.mojang.blaze3d.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.systems.GpuDevice;
-import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuSampler;
-import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.IndexType;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuSampler;
+import com.mojang.renderpearl.api.textures.GpuTexture;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.pipeline.IndexType;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.renderpearl.api.vertex.VertexFormat;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.content.shaders.sodium.SodiumShadowRenderer;
@@ -26,7 +26,7 @@ import net.minecraft.util.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.DynamicUniforms;
+import net.minecraft.client.renderer.DynamicGpuData;
 import net.minecraft.client.renderer.ViewArea;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
@@ -233,9 +233,10 @@ public class ShadowMapRenderer {
         for (ChunkSectionLayer layer : SHADOW_LAYERS) {
             drawsPerLayer.put(layer, new Int2ObjectOpenHashMap<>());
         }
-        List<DynamicUniforms.ChunkSectionInfo> sectionInfos = new ArrayList<>();
+        List<DynamicGpuData.ChunkSectionInfo> sectionInfos = new ArrayList<>();
         int maxIndices = 0;
         long now = Util.getMillis();
+        long fadeDuration = Util.toMillis(mc.options.chunkSectionFadeInTime().get());
 
         // read only under the lock: an upload here would move allocations under the main pass's frozen draws
         dispatcher.lock();
@@ -252,11 +253,11 @@ public class ShadowMapRenderer {
                     if (draw.hasCustomIndexBuffer() && slice.indexBuffer() == null) continue;
                     if (infoIndex == -1) {
                         infoIndex = sectionInfos.size();
-                        sectionInfos.add(new DynamicUniforms.ChunkSectionInfo(new Matrix4f(lightView),
+                        sectionInfos.add(new DynamicGpuData.ChunkSectionInfo(
                                 origin.getX(), origin.getY(), origin.getZ(),
-                                section.getVisibility(now), atlasWidth, atlasHeight));
+                                section.getVisibility(now, fadeDuration)));
                     }
-                    VertexFormat vertexFormat = layer.pipeline().getVertexFormatBinding(0);
+                    VertexFormat vertexFormat = layer.pipeline(false).getVertexFormatBinding(0);
                     GpuBuffer vertexBuffer = slice.vertexBuffer();
                     int bufferGroup = 31 * 173 + vertexBuffer.hashCode();
 
@@ -279,7 +280,7 @@ public class ShadowMapRenderer {
                     drawsPerLayer.get(layer).computeIfAbsent(bufferGroup, k -> new ArrayList<>())
                             .add(new RenderPass.Draw<>(0, vertexBuffer, indexBuffer, indexType,
                                     firstIndex, draw.indexCount(), baseVertex,
-                                    (slices, uploader) -> uploader.upload("ChunkSection", slices[uniformIndex])));
+                                    (slices, uploader) -> uploader.setUniform("ChunkSection", slices[uniformIndex])));
                 }
             }
         } finally {
@@ -287,8 +288,11 @@ public class ShadowMapRenderer {
         }
         if (sectionInfos.isEmpty()) return;
 
+        // the light view goes in the terrain transform; each section only holds its origin
+        GpuBufferSlice terrainTransform = RenderSystem.getDynamicUniforms()
+                .writeTerrainTransform(lightView, atlasWidth, atlasHeight);
         GpuBufferSlice[] slices = RenderSystem.getDynamicUniforms()
-                .writeChunkSections(sectionInfos.toArray(new DynamicUniforms.ChunkSectionInfo[0]));
+                .writeChunkSections(sectionInfos.toArray(new DynamicGpuData.ChunkSectionInfo[0]));
 
         RenderSystem.AutoStorageIndexBuffer sequential = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
         GpuBuffer sharedIndexBuffer = maxIndices == 0 ? null : sequential.getBuffer(maxIndices);
@@ -300,11 +304,12 @@ public class ShadowMapRenderer {
                 depthTextureView, OptionalDouble.empty())) {
             RenderSystem.bindDefaultUniforms(pass);
             pass.setUniform("Projection", lightProjectionBuffer.slice()); // after the defaults, last bind wins
-            pass.bindTexture("Sampler2", mc.gameRenderer.lightmap(),
+            pass.setUniform("TerrainUniform", terrainTransform);
+            pass.setUniform("Sampler2", mc.gameRenderer.lightmap(),
                     RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
             for (ChunkSectionLayer layer : SHADOW_LAYERS) {
-                pass.setPipeline(layer.pipeline());
-                pass.bindTexture("Sampler0", atlasView, atlasSampler);
+                pass.setPipeline(RenderSystem.getCompiledPipeline(layer.pipeline(false)));
+                pass.setUniform("Sampler0", atlasView, atlasSampler);
                 for (var draws : drawsPerLayer.get(layer).values()) {
                     if (draws.isEmpty()) continue;
                     pass.drawMultipleIndexed(draws, sharedIndexBuffer, sharedIndexType, List.of("ChunkSection"), slices);
@@ -326,8 +331,6 @@ public class ShadowMapRenderer {
         Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
         modelViewStack.pushMatrix();
         modelViewStack.set(lightView);
-        RenderSystem.outputColorTextureOverride = colorTextureView;
-        RenderSystem.outputDepthTextureOverride = depthTextureView;
         mc.gameRenderer.lighting().setupFor(Lighting.Entry.LEVEL);
         try {
             PoseStack poseStack = new PoseStack();
@@ -357,15 +360,17 @@ public class ShadowMapRenderer {
                 submitBlockEntities(mc, blockEntityDispatcher, submitNodes, camState, camPos, poseStack);
             }
 
-            try {
-                featureDispatcher.renderAllFeatures(submitNodes);
+            try (FeatureRenderDispatcher.PreparedFrame frame = featureDispatcher.prepareFrame(submitNodes);
+                 RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
+                         () -> "Polytone shadow map features", colorTextureView, Optional.empty(),
+                         depthTextureView, OptionalDouble.empty())) {
+                RenderSystem.bindDefaultUniforms(pass);
+                FeatureRenderDispatcher.renderAllFeatures(pass, frame);
             } catch (Exception e) {
                 Polytone.LOGGER.error("Error rendering polytone shadow features", e);
             }
         } finally {
             casterBlockEntities.clear();
-            RenderSystem.outputColorTextureOverride = null;
-            RenderSystem.outputDepthTextureOverride = null;
             modelViewStack.popMatrix();
             RenderSystem.restoreProjectionMatrix();
         }

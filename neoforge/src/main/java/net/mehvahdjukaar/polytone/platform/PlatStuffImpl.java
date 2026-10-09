@@ -1,5 +1,7 @@
 package net.mehvahdjukaar.polytone.platform;
 
+import net.minecraft.core.registries.Registries;
+import org.jspecify.annotations.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.MapCodec;
@@ -119,13 +121,20 @@ public class PlatStuffImpl {
     }
 
 
+    // NeoForge only uses this in a log message, so it is null when there is no level
+    private static @Nullable ResourceKey<Biome> biomeKey(Biome biome) {
+        var level = Minecraft.getInstance().level;
+        if (level == null) return null;
+        return level.registryAccess().lookupOrThrow(Registries.BIOME).getResourceKey(biome).orElse(null);
+    }
+
     public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
         //forge original biome effect object is never user and redirected by coremod
         //we apply to the biome modifier. We don't want to change the original
         ModifiableBiomeInfo modifiable = biome.modifiableBiomeInfo();
         ModifiableBiomeInfo.BiomeInfo modifiedInfo = modifiable.getModifiedBiomeInfo();
         if (modifiedInfo == null) {
-            modifiedInfo = ModifiableBiomeInfo.BiomeInfo.Builder.copyOf(modifiable.getOriginalBiomeInfo()).build();
+            modifiedInfo = ModifiableBiomeInfo.BiomeInfo.Builder.copyOf(biomeKey(biome), modifiable.getOriginalBiomeInfo()).build();
             //assign modified info
             ((ModifiableBiomeAccessor) modifiable).setModifiedBiomeInfo(modifiedInfo);
         }
@@ -206,11 +215,8 @@ public class PlatStuffImpl {
             acc.setShowTitle(mod.showTitle().get());
         }
 
+        // NeoForge has no per-tab tab images, so tabs_image is read but does nothing, same as on Fabric
         Identifier oldTabsImage = null;
-        if (mod.tabsImage().isPresent()) {
-            oldTabsImage = tab.getTabsImage();
-            acc.setTabsImage(mod.tabsImage().get());
-        }
 
         Identifier oldBackgroundLocation = null;
         if (mod.backGroundLocation().isPresent()) {

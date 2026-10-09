@@ -209,7 +209,7 @@ public class ConfigScreen extends OptionsSubScreen {
 
             if (!components.isEmpty()) {
                 guiGraphics.tooltip(this.font, components, mouseX, mouseY,
-                        DefaultTooltipPositioner.INSTANCE, null);
+                        DefaultTooltipPositioner.INSTANCE, null, true);
             }
             return; // at most one option is hovered at a time
         }

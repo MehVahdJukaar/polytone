@@ -1,14 +1,14 @@
 package net.mehvahdjukaar.polytone.content.particle.gpu;
 
-import com.mojang.blaze3d.IndexType;
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.pipeline.IndexType;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.framegraph.FramePass;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.resource.ResourceHandle;
-import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.compat.IrisCompat;
@@ -50,12 +50,8 @@ public final class GpuParticles {
         if (active.isEmpty()) return;
 
         FramePass pass = builder.addPass("polytone_gpu_particles");
-        if (targets.particles != null) {
-            targets.particles = pass.readsAndWrites(targets.particles);
-        } else {
-            targets.main = pass.readsAndWrites(targets.main);
-        }
-        ResourceHandle<RenderTarget> handle = targets.particles != null ? targets.particles : targets.main;
+        targets.main = pass.readsAndWrites(targets.main);
+        ResourceHandle<RenderTarget> handle = targets.main;
         pass.executes(() -> {
             RenderSystem.setShaderFog(shaderFog);
             render(handle.get(), cameraPos, gameTime, partialTick);

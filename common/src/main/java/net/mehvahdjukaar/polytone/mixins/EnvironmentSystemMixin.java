@@ -6,16 +6,15 @@ import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(EnvironmentAttributeSystem.class)
+@Mixin(EnvironmentAttributeSystem.Builder.class)
 public class EnvironmentSystemMixin {
 
     @Inject(method = "addDefaultLayers", at = @At("RETURN"))
-    private static void polytone$addCustomPostLayers(EnvironmentAttributeSystem.Builder builder, Level level, CallbackInfo ci) {
+    private void polytone$addCustomPostLayers(Level level, CallbackInfoReturnable<EnvironmentAttributeSystem.Builder> cir) {
+        EnvironmentAttributeSystem.Builder builder = (EnvironmentAttributeSystem.Builder) (Object) this;
         Polytone.BIOME_MODIFIERS.addPostLayers(builder, level);
         Polytone.DIMENSION_MODIFIERS.addPostLayers(builder, level);
     }
-
-
 }

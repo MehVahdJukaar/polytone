@@ -6,7 +6,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
+import net.mehvahdjukaar.polytone.content.noise.OctaveSimplexNoise;
 import net.objecthunter.exp4j.function.Function;
 import net.objecthunter.exp4j.operator.Operator;
 
@@ -221,11 +221,11 @@ public class ExpressionUtils {
         return list.toArray(new Function[0]);
     }
 
-    public static void regenNoiseFunctions(Set<Map.Entry<Identifier, PerlinSimplexNoise>> noises) {
+    public static void regenNoiseFunctions(Set<Map.Entry<Identifier, OctaveSimplexNoise>> noises) {
         NOISE_FUNCS.clear();
         for (var e : noises) {
             Identifier res = e.getKey();
-            PerlinSimplexNoise noise = e.getValue();
+            OctaveSimplexNoise noise = e.getValue();
             String key = "noise_" + res.getNamespace() + "_" + res.getPath();
             NOISE_FUNCS.add(new Function(key, 2) {
                 @Override
@@ -243,7 +243,7 @@ public class ExpressionUtils {
                 });
             }
         }
-        PerlinSimplexNoise baseNoise = NoiseManager.DEFAULT;
+        OctaveSimplexNoise baseNoise = NoiseManager.DEFAULT;
         NOISE_FUNCS.add(new Function("noise", 2) {
             @Override
             public double apply(double... args) {

@@ -25,7 +25,7 @@ public final class ForwardAwareRegistryFixedCodec<E> implements Codec<Optional<H
 
     public <T> DataResult<T> encode(Optional<Holder<E>> opt, DynamicOps<T> ops, T value) {
         if (ops instanceof RegistryOps<?> registryOps) {
-            Optional<HolderOwner<E>> optional = registryOps.owner(this.registryKey);
+            Optional<? extends HolderOwner<E>> optional = registryOps.getter(this.registryKey);
             if (opt.isEmpty()) {
                 return DataResult.success(value, Lifecycle.stable());
             }

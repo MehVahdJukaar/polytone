@@ -9,12 +9,16 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.attributes.IExtendedEnvAttrEntry.Blend;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Util;
 import net.minecraft.world.attribute.AttributeType;
 import net.minecraft.world.attribute.AttributeTypes;
 import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.attribute.modifier.AttributeModifier;
+import net.minecraft.world.attribute.modifier.ColorModifier;
+import org.joml.Vector3fc;
+import org.joml.Vector4fc;
 
 import java.util.function.Supplier;
 
@@ -36,7 +40,8 @@ class EnvAttrEntryCodecs {
             EnvironmentAttribute<Value> attribute) {
 
         Codec<Argument> valueCodec = (Codec) attribute.valueCodec();
-        Codec<Either<Argument, Supplier<Argument>>> shorthandCodec = valueOrDynamic(valueCodec, attribute.type());
+        Codec<Either<Argument, Supplier<Argument>>> shorthandCodec = valueOrDynamic(valueCodec, attribute.type(),
+                colorArgOf(attribute.type()));
 
         //generics are just wrong here... Hoping they line up at runtime
         Codec<EnvironmentAttributeMap.Entry<Value, ?>> fullCodec = attribute.type().modifierCodec().dispatch(
@@ -53,7 +58,7 @@ class EnvAttrEntryCodecs {
             EnvironmentAttribute<Value> attribute, AttributeModifier<Value, Argument> modifier) {
 
         Codec<Either<Argument, Supplier<Argument>>> argumentCodec =
-                valueOrDynamic(modifier.argumentCodec(attribute), attribute.type());
+                valueOrDynamic(modifier.argumentCodec(attribute), attribute.type(), colorArgOf(attribute.type(), modifier));
 
         return RecordCodecBuilder.mapCodec(i -> i.group(
                 argumentCodec.fieldOf("argument").forGetter(EnvAttrEntryCodecs::argumentOrSupplier),
@@ -95,12 +100,40 @@ class EnvAttrEntryCodecs {
         );
     }
 
+    // Colors are vectors: Vector3fc for rgb, Vector4fc for argb
+    private enum ColorArg {NONE, RGB, ARGB}
+
+    private static ColorArg colorArgOf(AttributeType<?> type) {
+        if (type == AttributeTypes.RGB_COLOR) return ColorArg.RGB;
+        if (type == AttributeTypes.ARGB_COLOR) return ColorArg.ARGB;
+        return ColorArg.NONE;
+    }
+
+    private static ColorArg colorArgOf(AttributeType<?> type, AttributeModifier<?, ?> modifier) {
+        ColorArg valueArg = colorArgOf(type);
+        if (valueArg == ColorArg.NONE || modifier == AttributeModifier.override()) return valueArg;
+        if (modifier instanceof ColorModifier.ArgbModifier<?>) return ColorArg.ARGB;
+        if (modifier instanceof ColorModifier.RgbModifier<?>) return ColorArg.RGB;
+        return ColorArg.NONE;
+    }
+
+    private static Object colorToArgument(int color, ColorArg colorArg) {
+        return colorArg == ColorArg.ARGB ? ARGB.vector4fFromARGB32(color) : ARGB.vector3fFromRGB24(color);
+    }
+
+    private static int argumentToColor(Object argument) {
+        if (argument instanceof Vector4fc v) return ARGB.colorFromVector4f(v);
+        if (argument instanceof Vector3fc v) return ARGB.colorFromVector3f(v);
+        return 0;
+    }
+
     // Allows a Colormap or an Expression to be used wherever a color or a float attribute value is expected
-    private static <A, Value> Codec<Either<A, Supplier<A>>> valueOrDynamic(Codec<A> valueCodec, AttributeType<Value> type) {
-        if (type == AttributeTypes.ARGB_COLOR || type == AttributeTypes.RGB_COLOR) {
-            Codec<Supplier<Integer>> colormapCodec = COLORMAP_OR_EXPRESSION.xmap(
-                    colormap -> () -> DynamicAttributeContext.sampleColor(colormap),
-                    supplier -> new IColorGetter.StaticColor(supplier.get()));
+    private static <A, Value> Codec<Either<A, Supplier<A>>> valueOrDynamic(Codec<A> valueCodec, AttributeType<Value> type,
+                                                                         ColorArg colorArg) {
+        if (colorArg != ColorArg.NONE) {
+            Codec<Supplier<Object>> colormapCodec = COLORMAP_OR_EXPRESSION.xmap(
+                    colormap -> () -> colorToArgument(DynamicAttributeContext.sampleColor(colormap), colorArg),
+                    supplier -> new IColorGetter.StaticColor(argumentToColor(supplier.get())));
             return Codec.either(valueCodec, (Codec) colormapCodec);
         }
         if (type == AttributeTypes.FLOAT || type == AttributeTypes.ANGLE_DEGREES) {

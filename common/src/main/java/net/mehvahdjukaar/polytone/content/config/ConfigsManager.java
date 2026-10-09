@@ -22,6 +22,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.OverlayMetadataSection;
 import net.minecraft.server.packs.PackLocationInfo;
+import net.minecraft.server.packs.PackMetadataResources;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.metadata.pack.PackFormat;
@@ -236,7 +237,7 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
 
     //is this pack active or not? we dont know
     //called one pack at the time. we cant do IO there, we rely on the cache
-    public void loadCurrentPackConfigs(PackResources primary, Pack.ResourcesSupplier resources,
+    public void loadCurrentPackConfigs(PackMetadataResources primary, Pack.ResourcesSupplier resources,
                                        PackLocationInfo location, PackFormat version, PackType packType) {
         if (packType != PackType.CLIENT_RESOURCES) return;
         PackSource source = primary.location().source();
@@ -245,14 +246,25 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         MapRegistry<OptionHolder<?>> activePackReg = new MapRegistry<>("Active Pack Configs");
         registerBuiltins(activePackReg);
         activeLoadConfigs.set(activePackReg);
-        parsePackConfigsInto(primary, packType, activePackReg);
+        // metadata resources can't list files, so the pack is opened again, without overlays, to read the configs
+        parsePackConfigsInto(resources, location, List.of(), packType, activePackReg);
 
         List<String> overlays = collectFormatOverlays(primary, packType, version);
         if (overlays.isEmpty()) return;
 
-        try (PackResources fullPack = resources.openFull(location, new Pack.Metadata(Component.empty(),
-                PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), overlays))) {
-            parsePackConfigsInto(fullPack, packType, activePackReg);
+        parsePackConfigsInto(resources, location, overlays, packType, activePackReg);
+    }
+
+    private void parsePackConfigsInto(Pack.ResourcesSupplier resources, PackLocationInfo location, List<String> overlays,
+                                      PackType packType, MapRegistry<OptionHolder<?>> reg) {
+        List<PackResources> packs = resources.openResources(location, new Pack.Metadata(Component.empty(),
+                PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), overlays)).toList();
+        try {
+            for (PackResources pack : packs) {
+                parsePackConfigsInto(pack, packType, reg);
+            }
+        } finally {
+            packs.forEach(PackResources::close);
         }
     }
 
@@ -266,7 +278,7 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         }
     }
 
-    private static List<String> collectFormatOverlays(PackResources primary, PackType packType, PackFormat version) {
+    private static List<String> collectFormatOverlays(PackMetadataResources primary, PackType packType, PackFormat version) {
         List<String> overlays = new ArrayList<>();
         try {
             OverlayMetadataSection section = primary.getMetadataSection(OverlayMetadataSection.forPackType(packType));

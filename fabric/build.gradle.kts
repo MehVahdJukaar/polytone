@@ -36,14 +36,14 @@ dependencies {
     // modRuntimeOnly("maven.modrinth:sodium:mc1.21-0.6.0-beta.1-fabric")
 //modImplementation "curse.maven:continuity-531351:5425853"
     // modImplementation ("curse.maven:continuity-531351:5425853")
-    // 0.9.1, not 0.9.2-alpha: Iris 1.11.2+26.2 pins 0.9.1 and its sodium-compat mixins fail to apply on the alphas
-    modImplementation("maven.modrinth:sodium:mc26.2-0.9.1-fabric")
+    // 0.9.2, not the 0.9.3 alpha: Iris 1.11.7+26.3 is built against it
+    modImplementation("maven.modrinth:sodium:mc26.3-0.9.2-fabric")
     // re-enables vanilla core-shader replacement under Sodium (terrain/block shaders); no 26.2 build yet,
     // newest is still built against Sodium 0.9.0-beta.1 on 26.1.2 - we only need its own API classes to compile
     modCompileOnly("curse.maven:sodium-core-shader-support-956376:8267839") // 1.5.0-mc26.1.2-sodium0.9.0beta.1
      //modImplementation ("curse.maven:distant-horizons-508933:6387715")
     // Compile-only: pulling Iris into the dev runtime changes how the whole render path behaves.
-    modImplementation("maven.modrinth:iris:1.11.2+26.2-fabric")
+    modImplementation("maven.modrinth:iris:1.11.7+26.3-fabric")
     // replaces the vanilla pack screen
     modImplementation("maven.modrinth:packed-packs:${packed_packs_fabric_version}")
     compileOnly("io.github.fishstiz.packed_packs.api:packed_packs_api-fabric:${packed_packs_api_version}")

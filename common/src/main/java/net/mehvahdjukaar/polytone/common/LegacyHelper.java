@@ -27,7 +27,7 @@ import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.RedStoneWireBlock;
+import net.minecraft.world.level.block.RedstoneWireBlock;
 import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -123,7 +123,7 @@ public class LegacyHelper {
                 Colormap colormap = Colormap.simple(new IColormapExp() {
                     @Override
                     public float evaluate(@NotNull BlockAndTintGetter level, @Nullable BlockState state, Vec3 pos, Biome biome, BiomeIdMapper mapper, ItemStack stack) {
-                        return state != null ? (1 - (state.getValue(RedStoneWireBlock.POWER) / 15f)) : 1;
+                        return state != null ? (1 - (state.getValue(RedstoneWireBlock.POWER) / 15f)) : 1;
                     }
 
                     @Override

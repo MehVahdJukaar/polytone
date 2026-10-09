@@ -5,7 +5,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
+import net.mehvahdjukaar.polytone.content.noise.OctaveSimplexNoise;
 
 @BeanAliases
 public class RandomProxy {
@@ -67,13 +67,13 @@ public class RandomProxy {
     }
 
     public double noise(String name, double x, double y) {
-        PerlinSimplexNoise n = Polytone.NOISES.getNoise(name);
+        OctaveSimplexNoise n = Polytone.NOISES.getNoise(name);
         if (n == null) return 0;
         return n.getValue(x, y, true);
     }
 
     public double noise(double x, double y) {
-        PerlinSimplexNoise n = NoiseManager.DEFAULT;
+        OctaveSimplexNoise n = NoiseManager.DEFAULT;
         return n.getValue(x, y, true);
     }
 }

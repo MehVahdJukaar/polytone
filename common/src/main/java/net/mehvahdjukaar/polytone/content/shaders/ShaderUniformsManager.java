@@ -1,9 +1,10 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
+import com.mojang.renderpearl.api.pipeline.ShaderType;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.commands.RenderPass;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
@@ -157,8 +158,8 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
             }
         }
         if (byShader.isEmpty()) return;
-        List<ExpressionUniformBuffers> list = byShader.get(pipeline.getFragmentShader());
-        if (list == null) list = byShader.get(pipeline.getVertexShader());
+        List<ExpressionUniformBuffers> list = byShader.get(pipeline.getShaders().get(ShaderType.FRAGMENT));
+        if (list == null) list = byShader.get(pipeline.getShaders().get(ShaderType.VERTEX));
         if (list == null) return;
         for (ExpressionUniformBuffers b : list) {
             b.bind(pass, declaredUniforms);

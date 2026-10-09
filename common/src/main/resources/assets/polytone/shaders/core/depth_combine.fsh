@@ -1,10 +1,11 @@
 #version 330
+#extension GL_ARB_separate_shader_objects : require
 
 uniform sampler2D InSampler;
 
-in vec2 texCoord;
+layout(location = 0) in vec2 texCoord;
 
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 // Re-projects a saved world depth back into the current depth buffer (which, after
 // the first-person hand is drawn, only holds the hand on a cleared background).

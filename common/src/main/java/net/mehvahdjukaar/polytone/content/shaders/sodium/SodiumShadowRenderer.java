@@ -1,7 +1,9 @@
 package net.mehvahdjukaar.polytone.content.shaders.sodium;
 
-import com.mojang.blaze3d.textures.GpuSampler;
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.textures.GpuSampler;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import net.caffeinemc.mods.sodium.client.SodiumClientMod;
 import net.caffeinemc.mods.sodium.client.render.SodiumWorldRenderer;
 import net.caffeinemc.mods.sodium.client.render.chunk.ChunkRenderMatrices;
@@ -23,25 +25,16 @@ import org.joml.Matrix4f;
 import org.joml.Vector3d;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalDouble;
 
 // Sodium half of the shadow pass, kept apart so its types only load with Sodium present. See research/POST_SHADOW_NOTES.md.
 public final class SodiumShadowRenderer {
-
-    private static GpuTextureView activeShadowColor = null;
-    private static GpuTextureView activeShadowDepth = null;
 
     private static GpuSampler terrainSampler = null;
 
     public static void captureTerrainSampler(GpuSampler sampler) {
         terrainSampler = sampler;
-    }
-
-    public static GpuTextureView activeShadowColorView() {
-        return activeShadowColor;
-    }
-
-    public static GpuTextureView activeShadowDepthView() {
-        return activeShadowDepth;
     }
 
     public static void replayTerrain(Minecraft mc, Camera cam, Vec3 camPos,
@@ -66,19 +59,18 @@ public final class SodiumShadowRenderer {
             var performance = SodiumClientMod.options().performance;
             boolean prevFaceCulling = performance.useBlockFaceCulling;
             performance.useBlockFaceCulling = false;
-            activeShadowColor = color;
-            activeShadowDepth = depth;
             UniformBufferManager uniforms = ((SodiumWorldRendererShadowAccessor) worldRenderer).polytone$getUniformBufferManager();
             if (uniforms != null) uniforms.prepareFrame();
-            try {
+            // sodium draws into the pass it is given, so the shadow textures are set on this pass
+            try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
+                    () -> "Polytone shadow map terrain (Sodium)", color, Optional.empty(), depth, OptionalDouble.empty())) {
+                RenderSystem.bindDefaultUniforms(pass);
                 ChunkRenderMatrices matrices = new ChunkRenderMatrices(lightProj, lightView);
-                worldRenderer.drawChunkLayer(ChunkSectionLayerGroup.OPAQUE, matrices,
-                        camPos.x, camPos.y, camPos.z, sampler);
+                worldRenderer.drawChunkLayer(pass, ChunkSectionLayerGroup.OPAQUE, matrices,
+                        camPos.x, camPos.y, camPos.z, sampler, null);
             } finally {
                 if (uniforms != null) uniforms.prepareFrame();
                 performance.useBlockFaceCulling = prevFaceCulling;
-                activeShadowColor = null;
-                activeShadowDepth = null;
             }
         } finally {
             if (mutatedRenderLists) {

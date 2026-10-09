@@ -1,9 +1,9 @@
 package net.mehvahdjukaar.polytone.content.particle.gpu;
 
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.renderpearl.api.vertex.VertexFormat;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-//all 4 vertices of a record carry identical data, the shader tells corners apart by gl_VertexID
+//all 4 vertices of a record carry identical data, the shader tells corners apart by gl_VertexIndex
 //pos is relative to origin and spawn ticks to timeBase, both rebased (buffer cleared) on drift so floats stay sane
 public final class GpuParticleBuffer implements AutoCloseable {
 

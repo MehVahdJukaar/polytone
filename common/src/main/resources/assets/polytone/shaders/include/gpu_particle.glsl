@@ -1,4 +1,5 @@
-#version 330
+#ifndef POLYTONE_GPU_PARTICLE_GLSL
+#define POLYTONE_GPU_PARTICLE_GLSL
 
 // Per-type knobs, same for every particle of a gpu particle type. Field order must match the
 // Std140Builder calls in GpuParticleRenderer. Origin and Time share a vec4 on purpose: Std140Builder
@@ -29,3 +30,5 @@ layout(std140) uniform ParticleInfo {
 
 #define Origin (OriginTime.xyz)
 #define Time (OriginTime.w)
+
+#endif

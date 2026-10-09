@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.item;
 
+import net.minecraft.client.renderer.state.level.PlayerRenderState;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.content.model.WornModel;
 import net.minecraft.client.DeltaTracker;
@@ -84,7 +85,7 @@ public class PolytoneClientItemExtensions implements IClientItemExtensions {
     }
 
     @Override
-    public boolean applyForgeHandTransform(PoseStack poseStack, LocalPlayer player, HumanoidArm arm, ItemStack stack,
+    public boolean applyForgeHandTransform(PoseStack poseStack, PlayerRenderState player, HumanoidArm arm, ItemStack stack,
                                            float partialTick, float equipProcess, float swingProcess) {
         return delegate.applyForgeHandTransform(poseStack, player, arm, stack, partialTick, equipProcess, swingProcess);
     }

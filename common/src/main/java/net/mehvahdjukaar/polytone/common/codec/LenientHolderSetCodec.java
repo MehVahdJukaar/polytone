@@ -79,7 +79,7 @@ public class LenientHolderSetCodec<E> implements Codec<HolderSet<E>> {
     @Override
     public <T> DataResult<T> encode(HolderSet<E> input, DynamicOps<T> ops, T prefix) {
         if (ops instanceof RegistryOps<T> registryOps) {
-            Optional<HolderOwner<E>> optional = registryOps.owner(this.registryKey);
+            Optional<? extends HolderOwner<E>> optional = registryOps.getter(this.registryKey);
             if (optional.isPresent()) {
                 if (!input.canSerializeIn(optional.get())) {
                     return DataResult.error(() -> "HolderSet " + input + " is not valid in current registry set");

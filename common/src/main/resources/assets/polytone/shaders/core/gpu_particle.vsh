@@ -1,26 +1,27 @@
 #version 330
+#extension GL_ARB_separate_shader_objects : require
 
-#moj_import <minecraft:fog.glsl>
-#moj_import <minecraft:dynamictransforms.glsl>
-#moj_import <minecraft:projection.glsl>
-#moj_import <polytone:gpu_particle.glsl>
+#include <minecraft:fog.glsl>
+#include <minecraft:dynamictransforms.glsl>
+#include <minecraft:projection.glsl>
+#include <polytone:gpu_particle.glsl>
 
 // One record, repeated over the four corners of its quad. Nothing here changes after the spawn:
 // the whole simulation is this shader plus Time.
-in vec3 Position;   // spawn position, relative to Origin
-in vec3 Velocity;   // blocks per tick
-in vec2 SpawnLife;  // spawn tick (relative to the time base), lifetime in ticks
-in vec4 Params;     // size, roll, custom, seed
-in vec4 Color;
-in ivec2 UV2;
+layout(location = 0) in vec3 Position;   // spawn position, relative to Origin
+layout(location = 1) in vec3 Velocity;   // blocks per tick
+layout(location = 2) in vec2 SpawnLife;  // spawn tick (relative to the time base), lifetime in ticks
+layout(location = 3) in vec4 Params;     // size, roll, custom, seed
+layout(location = 4) in vec4 Color;
+layout(location = 5) in ivec2 UV2;
 
 uniform sampler2D Sampler1; // heightmap, see GpuParticleHeightmap
 uniform sampler2D Sampler2; // lightmap
 
-out float sphericalVertexDistance;
-out float cylindricalVertexDistance;
-out vec2 texCoord0;
-out vec4 vertexColor;
+layout(location = 0) out float sphericalVertexDistance;
+layout(location = 1) out float cylindricalVertexDistance;
+layout(location = 2) out vec2 texCoord0;
+layout(location = 3) out vec4 vertexColor;
 
 const float TAU = 6.2831853;
 
@@ -29,9 +30,9 @@ float hash(float seed, float salt) {
 }
 
 void main() {
-    int corner = gl_VertexID & 3;
+    int corner = gl_VertexIndex & 3;
     // with an area, one record is AreaCount quads in a row; each gets its own offset and phase
-    int sub = (gl_VertexID >> 2) % AreaCount;
+    int sub = (gl_VertexIndex >> 2) % AreaCount;
 
     float life = SpawnLife.y;
     float age = Time - SpawnLife.x;

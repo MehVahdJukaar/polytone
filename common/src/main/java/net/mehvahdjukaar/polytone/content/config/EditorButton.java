@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.config;
 
+import com.mojang.blaze3d.Blaze3D;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.nautilus.PolytoneNautilus;
 import net.minecraft.client.Minecraft;
@@ -12,14 +13,14 @@ import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Util;
+import java.net.URI;
 
 final class EditorButton extends Button {
 
     private static final Identifier ICON = Polytone.res("codec_editor");
     private static final Identifier ICON_ACTIVE = Polytone.res("codec_editor_on");
     private static final Identifier ICON_LOADING = Polytone.res("codec_editor_loading");
-    private static final String NAUTILUS_URL = "https://github.com/MehVahdJukaar/pack_editor";
+    private static final URI NAUTILUS_URL = URI.create("https://github.com/MehVahdJukaar/pack_editor");
 
     private final int spriteWidth;
     private final int spriteHeight;
@@ -48,7 +49,7 @@ final class EditorButton extends Button {
         Minecraft mc = Minecraft.getInstance();
         Screen parent = mc.gui.screen();
         mc.gui.setScreen(new ConfirmLinkScreen(confirmed -> {
-            if (confirmed) Util.getPlatform().openUri(NAUTILUS_URL);
+            if (confirmed) Blaze3D.openUri(NAUTILUS_URL);
             mc.gui.setScreen(parent);
         }, NAUTILUS_URL, true));
     }

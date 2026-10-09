@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.lightmap;
 
-import com.mojang.blaze3d.opengl.GlStateManager;
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.renderpearl.backend.opengl.GlStateManager;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;

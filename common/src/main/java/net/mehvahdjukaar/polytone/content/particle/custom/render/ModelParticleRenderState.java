@@ -74,7 +74,7 @@ public class ModelParticleRenderState implements ParticleGroupRenderState {
                         p.y - cameraRenderState.pos.y,
                         p.z - cameraRenderState.pos.z
                 );
-                poseStack.mulPose(particleRot);
+                poseStack.rotate(particleRot);
 
                 poseStack.scale(p.size, p.size, p.size);
 

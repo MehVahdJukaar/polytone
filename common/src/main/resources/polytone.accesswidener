@@ -15,7 +15,7 @@ accessible method net/minecraft/client/renderer/state/gui/GuiRenderState$Node <i
 
 accessible field net/minecraft/client/renderer/PostChain passes Ljava/util/List;
 accessible field net/minecraft/client/renderer/PostPass infoUbo Lnet/minecraft/client/renderer/MappableRingBuffer;
-accessible field net/minecraft/client/renderer/MappableRingBuffer buffers [Lcom/mojang/blaze3d/buffers/GpuBuffer;
+accessible field net/minecraft/client/renderer/MappableRingBuffer buffers [Lcom/mojang/renderpearl/api/buffers/GpuBuffer;
 
 accessible method net/minecraft/client/multiplayer/ClientLevel addEnvironmentAttributeLayers (Lnet/minecraft/world/attribute/EnvironmentAttributeSystem$Builder;)Lnet/minecraft/world/attribute/EnvironmentAttributeSystem$Builder;
 accessible field net/minecraft/world/effect/MobEffect AMBIENT_ALPHA I
@@ -26,8 +26,6 @@ accessible method net/minecraft/client/gui/screens/packs/PackSelectionScreen rel
 
 accessible field net/minecraft/client/renderer/chunk/RenderSectionRegion level Lnet/minecraft/client/multiplayer/ClientLevel;
 
-accessible field net/minecraft/client/renderer/fog/environment/PowderedSnowFogEnvironment COLOR I
-mutable field net/minecraft/client/renderer/fog/environment/PowderedSnowFogEnvironment COLOR I
 accessible field net/minecraft/client/renderer/LevelRenderer levelRenderState Lnet/minecraft/client/renderer/state/level/LevelRenderState;
 
 accessible method net/minecraft/client/gui/components/CycleButton createLabelForValue (Ljava/lang/Object;)Lnet/minecraft/network/chat/Component;
@@ -39,7 +37,7 @@ accessible field net/minecraft/client/OptionInstance caption Lnet/minecraft/netw
 accessible field net/minecraft/client/OptionInstance toString Ljava/util/function/Function;
 
 # 26.2: MATRICES_PROJECTION_SNIPPET removed/renamed
-#accessible field net/minecraft/client/renderer/RenderPipelines MATRICES_PROJECTION_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+#accessible field net/minecraft/client/renderer/RenderPipelines MATRICES_PROJECTION_SNIPPET Lcom/mojang/renderpearl/api/pipeline/RenderPipeline$Snippet;
 
 accessible field net/minecraft/client/renderer/entity/EntityRenderDispatcher renderers Ljava/util/Map;
 
@@ -58,12 +56,12 @@ accessible field net/minecraft/world/attribute/WeatherAttributes THUNDER Lnet/mi
 mutable field net/minecraft/world/attribute/WeatherAttributes THUNDER Lnet/minecraft/world/attribute/EnvironmentAttributeMap;
 
 
-accessible field net/minecraft/client/renderer/RenderPipelines TERRAIN_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+accessible field net/minecraft/client/renderer/RenderPipelines TERRAIN_SNIPPET Lcom/mojang/renderpearl/api/pipeline/RenderPipeline$Snippet;
 
 accessible field net/minecraft/client/multiplayer/ClientLevel environmentAttributes Lnet/minecraft/world/attribute/EnvironmentAttributeSystem;
 mutable field net/minecraft/client/multiplayer/ClientLevel environmentAttributes Lnet/minecraft/world/attribute/EnvironmentAttributeSystem;
 
-accessible field net/minecraft/client/renderer/RenderPipelines MATRICES_FOG_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+accessible field net/minecraft/client/renderer/RenderPipelines MATRICES_FOG_SNIPPET Lcom/mojang/renderpearl/api/pipeline/RenderPipeline$Snippet;
 accessible method net/minecraft/client/renderer/rendertype/RenderType create (Ljava/lang/String;Lnet/minecraft/client/renderer/rendertype/RenderSetup;)Lnet/minecraft/client/renderer/rendertype/RenderType;
 
 mutable field net/minecraft/client/renderer/BiomeColors WATER_COLOR_RESOLVER Lnet/minecraft/world/level/ColorResolver;
@@ -161,8 +159,8 @@ accessible field net/minecraft/world/item/DyeColor textColor I
 
 mutable field net/minecraft/core/particles/DustParticleOptions REDSTONE_PARTICLE_COLOR I
 
-accessible field net/minecraft/world/level/block/RedStoneWireBlock COLORS [I
-mutable field net/minecraft/world/level/block/RedStoneWireBlock COLORS [I
+accessible field net/minecraft/world/level/block/RedstoneWireBlock COLORS [I
+mutable field net/minecraft/world/level/block/RedstoneWireBlock COLORS [I
 accessible field net/minecraft/world/item/DyeColor textureDiffuseColor I
 mutable field net/minecraft/world/item/DyeColor textureDiffuseColor I
 
@@ -191,7 +189,7 @@ mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBas
 
 
 # Shaders
-accessible method net/minecraft/client/renderer/RenderPipelines register (Lcom/mojang/blaze3d/pipeline/RenderPipeline;)Lcom/mojang/blaze3d/pipeline/RenderPipeline;
+accessible method net/minecraft/client/renderer/RenderPipelines register (Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;)Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;
 
 #ok
 
@@ -238,9 +236,8 @@ accessible field net/minecraft/client/renderer/culling/Frustum camZ D
 mutable field net/minecraft/client/gui/components/debug/DebugScreenEntries PROFILES Ljava/util/Map;
 
 # Sodium shadow replay needs the GL backend's DirectStateAccess to build an FBO for the shadow
-# attachments. 26.1 hides GlDevice behind the public GpuDevice frontend.
-accessible class com/mojang/blaze3d/opengl/GlDevice
-accessible field com/mojang/blaze3d/systems/GpuDevice backend Lcom/mojang/blaze3d/systems/GpuDeviceBackend;
+# attachments. GlDevice is package-private.
+accessible class com/mojang/renderpearl/backend/opengl/GlDevice
 
 # Shadow pass walks every loaded section itself (same set the main cull starts from). 26.2 made the
 # storage private.

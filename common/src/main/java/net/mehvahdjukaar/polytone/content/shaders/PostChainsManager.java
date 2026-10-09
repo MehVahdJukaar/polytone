@@ -1,19 +1,19 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
 import com.google.gson.JsonElement;
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
-import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuSampler;
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuSampler;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
@@ -24,7 +24,7 @@ import net.minecraft.client.renderer.LevelTargetBundle;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.renderer.ShaderManager;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
-import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
@@ -164,9 +164,9 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
             GpuTextureView shadowMap = Polytone.SHADOWS.renderer().getShadowTexture();
             if (shadowMap == null) {
                 shadowMap = Minecraft.getInstance().getTextureManager()
-                        .getTexture(TextureManager.INTENTIONAL_MISSING_TEXTURE).getTextureView();
+                        .getTexture(MissingTextureAtlasSprite.getLocation()).getTextureView();
             }
-            pass.bindTexture(SHADOW_SAMPLER_NAME, shadowMap,
+            pass.setUniform(SHADOW_SAMPLER_NAME, shadowMap,
                     RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
         }
         if (samplersByPassPipeline.isEmpty()) return;
@@ -178,7 +178,7 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
             for (var e : samplers.entrySet()) {
                 if (!declaredUniforms.contains(e.getKey())) continue;
                 GpuTextureView view = textureManager.getTexture(e.getValue()).getTextureView();
-                pass.bindTexture(e.getKey(), view, sampler);
+                pass.setUniform(e.getKey(), view, sampler);
             }
         }
     }
@@ -195,7 +195,6 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
             emptyShadowUbo.close();
             emptyShadowUbo = null;
         }
-        DeclaredUniforms.clearCache();
         if (worldDepthSnapshot != null) {
             worldDepthSnapshot.destroyBuffers();
             worldDepthSnapshot = null;
@@ -279,8 +278,8 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
 
     private void ensureSnapshotSized(int width, int height) {
         if (worldDepthSnapshot == null) {
-            worldDepthSnapshot = new TextureTarget("Polytone World Depth Snapshot", width, height, true,
-                    GpuFormat.RGBA8_UNORM);
+            worldDepthSnapshot = new TextureTarget("Polytone World Depth Snapshot", width, height,
+                    GpuFormat.RGBA8_UNORM, GpuFormat.D32_FLOAT);
         } else if (worldDepthSnapshot.width != width || worldDepthSnapshot.height != height) {
             worldDepthSnapshot.resize(width, height);
         }
@@ -293,9 +292,9 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
                 () -> "Polytone depth combine",
                 main.getColorTextureView(), Optional.empty(),
                 main.getDepthTextureView(), OptionalDouble.empty())) {
-            pass.setPipeline(PolytoneRenderTypes.DEPTH_COMBINE_PIPELINE);
+            pass.setPipeline(RenderSystem.getCompiledPipeline(PolytoneRenderTypes.DEPTH_COMBINE_PIPELINE));
             RenderSystem.bindDefaultUniforms(pass);
-            pass.bindTexture("InSampler", worldDepth, sampler);
+            pass.setUniform("InSampler", worldDepth, sampler);
             pass.draw(3, 1, 0, 0);
         }
     }

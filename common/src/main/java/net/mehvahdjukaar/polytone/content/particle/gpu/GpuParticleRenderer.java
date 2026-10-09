@@ -1,21 +1,21 @@
 package net.mehvahdjukaar.polytone.content.particle.gpu;
 
-import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.DepthStencilState;
-import com.mojang.blaze3d.IndexType;
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.pipeline.BindGroupLayout;
-import com.mojang.blaze3d.platform.BlendFactor;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.shaders.UniformType;
-import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.renderpearl.api.pipeline.BlendFunction;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.DepthStencilState;
+import com.mojang.renderpearl.api.pipeline.IndexType;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.BindGroupLayout;
+import com.mojang.renderpearl.api.pipeline.BlendFactor;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.UniformType;
+import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
@@ -27,7 +27,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SpriteSet;
-import com.mojang.blaze3d.platform.CompareOp;
+import com.mojang.renderpearl.api.pipeline.CompareOp;
 import net.minecraft.client.renderer.BindGroupLayouts;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.util.LightCoordsUtil;
@@ -147,7 +147,7 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
                         .withDepthStencilState(DepthStencilState.DEFAULT);
             }
             pipeline = builder.build();
-            if (!RenderSystem.getDevice().precompilePipeline(pipeline, null).isValid()) {
+            if (RenderSystem.getCompiledPipelineNullable(pipeline) == null) {
                 Polytone.LOGGER.error("Failed to compile shader {} for gpu particle {}", type.shader(), id);
                 shaderFailed = true;
                 pipeline = null;
@@ -216,10 +216,10 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
         GpuBuffer vertices = records.vertexBuffer();
         if (pipeline == null || vertices == null || texture == null || heightmap == null) return;
 
-        pass.setPipeline(pipeline);
-        pass.bindTexture("Sampler0", texture, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
-        pass.bindTexture("Sampler1", heightmap.textureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
-        pass.bindTexture("Sampler2", Minecraft.getInstance().gameRenderer.lightmap(),
+        pass.setPipeline(RenderSystem.getCompiledPipeline(pipeline));
+        pass.setUniform("Sampler0", texture, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+        pass.setUniform("Sampler1", heightmap.textureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+        pass.setUniform("Sampler2", Minecraft.getInstance().gameRenderer.lightmap(),
                 RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
         pass.setUniform("ParticleInfo", infoUbo);
         customUniforms.bind(pass, type.uniforms().keySet());
