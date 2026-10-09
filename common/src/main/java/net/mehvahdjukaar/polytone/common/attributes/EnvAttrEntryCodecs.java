@@ -95,7 +95,6 @@ class EnvAttrEntryCodecs {
         );
     }
 
-    // Allows a Colormap or an Expression to be used wherever a color or a float attribute value is expected
     private static <A, Value> Codec<Either<A, Supplier<A>>> valueOrDynamic(Codec<A> valueCodec, AttributeType<Value> type) {
         if (type == AttributeTypes.ARGB_COLOR || type == AttributeTypes.RGB_COLOR) {
             Codec<Supplier<Integer>> colormapCodec = COLORMAP_OR_EXPRESSION.xmap(
@@ -104,7 +103,7 @@ class EnvAttrEntryCodecs {
             return Codec.either(valueCodec, (Codec) colormapCodec);
         }
         if (type == AttributeTypes.FLOAT || type == AttributeTypes.ANGLE_DEGREES) {
-            Codec<Supplier<Float>> expressionCodec = IBlockExp.CODEC.xmap(
+            Codec<Supplier<Float>> expressionCodec = IBlockExp.CODEC_LEGACY.xmap(
                     exp -> () -> DynamicAttributeContext.evaluate(exp),
                     supplier -> IBlockExp.ZERO);
             return Codec.either(valueCodec, (Codec) expressionCodec);
