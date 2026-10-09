@@ -19,7 +19,7 @@ public class BlockLightSource extends LightSource {
 
     private static final int MAX_LIGHTS = 512;
 
-    private final Map<Long, List<LitBlock>> litBlocksPerSection = new ConcurrentHashMap<>();
+    private final Map<Long, List<LitBlockRecord>> litBlocksPerSection = new ConcurrentHashMap<>();
 
     public BlockLightSource(PointLightStorage storage) {
         super(storage);
@@ -32,7 +32,7 @@ public class BlockLightSource extends LightSource {
     public class Scan {
 
         private static final int BLOCKS_PER_SECTION = 16 * 16 * 16;
-        private final List<LitBlock> found = new ArrayList<>();
+        private final List<LitBlockRecord> found = new ArrayList<>();
 
         private final RandomSource random = RandomSource.create();
         private long sectionKey = Long.MIN_VALUE;
@@ -49,7 +49,7 @@ public class BlockLightSource extends LightSource {
             if (rules == null) return;
             for (var rule : rules) {
                 if (rule.matches(lightState, random)) {
-                    found.add(new LitBlock(new BlockPos(x, y, z), lightState, rule));
+                    found.add(new LitBlockRecord(new BlockPos(x, y, z), lightState, rule));
                     return;
                 }
             }
@@ -64,7 +64,7 @@ public class BlockLightSource extends LightSource {
 
     @Override
     public void tick(ClientLevel level, Vec3 camera) {
-        List<LitBlock> found = new ArrayList<>();
+        List<LitBlockRecord> found = new ArrayList<>();
         var it = litBlocksPerSection.entrySet().iterator();
         while (it.hasNext()) {
             var e = it.next();
@@ -77,10 +77,12 @@ public class BlockLightSource extends LightSource {
         }
         keepNearest(found, MAX_LIGHTS, b -> b.pos.getCenter().distanceToSqr(camera));
 
-        for (LitBlock lit : found) {
+        for (LitBlockRecord lit : found) {
             Vec3 center = lit.pos.getCenter();
-            ResolvedPointLight resolved = lit.rule.light().resolve(lit.state, center, level, defaultRadius(lit.state));
-            if (resolved != null) set(lit.pos, center.x, center.y, center.z, resolved);
+            ResolvedPointLight resolved = lit.rule.light().resolve(lit.state, center, level);
+            if (resolved != null) {
+                set(lit.pos, center.x, center.y, center.z, resolved);
+            }
         }
         removeUnset();
     }
@@ -91,11 +93,9 @@ public class BlockLightSource extends LightSource {
         litBlocksPerSection.clear();
     }
 
-    private static float defaultRadius(BlockState state) {
-        int emission = state.getLightEmission();
-        return emission > 0 ? emission : DEFAULT_LIGHT_RADIUS;
-    }
-
-    private record LitBlock(BlockPos pos, BlockState state, ColoredLightsManager.BlockRule rule) {
+    private record LitBlockRecord(BlockPos pos, BlockState state, ColoredLightsManager.BlockRule rule) {
+        ResolvedPointLight resolve(ClientLevel level) {
+            return rule.light().resolve(state, pos.getCenter(), level);
+        }
     }
 }
