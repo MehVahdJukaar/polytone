@@ -11,8 +11,6 @@ import java.util.function.ToDoubleFunction;
 
 public abstract class LightSource {
 
-    protected static final float DEFAULT_LIGHT_RADIUS = 8;
-
     private final PointLightStorage storage;
     private ObjectOpenHashSet<Object> litLastTick = new ObjectOpenHashSet<>();
     private ObjectOpenHashSet<Object> litThisTick = new ObjectOpenHashSet<>();
