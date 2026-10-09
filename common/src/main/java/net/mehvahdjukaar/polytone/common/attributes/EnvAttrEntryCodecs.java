@@ -137,7 +137,7 @@ class EnvAttrEntryCodecs {
             return Codec.either(valueCodec, (Codec) colormapCodec);
         }
         if (type == AttributeTypes.FLOAT || type == AttributeTypes.ANGLE_DEGREES) {
-            Codec<Supplier<Float>> expressionCodec = IBlockExp.CODEC.xmap(
+            Codec<Supplier<Float>> expressionCodec = IBlockExp.CODEC_LEGACY.xmap(
                     exp -> () -> DynamicAttributeContext.evaluate(exp),
                     supplier -> IBlockExp.ZERO);
             return Codec.either(valueCodec, (Codec) expressionCodec);

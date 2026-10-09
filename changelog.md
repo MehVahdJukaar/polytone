@@ -1,1 +1,1 @@
-fixed a bug with null gui
+restored some legacy expressions compat
