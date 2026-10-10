@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.google.gson.JsonElement;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.minecraft.client.gui.Hud;

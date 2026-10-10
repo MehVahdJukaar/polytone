@@ -1,5 +1,7 @@
 package net.mehvahdjukaar.polytone.content.fluid.platform;
 
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.state.level.PlayerRenderState;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
@@ -56,8 +58,8 @@ public class FluidPropertiesManagerImpl {
         }
 
         @Override
-        public void renderOverlay(Minecraft mc, PoseStack poseStack, SubmitNodeCollector submitNodeCollector) {
-            existingProperties.renderOverlay(mc, poseStack, submitNodeCollector);
+        public void extractOverlay(Minecraft minecraft, LocalPlayer player, PlayerRenderState playerRenderState, BlockPos eyePos, float brightness) {
+            existingProperties.extractOverlay(minecraft, player, playerRenderState, eyePos, brightness);
         }
 
         @Override

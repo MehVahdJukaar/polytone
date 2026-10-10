@@ -265,7 +265,7 @@ public class Polytone {
         var regs = List.of(
                 Registries.SOUND_EVENT, Registries.BIOME,
                 Registries.BLOCK, Registries.ITEM,
-                Registries.BLOCK_TYPE, Registries.PARTICLE_TYPE, Registries.FLUID,
+                Registries.PARTICLE_TYPE, Registries.FLUID,
                 Registries.POTION, Registries.MOB_EFFECT
         );
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("registry_dump.txt"))) {

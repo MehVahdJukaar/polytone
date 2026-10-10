@@ -26,10 +26,6 @@ public interface CreativeTabAccessor {
     @Accessor("searchBarWidth")
     void setSearchBarWidth(int width);
 
-    @Mutable
-    @Accessor("tabsImage")
-    void setTabsImage(Identifier tabsImage);
-
     @Accessor("backgroundTexture")
     void setBackgroundTexture(Identifier back);
 

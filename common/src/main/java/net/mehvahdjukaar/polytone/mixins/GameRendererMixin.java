@@ -5,7 +5,6 @@ import com.mojang.blaze3d.resource.CrossFrameResourcePool;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.content.particle.PreviewRenderTarget;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import org.spongepowered.asm.mixin.Final;
@@ -25,12 +24,12 @@ public abstract class GameRendererMixin {
 
     @Inject(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/render/GuiRenderer;render()V"))
-    private void polytone$setupGuiLightmap(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
+    private void polytone$setupGuiLightmap(CallbackInfo ci) {
         Polytone.LIGHTMAPS.setupForGUI(true);
     }
 
     @Inject(method = "render", at = @At(value = "TAIL"))
-    private void polytone$resetGuiLightmap(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
+    private void polytone$resetGuiLightmap(CallbackInfo ci) {
         Polytone.LIGHTMAPS.setupForGUI(false);
     }
 
@@ -49,17 +48,17 @@ public abstract class GameRendererMixin {
     }
 
     // post_chains_after_hand: save the world depth right before vanilla clears it to draw the hand...
-    @Inject(method = "renderLevel", at = @At(value = "INVOKE",
-            target = "Lcom/mojang/blaze3d/systems/CommandEncoder;clearDepthTexture(Lcom/mojang/blaze3d/textures/GpuTexture;D)V"))
-    private void polytone$snapshotWorldDepth(DeltaTracker deltaTracker, CallbackInfo ci) {
+    @Inject(method = "render3dHud", at = @At(value = "INVOKE",
+            target = "Lcom/mojang/renderpearl/api/commands/CommandEncoder;clearDepthTexture(Lcom/mojang/renderpearl/api/textures/GpuTexture;D)V"))
+    private void polytone$snapshotWorldDepth(CallbackInfo ci) {
         if (!Polytone.CONFIGS.postChainsAfterHand.get()) return;
         Polytone.POST_CHAINS.snapshotWorldDepth(Minecraft.getInstance().gameRenderer.mainRenderTarget());
     }
 
     // ...then run the chains after the hand, so held items occlude depth effects like godrays
     @Inject(method = "render", at = @At(value = "INVOKE", shift = At.Shift.AFTER,
-            target = "Lnet/minecraft/client/renderer/GameRenderer;renderLevel(Lnet/minecraft/client/DeltaTracker;)V"))
-    private void polytone$runPostChainsAfterHand(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
+            target = "Lnet/minecraft/client/renderer/GameRenderer;renderLevel()V"))
+    private void polytone$runPostChainsAfterHand(CallbackInfo ci) {
         if (!Polytone.CONFIGS.postChainsAfterHand.get()) return;
         Polytone.POST_CHAINS.runChainsAfterHand(Minecraft.getInstance().gameRenderer.mainRenderTarget(), this.resourcePool);
     }

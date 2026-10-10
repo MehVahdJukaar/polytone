@@ -92,7 +92,7 @@ public record BlockParticleEmitter(
 
         Vec3 v = Vec3.atCenterOf(pos);
         double spawnChance = chance.evaluate(level, v, state);
-        if (level.getRandom().nextFloat() < spawnChance && predicate().test(state, level.getRandom())) {
+        if (level.getRandom().nextFloat() < spawnChance && predicate().test(state, pos, level.getRandom())) {
             if (biomes.isPresent()) {
                 var biome = level.getBiome(pos);
                 if (!biomes.get().contains(biome)) return;

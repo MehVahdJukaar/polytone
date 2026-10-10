@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
-import com.mojang.blaze3d.GpuFormat;
+import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.blaze3d.resource.ResourceHandle;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodec;
@@ -65,8 +65,8 @@ public class PostTargetsManager extends ContentManager<PostTargetsManager.Target
 
     public Set<Identifier> allowedTargets() {
         Map<Identifier, TargetSpec> specs = this.specs;
-        if (specs.isEmpty()) return LevelTargetBundle.SORTING_TARGETS;
-        Set<Identifier> set = new HashSet<>(LevelTargetBundle.SORTING_TARGETS);
+        if (specs.isEmpty()) return LevelTargetBundle.MAIN_TARGETS;
+        Set<Identifier> set = new HashSet<>(LevelTargetBundle.MAIN_TARGETS);
         set.addAll(specs.keySet());
         return set;
     }
@@ -79,8 +79,8 @@ public class PostTargetsManager extends ContentManager<PostTargetsManager.Target
             for (var e : specs.entrySet()) {
                 TargetSpec spec = e.getValue();
                 targets.put(e.getKey(), new TextureTarget(e.getKey().toString(),
-                        spec.width().orElse(frameWidth), spec.height().orElse(frameHeight), spec.useDepth(),
-                        GpuFormat.RGBA8_UNORM));
+                        spec.width().orElse(frameWidth), spec.height().orElse(frameHeight),
+                        GpuFormat.RGBA8_UNORM, spec.useDepth() ? GpuFormat.D32_FLOAT : null));
             }
             dirty = false;
         } else {

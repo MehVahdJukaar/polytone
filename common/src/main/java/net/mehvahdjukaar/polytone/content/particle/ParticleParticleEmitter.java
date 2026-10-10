@@ -88,7 +88,7 @@ public record ParticleParticleEmitter(
                 // off-thread (async particles): skip unloaded chunks, else the biome/air fallback misfires
                 if (!level.hasChunkAt(pos)) return;
                 if (biomes.isPresent() && !biomes.get().contains(level.getBiome(pos))) return;
-                if (predicate != AlwaysTrueTest.INSTANCE && !predicate.test(level.getBlockState(pos), rand)) return;
+                if (predicate != AlwaysTrueTest.INSTANCE && !predicate.test(level.getBlockState(pos), pos, rand)) return;
             }
             for (int i = 0; i < count.evaluate(particle, level); i++) {
                 ParticleOptions po = getParticleOptions(particle, level);

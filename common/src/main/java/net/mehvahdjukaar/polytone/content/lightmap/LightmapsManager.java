@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.lightmap;
 
 import com.google.gson.JsonElement;
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.PlatStuff;

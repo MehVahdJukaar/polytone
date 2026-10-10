@@ -1,13 +1,13 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
-import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.renderpearl.backend.opengl.GlBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
-import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
-import net.mehvahdjukaar.polytone.mixins.accessor.GlBufferAccessor;
 import org.lwjgl.opengl.GL30C;
 import org.lwjgl.opengl.GL31C;
 import org.lwjgl.opengl.GL32C;
@@ -86,7 +86,8 @@ public final class ExpressionUniformBuffers {
         for (var e : buffers.entrySet()) {
             int blockIndex = GL32C.glGetUniformBlockIndex(program, e.getKey());
             if (blockIndex < 0) continue;
-            int glId = ((GlBufferAccessor) e.getValue()).polytone$getHandle();
+            if (!(e.getValue() instanceof GlBuffer glBuffer)) continue;
+            int glId = glBuffer.handle();
             GL32C.glUniformBlockBinding(program, blockIndex, nextBindingPoint);
             GL30C.glBindBufferBase(GL31C.GL_UNIFORM_BUFFER, nextBindingPoint, glId);
             nextBindingPoint++;

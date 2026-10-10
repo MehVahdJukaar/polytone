@@ -14,6 +14,7 @@ import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
@@ -56,8 +57,8 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
             SchemaCodecs.optionalAlias(FogParam.CODEC, "fog_radius", "fog_end"),
             (b, fog, sky, fogFade, fogRadius) -> {
                 EnvironmentAttributeMapMod.Builder builder = EnvironmentAttributeMapMod.builder();
-                fog.ifPresent(f -> builder.set(EnvironmentAttributes.FOG_COLOR, f));
-                sky.ifPresent(s -> builder.set(EnvironmentAttributes.SKY_COLOR, s));
+                fog.ifPresent(f -> builder.set(EnvironmentAttributes.FOG_COLOR, ARGB.vector3fFromRGB24(f)));
+                sky.ifPresent(s -> builder.set(EnvironmentAttributes.SKY_COLOR, ARGB.vector3fFromRGB24(s)));
                 //probably very wrong
                 /*
                 fogRadius.ifPresent(f -> {

@@ -1,16 +1,16 @@
 package net.mehvahdjukaar.polytone;
 
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.DepthStencilState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.BlendFactor;
-import com.mojang.blaze3d.platform.CompareOp;
-import com.mojang.blaze3d.GpuFormat;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.BlendFunction;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.DepthStencilState;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.BlendFactor;
+import com.mojang.renderpearl.api.pipeline.CompareOp;
+import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.AddressMode;
-import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.AddressMode;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
@@ -20,7 +20,6 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.BindGroupLayouts;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.rendertype.OutputTarget;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -48,7 +47,8 @@ public class PolytoneRenderTypes {
     public static final RenderPipeline ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE = register(
             RenderPipeline.builder()
                     .withBindGroupLayout(BindGroupLayouts.GLOBALS)
-                    .withBindGroupLayout(BindGroupLayouts.MATRICES_PROJECTION)
+                    .withBindGroupLayout(BindGroupLayouts.PROJECTION)
+                    .withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS)
                     .withBindGroupLayout(BindGroupLayouts.FOG)
                     .withVertexShader("core/particle")
                     .withFragmentShader(Polytone.res("core/particle_no_cutoff"))
@@ -65,7 +65,8 @@ public class PolytoneRenderTypes {
                     .withBindGroupLayout(BindGroupLayouts.GLOBALS)
                     .withBindGroupLayout(BindGroupLayouts.FOG)
                     .withBindGroupLayout(BindGroupLayouts.SAMPLER0_SAMPLER2)
-                    .withBindGroupLayout(BindGroupLayouts.MATRICES_PROJECTION)
+                    .withBindGroupLayout(BindGroupLayouts.PROJECTION)
+                    .withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS)
                     .withVertexShader("core/block")
                     .withFragmentShader("core/block")
                     .withVertexBinding(0, DefaultVertexFormat.BLOCK)
@@ -80,7 +81,6 @@ public class PolytoneRenderTypes {
                     .useLightmap()
                     .withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS,
                             () -> RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.NEAREST, true))
-                    .setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
                     .setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE)
                     .createRenderSetup());
 
@@ -98,7 +98,8 @@ public class PolytoneRenderTypes {
     public static final RenderPipeline LEASH_PIPELINE = register(
             RenderPipeline.builder()
                     .withBindGroupLayout(BindGroupLayouts.GLOBALS)
-                    .withBindGroupLayout(BindGroupLayouts.MATRICES_PROJECTION)
+                    .withBindGroupLayout(BindGroupLayouts.PROJECTION)
+                    .withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS)
                     .withBindGroupLayout(BindGroupLayouts.SAMPLER0)
                     .withBindGroupLayout(BindGroupLayouts.FOG)
                     .withBindGroupLayout(BindGroupLayouts.SAMPLER2)

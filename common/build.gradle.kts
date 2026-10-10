@@ -4,7 +4,7 @@ plugins {
 
 common {
     //pinned so the build doesn't need to hit maven.neoforged.net to list versions
-    neoformVersion = "26.2-2"
+    neoformVersion = "26.3-1"
     accessWidener()
 }
 
@@ -24,7 +24,7 @@ dependencies {
     implementation ("net.objecthunter:exp4j:${exp4j_version}")
     implementation ("hollowpoint:nexp:${nexp_version}")
 
-    modCompileOnly("maven.modrinth:iris:1.11.2+26.1-neoforge")
+    modCompileOnly("maven.modrinth:iris:1.11.7+26.3-neoforge")
     modCompileOnly("maven.modrinth:packed-packs:${packed_packs_neoforge_version}")
     compileOnly("io.github.fishstiz.packed_packs.api:packed_packs_api-neoforge:${packed_packs_api_version}")
     compileOnly(files(layout.buildDirectory.file("sodium/sodium-neoforge-mod.jar")).builtBy(tasks.named("extractSodiumNeoforge")))

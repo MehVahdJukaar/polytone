@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.particle.gpu;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.Mth;

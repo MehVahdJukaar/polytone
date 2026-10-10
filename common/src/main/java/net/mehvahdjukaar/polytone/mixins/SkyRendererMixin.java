@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.minecraft.client.renderer.SkyRenderer;
@@ -16,7 +16,7 @@ public class SkyRendererMixin {
 
     @ModifyExpressionValue(method = "renderSkyDisc",
             at = @At(value = "FIELD",
-                    target = "Lnet/minecraft/client/renderer/RenderPipelines;SKY:Lcom/mojang/blaze3d/pipeline/RenderPipeline;"))
+                    target = "Lnet/minecraft/client/renderer/RenderPipelines;SKY:Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;"))
     private RenderPipeline polytone$skyDepthWrite(RenderPipeline original) {
         if (Polytone.CONFIGS.skyDepthWrite.get()) {
             return PolytoneRenderTypes.SKY_DEPTH_WRITE_PIPELINE;

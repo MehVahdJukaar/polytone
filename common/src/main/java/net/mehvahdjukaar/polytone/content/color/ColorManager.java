@@ -43,7 +43,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.RedStoneWireBlock;
+import net.minecraft.world.level.block.RedstoneWireBlock;
 import net.minecraft.world.level.border.BorderStatus;
 import net.minecraft.world.level.material.MapColor;
 import org.jetbrains.annotations.Nullable;
@@ -68,7 +68,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
     private final Map<DyeColor, Integer> customSheepColors = new EnumMap<>(DyeColor.class);
     private final Map<DyeColor, Integer> originalSheepColors = new EnumMap<>(ColorLerper.Type.SHEEP.colorByDye);
 
-    protected final int[] originalRedstoneWireColors = Arrays.copyOf(RedStoneWireBlock.COLORS, RedStoneWireBlock.COLORS.length);
+    protected final int[] originalRedstoneWireColors = Arrays.copyOf(RedstoneWireBlock.COLORS, RedstoneWireBlock.COLORS.length);
 
     protected final Style originalSplash = SplashManager.DEFAULT_STYLE;
 
@@ -401,10 +401,10 @@ public class ColorManager extends SingleFileContentManager<Void> {
 
         doWith(obj, "redstone", (k, v) -> {
             int code = Integer.parseInt(k);
-            if (code < RedStoneWireBlock.COLORS.length) {
+            if (code < RedstoneWireBlock.COLORS.length) {
                 int col = parseColor(v);
                 var rgb = ColorUtils.unpack(col);
-                RedStoneWireBlock.COLORS[code] = ARGB.colorFromFloat(1.0f, rgb[0], rgb[1], rgb[2]);
+                RedstoneWireBlock.COLORS[code] = ARGB.colorFromFloat(1.0f, rgb[0], rgb[1], rgb[2]);
                 if (code == 15) {
                     int maxPower = ARGB.colorFromFloat(1.0f, rgb[0], rgb[1], rgb[2]);
                     net.minecraft.core.particles.DustParticleOptions.REDSTONE_PARTICLE_COLOR = maxPower;
@@ -656,7 +656,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
         }
         vanillaBorderStatus.clear();
 
-        RedStoneWireBlock.COLORS = Arrays.copyOf(originalRedstoneWireColors, originalRedstoneWireColors.length);
+        RedstoneWireBlock.COLORS = Arrays.copyOf(originalRedstoneWireColors, originalRedstoneWireColors.length);
         DustParticleOptions.REDSTONE_PARTICLE_COLOR = DEFAULT_COLOR;//default
         ((DustParticleOptionAccessor) DustParticleOptions.REDSTONE).setColor(DustParticleOptions.REDSTONE_PARTICLE_COLOR);
     }

@@ -21,7 +21,8 @@ subprojects {
 
     apply(plugin = "com.possible-triangle.core")
     apply(plugin = "net.mehvahdjukaar.candlelight")
-    apply(plugin = "dev.mixinmcp.decompile")
+    // dev tool plugin; skipped on machines that don't have it
+    runCatching { apply(plugin = "dev.mixinmcp.decompile") }
 
     dependencies {
         compileOnly("net.mehvahdjukaar:candlelight:1.2.4")

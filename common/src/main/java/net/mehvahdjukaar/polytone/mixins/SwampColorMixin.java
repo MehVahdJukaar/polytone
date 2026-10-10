@@ -23,7 +23,7 @@ public class SwampColorMixin {
         if(a != null || b != null) {
             a = a == null ? 5011004 : a;
             b = b == null ? 6975545 : b;
-            double f = Biome.BIOME_INFO_NOISE.getValue(d * 0.0225, e * 0.0225, false);
+            double f = Biome.BIOME_INFO_NOISE.get(d * 0.0225, e * 0.0225);
             cir.setReturnValue(f < -0.1 ? a : b);
         }
     }

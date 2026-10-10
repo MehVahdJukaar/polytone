@@ -1,5 +1,10 @@
 package net.mehvahdjukaar.polytone.mixins;
 
+import net.minecraft.util.ARGB;
+import org.joml.Vector3f;
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -51,22 +56,28 @@ public abstract class ClientLevelMixin extends Level {
     }
 
 
-    @Inject(method = "addBreakingBlockEffect", at = @At("HEAD"), cancellable = true)
-    public void polytone$addExtraBreakingParticles(BlockPos pos, Direction direction, CallbackInfo ci) {
+    // the breaking sound plays in the same method, so a ticker that cancels only stops the particles
+    @Inject(method = "addBreakingBlockEffects", at = @At("HEAD"))
+    public void polytone$addExtraBreakingParticles(BlockPos pos, Direction direction, boolean playSound, CallbackInfo ci,
+                                                   @Share("polytone$cancelParticles") LocalBooleanRef cancelParticles) {
         BlockState state = this.getBlockState(pos);
         if (!state.isAir()) {
-            boolean cancels = Polytone.BLOCK_MODIFIERS.runTickers(state, (ClientLevel)(Object)this, pos, TickSource.BLOCK_CRACKING);
-            if (cancels) {
-                ci.cancel();
-            }
+            cancelParticles.set(Polytone.BLOCK_MODIFIERS.runTickers(state, (ClientLevel)(Object)this, pos, TickSource.BLOCK_CRACKING));
         }
     }
 
-    @ModifyExpressionValue(method = "addEnvironmentAttributeLayers", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/ARGB;color(III)I"))
-    public int polytone$modifySkyLightSampler(int value) {
+    @WrapWithCondition(method = "addBreakingBlockEffects", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/multiplayer/ClientLevel;addBreakingParticles(Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Lnet/minecraft/world/level/block/state/BlockState;)V"))
+    private boolean polytone$skipCancelledParticles(ClientLevel level, BlockPos pos, Direction direction, BlockState state,
+                                                    @Share("polytone$cancelParticles") LocalBooleanRef cancelParticles) {
+        return !cancelParticles.get();
+    }
+
+    @ModifyExpressionValue(method = "addEnvironmentAttributeLayers", at = @At(value = "NEW", target = "(FFF)Lorg/joml/Vector3f;"))
+    public Vector3f polytone$modifySkyLightSampler(Vector3f value) {
         Integer c = Polytone.COLORS.getSkyFlash();
         if (c != null) {
-            return c;
+            return ARGB.vector3fFromRGB24(c);
         }
         return value;
     }
