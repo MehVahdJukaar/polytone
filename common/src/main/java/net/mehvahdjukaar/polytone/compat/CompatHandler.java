@@ -12,5 +12,6 @@ public class CompatHandler {
     public static final boolean ETF = PlatStuff.isModLoaded("entity_texture_features");
     public static final boolean SODIUM = PlatStuff.isModLoaded("sodium");
     public static final boolean NAUTILUS = PlatStuff.isModLoaded("nautilus_studio");
+    public static final boolean DISTANT_HORIZONS = PlatStuff.isModLoaded("distanthorizons");
 
 }

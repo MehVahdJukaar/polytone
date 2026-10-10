@@ -24,21 +24,15 @@ public class BiomeKeysCache {
             {
                 var biomeKey = level.registryAccess().lookupOrThrow(Registries.BIOME).getResourceKey(biome);
                 if (biomeKey.isEmpty()) {
+                    var server = Minecraft.getInstance().getSingleplayerServer();
+                    boolean isServerBiome = server != null && server.registryAccess().lookupOrThrow(Registries.BIOME).getResourceKey(biome).isPresent();
+                    if (isServerBiome) {
+                        throw new ModThrewInServerSideBiomeException("A server side Biome was passed to a client side color getter! This is NOT a Polytone issue. Some other mod is calling client code with server biomes. Biome: " + biome);
+                    }
 
                     //we cant even log here otherwise people will complain
                     //if you are reading this, fix your mod.
                     return Biomes.THE_VOID;
-                    //tries with server biomes. This should never happen, server biomes should never be passed here
-                   // biomeKey = PlatStuff.getServerRegistryAccess()
-                   //         .lookupOrThrow(Registries.BIOME).getResourceKey(biome);
-
-                  //  if (biomeKey.isPresent()) {
-                       // return PLAINS;
-                        //Polytone.LOGGER.error("Polytone detected a Server Biome was passed to a getColor client side function! This is a bug! Must be caused by some other mod!");
-                       // return biomeKey.get();
-                 //   } else {
-                        //throw new IllegalStateException("Failed to get biome key for biome: " + biome + " This means that biome registry returned an empty key for it. How is this possible? Was it not registered? Seriously HOW? Must be due to some mod doing unsafe stuff!! This is NOT a Polytone issue!");
-                 //   }
                 }
                 return biomeKey.get();
             });
@@ -48,6 +42,12 @@ public class BiomeKeysCache {
 
     public static void clear() {
         CACHE.get().clear();
+    }
+
+    public static class ModThrewInServerSideBiomeException extends IllegalStateException {
+        public ModThrewInServerSideBiomeException(String message) {
+            super(message);
+        }
     }
 
 }

@@ -41,6 +41,7 @@ dependencies {
     modCompileOnly("curse.maven:entity-texture-features-fabric-568563:7392425")
     modCompileOnly("curse.maven:serene-seasons-291874:6182596")
     modCompileOnly("maven.modrinth:iris:1.11.2+26.1-neoforge")
+    modCompileOnly("maven.modrinth:distanthorizons:3.3.3-26.2")
     // replaces the vanilla pack screen
     modImplementation("maven.modrinth:packed-packs:${packed_packs_neoforge_version}")
     compileOnly("io.github.fishstiz.packed_packs.api:packed_packs_api-neoforge:${packed_packs_api_version}")
