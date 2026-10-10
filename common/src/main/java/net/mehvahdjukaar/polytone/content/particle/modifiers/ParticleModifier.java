@@ -15,7 +15,6 @@ import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.exp.impl.ParticleContextExpression;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.SingleQuadParticle;
-import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ItemParticleOption;
@@ -145,11 +144,9 @@ public class ParticleModifier {
             if (options instanceof BlockParticleOption bo) {
                 state = bo.getState();
             }
+            //not colorInWorld. that one goes through the block tint cache
             BlockPos pos = BlockPos.containing(particle.x, particle.y, particle.z);
-            BlockAndTintGetter bat = level instanceof BlockAndTintGetter b ? b : null;
-            int color = state != null && bat != null ? colormap.colorInWorld(state, bat, pos)
-                    : colormap.sampleColor(bat, state, Vec3.atCenterOf(pos), null, null);
-            float[] unpack = ColorUtils.unpack(color);
+            float[] unpack = ColorUtils.unpack(colormap.sampleColor(level, state, Vec3.atCenterOf(pos), level.getBiome(pos).value(), null));
             particle.setColor(unpack[0], unpack[1], unpack[2]);
         }
         if (lifeGetter != null) {

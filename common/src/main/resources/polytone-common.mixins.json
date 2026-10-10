@@ -61,6 +61,7 @@
     "LevelExtractorMixin",
     "LevelRendererMixin",
     "ShaderManagerMixin",
+    "SignRendererMixin",
     "LocalPlayerMixin",
     "MinecraftMixin",
     "ModelBakeryMixin",
