@@ -159,30 +159,27 @@ public record DimensionEffectsModifier(DimensionEnvAttributeModifications attrib
         }
 
         public DimensionEnvAttributeModifications applyAllModifications(DimensionType dimension) {
-            EnvironmentAttributeMap oldBase = EnvironmentAttributeMap.EMPTY;
+            EnvironmentAttributeMapMod oldBase = EnvironmentAttributeMapMod.EMPTY;
             if (!baseMod.isEmpty()) {
-                oldBase = dimension.attributes();
-                ((DimensionTypeAccessor) (Object) dimension).setAttributes(baseMod.modify(oldBase));
+                oldBase = EnvironmentAttributeMapMod.wrapVanilla(dimension.attributes());
+                ((DimensionTypeAccessor) (Object) dimension).setAttributes(baseMod.modify(dimension.attributes()));
             }
 
-            EnvironmentAttributeMap oldRain = EnvironmentAttributeMap.EMPTY;
+            EnvironmentAttributeMapMod oldRain = EnvironmentAttributeMapMod.EMPTY;
             if (!rainMod.isEmpty()) {
-                oldRain = WeatherAttributes.RAIN;
-                WeatherAttributes.RAIN = rainMod.modify(oldRain);
+                oldRain = EnvironmentAttributeMapMod.wrapVanilla(WeatherAttributes.RAIN);
+                WeatherAttributes.RAIN = rainMod.modify(WeatherAttributes.RAIN);
             }
 
-            EnvironmentAttributeMap oldThunder = EnvironmentAttributeMap.EMPTY;
+            EnvironmentAttributeMapMod oldThunder = EnvironmentAttributeMapMod.EMPTY;
             if (!thunderMod.isEmpty()) {
-                oldThunder = WeatherAttributes.THUNDER;
-                WeatherAttributes.THUNDER = thunderMod.modify(oldThunder);
+                oldThunder = EnvironmentAttributeMapMod.wrapVanilla(WeatherAttributes.THUNDER);
+                WeatherAttributes.THUNDER = thunderMod.modify(WeatherAttributes.THUNDER);
             }
 
             return new DimensionEnvAttributeModifications(
-                    EnvironmentAttributeMapMod.wrapVanilla(oldBase),
-                    EnvironmentAttributeMapMod.wrapVanilla(oldRain),
-                    EnvironmentAttributeMapMod.wrapVanilla(oldThunder),
-                    EnvironmentAttributeMapMod.EMPTY
-            );
+                    oldBase, oldRain, oldThunder,
+                    EnvironmentAttributeMapMod.EMPTY);
         }
     }
 
