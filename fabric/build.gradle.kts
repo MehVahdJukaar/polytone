@@ -38,6 +38,8 @@ dependencies {
 
    // modRuntimeOnly("maven.modrinth:moonlight:M2v3yoSl")       // moonlight 1.21.1-3.1.0 (fabric)
    // modRuntimeOnly("maven.modrinth:supplementaries:5pbVz5qU") // supplementaries 1.21.1-3.8.0 (fabric)
+    modRuntimeOnly("maven.modrinth:moonlight:przKUDWo")  // moonlight 1.21.1-3.7.1 (fabric)
+    modRuntimeOnly("maven.modrinth:amendments:TuWUel70") // amendments 1.21-2.1.10 (fabric)
     modCompileOnly("com.terraformersmc:modmenu:${modmenu_version}")
     modRuntimeOnly("com.terraformersmc:modmenu:${modmenu_version}")
 }
