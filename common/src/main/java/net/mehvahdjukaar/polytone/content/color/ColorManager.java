@@ -14,6 +14,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
+import net.mehvahdjukaar.polytone.common.expressions.impl.EntityExp;
 import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
 import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
@@ -38,7 +39,6 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.border.BorderStatus;
 import net.minecraft.world.level.material.MapColor;
@@ -69,13 +69,13 @@ public class ColorManager extends SingleFileContentManager<Void> {
     @Nullable
     ResourceLocation xpOrbParticle;
     @Nullable
-    private BlockContextExpression xpOrbColor;
+    private XpOrbExp xpOrbColor;
     @Nullable
-    private BlockContextExpression xpOrbColorR;
+    private XpOrbExp xpOrbColorR;
     @Nullable
-    private BlockContextExpression xpOrbColorG;
+    private XpOrbExp xpOrbColorG;
     @Nullable
-    private BlockContextExpression xpOrbColorB;
+    private XpOrbExp xpOrbColorB;
 
     private Integer xpBar = null;
     private Integer splash = null;
@@ -342,10 +342,10 @@ public class ColorManager extends SingleFileContentManager<Void> {
         doWith(obj, "xporb", (k, v) -> {
             switch (k) {
                 case "particle_replacement" -> Polytone.PARTICLE_MODIFIERS.setXpOrbReplace(v);
-                case "color" -> xpOrbColor = new BlockContextExpression(v.getAsString());
-                case "red" -> xpOrbColorR = new BlockContextExpression(v.getAsString());
-                case "green" -> xpOrbColorG = new BlockContextExpression(v.getAsString());
-                case "blue" -> xpOrbColorB = new BlockContextExpression(v.getAsString());
+                case "color" -> xpOrbColor = parseXpOrbExp(v.getAsString());
+                case "red" -> xpOrbColorR = parseXpOrbExp(v.getAsString());
+                case "green" -> xpOrbColorG = parseXpOrbExp(v.getAsString());
+                case "blue" -> xpOrbColorB = parseXpOrbExp(v.getAsString());
             }
         });
 
@@ -586,21 +586,32 @@ public class ColorManager extends SingleFileContentManager<Void> {
     }
 
 
+    private interface XpOrbExp {
+        double evaluate(ExperienceOrb orb, float partialTicks);
+    }
+
+    private static XpOrbExp parseXpOrbExp(String source) {
+        try {
+            BlockContextExpression legacy = new BlockContextExpression(source);
+            return (orb, partialTicks) -> legacy.getValue(orb.position(), orb.tickCount + partialTicks, orb.level());
+        } catch (Exception notExp4j) {
+            EntityExp exp = EntityExp.TYPE.create(source).getOrThrow();
+            return (orb, partialTicks) -> exp.evaluate(orb);
+        }
+    }
+
     public float @Nullable [] getXpOrbColor(ExperienceOrb orb, float partialTicks) {
-        Level level = orb.level();
-        var time = orb.tickCount + partialTicks;
-        Vec3 position = orb.position();
         if (xpOrbColor != null) {
-            int color = (int) xpOrbColor.getValue(position, time, level);
+            int color = (int) xpOrbColor.evaluate(orb, partialTicks);
             return ColorUtils.unpack(color);
         }
         if (xpOrbColorR == null && xpOrbColorG == null && xpOrbColorB == null) return null;
         float r = 0;
         float g = 0;
         float b = 0;
-        if (xpOrbColorR != null) r = (float) xpOrbColorR.getValue(position, time, level);
-        if (xpOrbColorG != null) g = (float) xpOrbColorG.getValue(position, time, level);
-        if (xpOrbColorB != null) b = (float) xpOrbColorB.getValue(position, time, level);
+        if (xpOrbColorR != null) r = (float) xpOrbColorR.evaluate(orb, partialTicks);
+        if (xpOrbColorG != null) g = (float) xpOrbColorG.evaluate(orb, partialTicks);
+        if (xpOrbColorB != null) b = (float) xpOrbColorB.evaluate(orb, partialTicks);
         return new float[]{r, g, b};
     }
 

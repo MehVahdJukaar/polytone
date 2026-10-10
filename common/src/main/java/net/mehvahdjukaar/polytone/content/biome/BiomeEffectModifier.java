@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.PlatStuff;
-import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.Targets;
@@ -19,6 +19,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.*;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Map;
 import java.util.Optional;
@@ -240,19 +241,19 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                         Codec.simpleMap(Weather.CODEC, SIMPLE_CODEC, StringRepresentable.keys(Weather.values()))
                                 .xmap(FogMap::new, FogMap::map).codec()
                 ),
-                BlockContextExpression.CODEC.xmap(
+                IBlockExp.CODEC_LEGACY.xmap(
                         FogExpression::new,
                         fogMap -> fogMap.map
                 )
         );
     }
 
-    public record FogExpression(BlockContextExpression map) implements FogParam {
+    public record FogExpression(IBlockExp map) implements FogParam {
 
         @Override
         public float get(Level level) {
             BlockPos pos = ClientFrameTicker.getCameraPos();
-            return (float) map.getValue(level, pos, Blocks.AIR.defaultBlockState());
+            return (float) map.evaluate(level, Vec3.atLowerCornerOf(pos), Blocks.AIR.defaultBlockState());
         }
     }
 

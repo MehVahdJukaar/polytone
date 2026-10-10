@@ -14,7 +14,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.companion.TextureRole;
 import net.mehvahdjukaar.polytone.common.companion.ScannedTextures;
-import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.minecraft.client.Minecraft;
@@ -50,7 +50,7 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
     private final Object2ObjectMap<DimensionType, IColorGetter> terrainFogColormaps = new Object2ObjectArrayMap<>();
     private final Object2ObjectMap<DimensionType, IColorGetter> skyColormaps = new Object2ObjectArrayMap<>();
     private final Object2ObjectMap<DimensionType, IColorGetter> sunsetColormaps = new Object2ObjectArrayMap<>();
-    private final Object2ObjectMap<DimensionType, BlockContextExpression> cloudFunctions = new Object2ObjectArrayMap<>();
+    private final Object2ObjectMap<DimensionType, IBlockExp> cloudFunctions = new Object2ObjectArrayMap<>();
     private final Object2BooleanArrayMap<DimensionType> cancelFogWeatherDarken = new Object2BooleanArrayMap<>();
     private final Object2BooleanArrayMap<DimensionType> cancelSkyWeatherDarken = new Object2BooleanArrayMap<>();
     private final Object2BooleanArrayMap<DimensionType> translucentSunAndMoon = new Object2BooleanArrayMap<>();
@@ -265,10 +265,10 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
 
     @Nullable
     public Float modifyCloudHeight(ClientLevel level) {
-        BlockContextExpression height = this.cloudFunctions.get(level.dimensionType());
+        IBlockExp height = this.cloudFunctions.get(level.dimensionType());
         if (height == null) return null;
         BlockPos pos = ClientFrameTicker.getCameraPos();
-        double v = height.getValue(level, pos, Blocks.AIR.defaultBlockState());
+        double v = height.evaluate(level, Vec3.atLowerCornerOf(pos), Blocks.AIR.defaultBlockState());
         if (v >= 10000) {
             return Float.NaN;
         }

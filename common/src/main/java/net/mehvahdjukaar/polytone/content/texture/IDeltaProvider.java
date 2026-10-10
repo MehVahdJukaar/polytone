@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.content.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.common.expressions.impl.SimpleExp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.Level;
@@ -14,8 +15,9 @@ import java.util.Locale;
 
 public interface IDeltaProvider {
     Codec<IDeltaProvider> CODEC = SchemaCodecs.labeled(
-            SchemaCodecs.alternatives(PresetProvider.CODEC, ExpProvider.CODEC),
+            SchemaCodecs.alternatives(PresetProvider.CODEC, ExpProvider.CODEC, SimpleExpProvider.CODEC),
             SchemaCodecs.alt("preset", PresetProvider.CODEC),
+            SchemaCodecs.alt("expression", SimpleExp.TYPE.codec()),
             SchemaCodecs.alt("legacy expression", ColormapExpressionProvider.CODEC));
 
     @Nullable Float getDelta(float timeCycleDuration);
@@ -29,6 +31,17 @@ public interface IDeltaProvider {
         public Float getDelta(float timeCycleDuration) {
             //expression evaluation not implemented yet
             return exp.getValue(null, null, null, null, null);
+        }
+    }
+
+
+    record SimpleExpProvider(SimpleExp exp) implements IDeltaProvider {
+        public static final Codec<SimpleExpProvider> CODEC = SimpleExp.TYPE.codec()
+                .xmap(SimpleExpProvider::new, SimpleExpProvider::exp);
+
+        @Override
+        public Float getDelta(float timeCycleDuration) {
+            return (float) exp.evaluate();
         }
     }
 

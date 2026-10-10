@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.lightmap.Lightmap;
@@ -17,7 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 
 
-public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpression>> cloudLevel,
+public record DimensionEffectsModifier(Optional<Either<Float, IBlockExp>> cloudLevel,
                                        Optional<Boolean> hasGround,
                                        Optional<DimensionSpecialEffects.SkyType> skyType,
                                        Optional<Boolean> forceBrightLightmap,
@@ -37,7 +37,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
 
     public static final Codec<DimensionEffectsModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    Codec.either(Codec.FLOAT, BlockContextExpression.CODEC).optionalFieldOf("cloud_level").forGetter(DimensionEffectsModifier::cloudLevel),
+                    Codec.either(Codec.FLOAT, IBlockExp.CODEC_LEGACY).optionalFieldOf("cloud_level").forGetter(DimensionEffectsModifier::cloudLevel),
                     Codec.BOOL.optionalFieldOf("has_ground").forGetter(DimensionEffectsModifier::hasGround),
                     SKY_TYPE_CODEC.optionalFieldOf("sky_type").forGetter(DimensionEffectsModifier::skyType),
                     Codec.BOOL.optionalFieldOf("force_bright_lightmap").forGetter(DimensionEffectsModifier::forceBrightLightmap),
@@ -118,7 +118,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
 
     public DimensionEffectsModifier applyInplace(ResourceLocation dimensionId) {
         DimensionSpecialEffects effects = PlatStuff.getDimensionEffects(dimensionId);
-        Optional<Either<Float, BlockContextExpression>> oldCloud = Optional.empty();
+        Optional<Either<Float, IBlockExp>> oldCloud = Optional.empty();
         if (this.cloudLevel.isPresent() && this.cloudLevel.get().left().isPresent()) {
             oldCloud = Optional.of(Either.left(effects.cloudLevel));
             effects.cloudLevel = this.cloudLevel.get().left().get();

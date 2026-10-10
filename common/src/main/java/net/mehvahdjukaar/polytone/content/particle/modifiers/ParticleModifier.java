@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.content.particle.modifiers;
 
 import net.mehvahdjukaar.polytone.common.exp.impl.ParticleContextExpression;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
@@ -36,14 +37,14 @@ public class ParticleModifier {
     public static final Codec<ParticleModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
             Filter.CODEC.optionalFieldOf("filter").forGetter(p -> Optional.ofNullable(p.filter)),
             Colormap.CODEC.optionalFieldOf("colormap").forGetter(p -> Optional.ofNullable(p.colormap)),
-            ParticleContextExpression.CODEC.optionalFieldOf("color").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleContextExpression.CODEC.optionalFieldOf("life").forGetter(p -> Optional.ofNullable(p.lifeGetter)),
-            ParticleContextExpression.CODEC.optionalFieldOf("size").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleContextExpression.CODEC.optionalFieldOf("red").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleContextExpression.CODEC.optionalFieldOf("green").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleContextExpression.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleContextExpression.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleContextExpression.CODEC.optionalFieldOf("speed").forGetter(p -> Optional.ofNullable(p.speedGetter)),
+            IParticleExp.CODEC_LEGACY.optionalFieldOf("color").forGetter(p -> Optional.ofNullable(p.colorGetter)),
+            IParticleExp.CODEC_LEGACY.optionalFieldOf("life").forGetter(p -> Optional.ofNullable(p.lifeGetter)),
+            IParticleExp.CODEC_LEGACY.optionalFieldOf("size").forGetter(p -> Optional.ofNullable(p.sizeGetter)),
+            IParticleExp.CODEC_LEGACY.optionalFieldOf("red").forGetter(p -> Optional.ofNullable(p.redGetter)),
+            IParticleExp.CODEC_LEGACY.optionalFieldOf("green").forGetter(p -> Optional.ofNullable(p.greenGetter)),
+            IParticleExp.CODEC_LEGACY.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.blueGetter)),
+            IParticleExp.CODEC_LEGACY.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.alphaGetter)),
+            IParticleExp.CODEC_LEGACY.optionalFieldOf("speed").forGetter(p -> Optional.ofNullable(p.speedGetter)),
             ColoredLight.ParticleLight.CODEC
                     .optionalFieldOf("colored_light").forGetter(p -> Optional.ofNullable(p.coloredLight)),
             Targets.codec(Registries.PARTICLE_TYPE).optionalFieldOf("targets", Targets.EMPTY).forGetter(p -> p.targets)
@@ -61,30 +62,30 @@ public class ParticleModifier {
     @Nullable
     public IColorGetter colormap;
     @Nullable
-    public final ParticleContextExpression colorGetter;
+    public final IParticleExp colorGetter;
     @Nullable
-    public final ParticleContextExpression lifeGetter;
+    public final IParticleExp lifeGetter;
     @Nullable
-    public final ParticleContextExpression sizeGetter;
+    public final IParticleExp sizeGetter;
     @Nullable
-    public final ParticleContextExpression speedGetter;
+    public final IParticleExp speedGetter;
     @Nullable
-    public final ParticleContextExpression redGetter;
+    public final IParticleExp redGetter;
     @Nullable
-    public final ParticleContextExpression blueGetter;
+    public final IParticleExp blueGetter;
     @Nullable
-    public final ParticleContextExpression greenGetter;
+    public final IParticleExp greenGetter;
     @Nullable
-    public final ParticleContextExpression alphaGetter;
+    public final IParticleExp alphaGetter;
     @Nullable
     public final ColoredLight.ParticleLight coloredLight;
     public final Targets targets;
 
     private ParticleModifier(Optional<Filter> filter, Optional<IColorGetter> colormap,
-                             Optional<ParticleContextExpression> color, Optional<ParticleContextExpression> life,
-                             Optional<ParticleContextExpression> size, Optional<ParticleContextExpression> red,
-                             Optional<ParticleContextExpression> green, Optional<ParticleContextExpression> blue,
-                             Optional<ParticleContextExpression> alpha, Optional<ParticleContextExpression> speed,
+                             Optional<IParticleExp> color, Optional<IParticleExp> life,
+                             Optional<IParticleExp> size, Optional<IParticleExp> red,
+                             Optional<IParticleExp> green, Optional<IParticleExp> blue,
+                             Optional<IParticleExp> alpha, Optional<IParticleExp> speed,
                              Optional<ColoredLight.ParticleLight> coloredLight,
                              Targets targets) {
         this(filter.orElse(null), colormap.orElse(null), color.orElse(null), life.orElse(null), size.orElse(null),
@@ -93,10 +94,10 @@ public class ParticleModifier {
     }
 
     public ParticleModifier(@Nullable Filter filter, @Nullable IColorGetter colormap,
-                            @Nullable ParticleContextExpression color, @Nullable ParticleContextExpression life,
-                            @Nullable ParticleContextExpression size, @Nullable ParticleContextExpression red,
-                            @Nullable ParticleContextExpression green, @Nullable ParticleContextExpression blue,
-                            @Nullable ParticleContextExpression alpha, @Nullable ParticleContextExpression speed,
+                            @Nullable IParticleExp color, @Nullable IParticleExp life,
+                            @Nullable IParticleExp size, @Nullable IParticleExp red,
+                            @Nullable IParticleExp green, @Nullable IParticleExp blue,
+                            @Nullable IParticleExp alpha, @Nullable IParticleExp speed,
                             @Nullable ColoredLight.ParticleLight coloredLight,
                             Targets explicitTargets) {
         this.colorGetter = color;
@@ -115,7 +116,7 @@ public class ParticleModifier {
 
     public static ParticleModifier ofColor(String color) {
         ParticleContextExpression expression = new ParticleContextExpression(color);
-        return new ParticleModifier(null, null, expression, null, null, null, null,
+        return new ParticleModifier(null, null, expression::getValue, null, null, null, null,
                 null, null, null, null, Targets.EMPTY);
     }
 
@@ -134,7 +135,7 @@ public class ParticleModifier {
             if (!filter.test(options)) return;
         }
         if (colorGetter != null) {
-            float[] unpack = ColorUtils.unpack((int) colorGetter.getValue(particle, level));
+            float[] unpack = ColorUtils.unpack((int) colorGetter.evaluate(particle, level));
             particle.setColor(unpack[0], unpack[1], unpack[2]);
         }
         if (colormap != null) {
@@ -148,28 +149,28 @@ public class ParticleModifier {
             particle.setColor(unpack[0], unpack[1], unpack[2]);
         }
         if (lifeGetter != null) {
-            particle.setLifetime((int) lifeGetter.getValue(particle, level));
+            particle.setLifetime((int) lifeGetter.evaluate(particle, level));
         }
         if (sizeGetter != null) {
-            particle.scale((float) sizeGetter.getValue(particle, level));
+            particle.scale((float) sizeGetter.evaluate(particle, level));
         }
         if (redGetter != null) {
-            particle.rCol = (float) redGetter.getValue(particle, level);
+            particle.rCol = (float) redGetter.evaluate(particle, level);
         }
         if (greenGetter != null) {
-            particle.gCol = (float) greenGetter.getValue(particle, level);
+            particle.gCol = (float) greenGetter.evaluate(particle, level);
         }
         if (blueGetter != null) {
-            particle.bCol = (float) blueGetter.getValue(particle, level);
+            particle.bCol = (float) blueGetter.evaluate(particle, level);
         }
         if (speedGetter != null) {
-            double speed = speedGetter.getValue(particle, level);
+            double speed = speedGetter.evaluate(particle, level);
             particle.xd *= speed;
             particle.yd *= speed;
             particle.zd *= speed;
         }
         if (alphaGetter != null) {
-            particle.alpha = (float) alphaGetter.getValue(particle, level);
+            particle.alpha = (float) alphaGetter.evaluate(particle, level);
         }
     }
 

@@ -39,6 +39,10 @@ public class CustomParticleInstance extends TextureSheetParticle {
     protected final @Nullable BakedModel model;
     protected final List<IParticleTickable> tickables;
     protected float oQuadSize;
+    private float oRCol;
+    private float oGCol;
+    private float oBCol;
+    private float oAlpha;
     private float renderScale = 1;
     protected double custom;
 
@@ -94,7 +98,7 @@ public class CustomParticleInstance extends TextureSheetParticle {
         this.colormapCache = this.type.colormap == null ? null
                 : new ParticleColor.Cache(this, this.type.colormap, state, pos);
         this.lightCache = new ParticleLightCache.Entry(super::getLightColor);
-
+        this.syncOldColor();
     }
 
     public Level getLevel() {
@@ -125,11 +129,26 @@ public class CustomParticleInstance extends TextureSheetParticle {
 
     @Override
     public void render(VertexConsumer buffer, Camera camera, float partialTicks) {
-        if (canUseSodiumFastPath()) {
-            super.render(buffer, camera, partialTicks);
-            return;
-        }
+        float red = this.rCol;
+        float green = this.gCol;
+        float blue = this.bCol;
+        float currentAlpha = this.alpha;
+        //hack:vanilla and sodium read the fields directly. Lerped color has to sit in them while we draw
+        this.rCol = Mth.lerp(partialTicks, this.oRCol, red);
+        this.gCol = Mth.lerp(partialTicks, this.oGCol, green);
+        this.bCol = Mth.lerp(partialTicks, this.oBCol, blue);
+        this.alpha = Mth.lerp(partialTicks, this.oAlpha, currentAlpha);
 
+        if (canUseSodiumFastPath()) super.render(buffer, camera, partialTicks);
+        else this.renderRotated(buffer, camera, partialTicks);
+
+        this.rCol = red;
+        this.gCol = green;
+        this.bCol = blue;
+        this.alpha = currentAlpha;
+    }
+
+    private void renderRotated(VertexConsumer buffer, Camera camera, float partialTicks) {
         Quaternionf quaternionf = new Quaternionf();
         IRotationProvider rotProv = this.type.rotationProvider;
         if (rotProv.updatesEveryRenderTick() || this.customRotationO == null) {
@@ -274,6 +293,15 @@ public class CustomParticleInstance extends TextureSheetParticle {
     void initTick() {
         this.type.ticker.tick(this, level);
         this.setAge(0);
+        // otherwise first frame fades in from the initializer colors
+        this.syncOldColor();
+    }
+
+    private void syncOldColor() {
+        this.oRCol = this.rCol;
+        this.oGCol = this.gCol;
+        this.oBCol = this.bCol;
+        this.oAlpha = this.alpha;
     }
 
     void tickInternal() {
@@ -295,6 +323,7 @@ public class CustomParticleInstance extends TextureSheetParticle {
         //interpolate our states
         this.oRoll = this.roll;
         this.oQuadSize = this.quadSize;
+        this.syncOldColor();
 
         if (!this.type.rotationProvider.updatesEveryRenderTick()) {
             //handle initialized state where both are null
