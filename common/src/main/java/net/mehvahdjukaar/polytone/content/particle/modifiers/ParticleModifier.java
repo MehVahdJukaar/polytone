@@ -12,6 +12,7 @@ import net.mehvahdjukaar.polytone.common.Targets;
 import net.minecraft.core.registries.Registries;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.exp.impl.ParticleContextExpression;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.core.BlockPos;
@@ -39,14 +40,14 @@ public class ParticleModifier {
     public static final SchemaCodec<ParticleModifier> CODEC = SchemaRecord.create(ParticleModifier.class, i -> i.group(
             i.optional("filter", Filter.CODEC, p -> Optional.ofNullable(p.filter)),
             i.optional("colormap", Colormap.CODEC, p -> Optional.ofNullable(p.colormap)),
-            i.optional("color", ParticleContextExpression.CODEC, p -> Optional.ofNullable(p.colorGetter)),
-            i.optional("life", ParticleContextExpression.CODEC, p -> Optional.ofNullable(p.lifeGetter)),
-            i.optional("size", ParticleContextExpression.CODEC, p -> Optional.ofNullable(p.colorGetter)),
-            i.optional("red", ParticleContextExpression.CODEC, p -> Optional.ofNullable(p.colorGetter)),
-            i.optional("green", ParticleContextExpression.CODEC, p -> Optional.ofNullable(p.colorGetter)),
-            i.optional("blue", ParticleContextExpression.CODEC, p -> Optional.ofNullable(p.colorGetter)),
-            i.optional("alpha", ParticleContextExpression.CODEC, p -> Optional.ofNullable(p.colorGetter)),
-            i.optional("speed", ParticleContextExpression.CODEC, p -> Optional.ofNullable(p.speedGetter)),
+            i.optional("color", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.colorGetter)),
+            i.optional("life", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.lifeGetter)),
+            i.optional("size", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.sizeGetter)),
+            i.optional("red", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.redGetter)),
+            i.optional("green", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.greenGetter)),
+            i.optional("blue", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.blueGetter)),
+            i.optional("alpha", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.alphaGetter)),
+            i.optional("speed", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.speedGetter)),
             i.optional("colored_light", ColoredLight.ParticleLight.CODEC, p -> Optional.ofNullable(p.coloredLight)),
             i.optional("targets", Targets.codec(Registries.PARTICLE_TYPE), Targets.EMPTY, p -> p.targets)
     ).apply(i, ParticleModifier::new));
@@ -62,30 +63,30 @@ public class ParticleModifier {
     @Nullable
     public IColorGetter colormap;
     @Nullable
-    public final ParticleContextExpression colorGetter;
+    public final IParticleExp colorGetter;
     @Nullable
-    public final ParticleContextExpression lifeGetter;
+    public final IParticleExp lifeGetter;
     @Nullable
-    public final ParticleContextExpression sizeGetter;
+    public final IParticleExp sizeGetter;
     @Nullable
-    public final ParticleContextExpression speedGetter;
+    public final IParticleExp speedGetter;
     @Nullable
-    public final ParticleContextExpression redGetter;
+    public final IParticleExp redGetter;
     @Nullable
-    public final ParticleContextExpression blueGetter;
+    public final IParticleExp blueGetter;
     @Nullable
-    public final ParticleContextExpression greenGetter;
+    public final IParticleExp greenGetter;
     @Nullable
-    public final ParticleContextExpression alphaGetter;
+    public final IParticleExp alphaGetter;
     @Nullable
     public final ColoredLight.ParticleLight coloredLight;
     public final Targets targets;
 
     private ParticleModifier(Optional<Filter> filter, Optional<IColorGetter> colormap,
-                             Optional<ParticleContextExpression> color, Optional<ParticleContextExpression> life,
-                             Optional<ParticleContextExpression> size, Optional<ParticleContextExpression> red,
-                             Optional<ParticleContextExpression> green, Optional<ParticleContextExpression> blue,
-                             Optional<ParticleContextExpression> alpha, Optional<ParticleContextExpression> speed,
+                             Optional<IParticleExp> color, Optional<IParticleExp> life,
+                             Optional<IParticleExp> size, Optional<IParticleExp> red,
+                             Optional<IParticleExp> green, Optional<IParticleExp> blue,
+                             Optional<IParticleExp> alpha, Optional<IParticleExp> speed,
                              Optional<ColoredLight.ParticleLight> coloredLight,
                              Targets targets) {
         this(filter.orElse(null), colormap.orElse(null), color.orElse(null), life.orElse(null), size.orElse(null),
@@ -94,10 +95,10 @@ public class ParticleModifier {
     }
 
     private ParticleModifier(@Nullable Filter filter, @Nullable IColorGetter colormap,
-                            @Nullable ParticleContextExpression color, @Nullable ParticleContextExpression life,
-                            @Nullable ParticleContextExpression size, @Nullable ParticleContextExpression red,
-                            @Nullable ParticleContextExpression green, @Nullable ParticleContextExpression blue,
-                            @Nullable ParticleContextExpression alpha, @Nullable ParticleContextExpression speed,
+                            @Nullable IParticleExp color, @Nullable IParticleExp life,
+                            @Nullable IParticleExp size, @Nullable IParticleExp red,
+                            @Nullable IParticleExp green, @Nullable IParticleExp blue,
+                            @Nullable IParticleExp alpha, @Nullable IParticleExp speed,
                             @Nullable ColoredLight.ParticleLight coloredLight,
                             Targets explicitTargets) {
         this.colorGetter = color;
