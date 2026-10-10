@@ -56,6 +56,23 @@ public abstract class PositionalProxy {
     @Nullable
     protected abstract BlockPos getPosInternal();
 
+    public abstract double x();
+
+    public abstract double y();
+
+    public abstract double z();
+
+    public double distSq(PositionalProxy other) {
+        double dx = x() - other.x();
+        double dy = y() - other.y();
+        double dz = z() - other.z();
+        return dx * dx + dy * dy + dz * dz;
+    }
+
+    public double dist(PositionalProxy other) {
+        return Math.sqrt(distSq(other));
+    }
+
     @Nullable
     private BlockPos updatedPos() {
         BlockPos newPos = getPosInternal();

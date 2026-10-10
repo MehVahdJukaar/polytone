@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
-@Mixin(AbstractSignRenderer.class)
+@Mixin(value = AbstractSignRenderer.class, priority = 1100)
 public abstract class SignRendererMixin {
 
     //Black is the only dye with a hardcoded glow color
