@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.shaders.light;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.Targets;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -29,7 +29,7 @@ public sealed interface ColoredLightEntry {
         static final MapCodec<Blocks> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
                 Targets.codec(Registries.BLOCK).fieldOf("targets").forGetter(Blocks::targets),
                 ColoredLight.BlockLight.CODEC.fieldOf("colored_light").forGetter(Blocks::light),
-                SchemaCodecs.lenientWithLog(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(Blocks::predicate)
+                CodecUtils.STATE_PREDICATE.forGetter(Blocks::predicate)
         ).apply(i, Blocks::new));
 
         @Override

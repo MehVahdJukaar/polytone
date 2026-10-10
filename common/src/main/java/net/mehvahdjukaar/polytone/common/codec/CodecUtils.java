@@ -2,6 +2,10 @@ package net.mehvahdjukaar.polytone.common.codec;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapCodec;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
@@ -9,6 +13,10 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTest;
+import net.minecraft.world.level.levelgen.structure.templatesystem.RandomBlockMatchTest;
+import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -39,6 +47,14 @@ public class CodecUtils {
             return DataResult.error(() -> "Not a numeric literal: " + s);
         }
     }
+
+    private static final RuleTest MATCHES_NOTHING = new RandomBlockMatchTest(Blocks.AIR, 0);
+
+    public static final MapCodec<RuleTest> STATE_PREDICATE = Codec.PASSTHROUGH.xmap(
+            unparsed -> RuleTest.CODEC.parse(unparsed).resultOrPartial(error ->
+                    Polytone.LOGGER.error("Failed to parse state_predicate: {}. It will match nothing", error)).orElse(MATCHES_NOTHING),
+            test -> new Dynamic<>(JsonOps.INSTANCE, RuleTest.CODEC.encodeStart(JsonOps.INSTANCE, test).getOrThrow())
+    ).optionalFieldOf("state_predicate", AlwaysTrueTest.INSTANCE);
 
     public static <E> Codec<HolderSet<E>> forwardAwareHomogeneousList(ResourceKey<? extends Registry<E>> registryKey) {
         return LenientHolderSetCodec.create(registryKey, new ForwardAwareRegistryFixedCodec<>(registryKey), false);
