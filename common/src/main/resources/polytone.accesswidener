@@ -23,6 +23,11 @@ accessible field net/minecraft/client/model/geom/ModelPart children Ljava/util/M
 accessible class net/minecraft/server/packs/OverlayMetadataSection$OverlayEntry$IntermediateEntry
 accessible method net/minecraft/server/packs/OverlayMetadataSection$OverlayEntry$IntermediateEntry <init> (Lnet/minecraft/server/packs/metadata/pack/PackFormat$IntermediaryFormat;Ljava/lang/String;)V
 accessible method net/minecraft/client/gui/screens/packs/PackSelectionScreen reload ()V
+accessible field net/minecraft/server/packs/PathPackResources root Ljava/nio/file/Path;
+accessible field net/minecraft/server/packs/FilePackResources prefix Ljava/lang/String;
+accessible field net/minecraft/server/packs/FilePackResources zipFileAccess Lnet/minecraft/server/packs/FilePackResources$SharedZipFileAccess;
+accessible class net/minecraft/server/packs/FilePackResources$SharedZipFileAccess
+accessible method net/minecraft/server/packs/FilePackResources$SharedZipFileAccess getOrCreateZipFile ()Ljava/util/zip/ZipFile;
 
 accessible field net/minecraft/client/renderer/chunk/RenderSectionRegion level Lnet/minecraft/client/multiplayer/ClientLevel;
 

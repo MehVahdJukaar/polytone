@@ -9,7 +9,9 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 
+import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -26,6 +28,9 @@ public class CodecUtils {
     public static final Codec<Float> LENIENT_FLOAT = Codec.withAlternative(Codec.FLOAT,
             Codec.STRING.comapFlatMap(CodecUtils::parseFloat, s -> Float.toString(s)));
 
+    public static final Codec<SoundSource> SOUND_SOURCE = Codec.STRING.comapFlatMap(
+            CodecUtils::parseSoundSource, s -> s.name().toLowerCase(Locale.ROOT));
+
     private static DataResult<Double> parseDouble(String s) {
         try {
             return DataResult.success(Double.parseDouble(s.trim()));
@@ -39,6 +44,14 @@ public class CodecUtils {
             return DataResult.success(Float.parseFloat(s.trim()));
         } catch (NumberFormatException e) {
             return DataResult.error(() -> "Not a numeric literal: " + s);
+        }
+    }
+
+    private static DataResult<SoundSource> parseSoundSource(String s) {
+        try {
+            return DataResult.success(SoundSource.valueOf(s.toUpperCase(Locale.ROOT)));
+        } catch (IllegalArgumentException e) {
+            return DataResult.error(() -> "Unknown sound source: " + s);
         }
     }
 

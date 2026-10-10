@@ -60,14 +60,17 @@ public abstract class PositionalProxy {
     private BlockPos updatedPos() {
         BlockPos newPos = getPosInternal();
         if (newPos == posCache) return posCache;
-        //first call keeps whatever the constructor seeded (attribute blending hands us a neighbour biome)
-        if (posCache != null && !posCache.equals(newPos)) {
-            stateCache = null;
-            beCache = null;
-            biomeCache = null;
-            biomeNameCache = null;
+        if (posCache == null || !posCache.equals(newPos)) {
+            //first call keeps whatever the constructor seeded (attribute blending hands us a neighbour biome)
+            if (posCache != null) {
+                stateCache = null;
+                beCache = null;
+                biomeCache = null;
+                biomeNameCache = null;
+            }
+            // a copy: Camera.blockPosition() is one mutable BlockPos that vanilla moves in place
+            posCache = newPos == null ? null : newPos.immutable();
         }
-        posCache = newPos;
         return posCache;
     }
 

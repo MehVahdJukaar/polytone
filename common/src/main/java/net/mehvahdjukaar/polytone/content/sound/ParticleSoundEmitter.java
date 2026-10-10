@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.content.sound;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
@@ -21,7 +20,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Locale;
 import java.util.Optional;
 
 public record ParticleSoundEmitter(
@@ -36,13 +34,9 @@ public record ParticleSoundEmitter(
         boolean distanceDelay,
         Optional<HolderSet<Biome>> biomes) implements IParticleTickable {
 
-  private static final Codec<SoundSource> SOUND_SOURCE_CODEC =
-          Codec.STRING.comapFlatMap(s -> DataResult.success(SoundSource.valueOf(s.toLowerCase(Locale.ROOT))),
-                  s -> s.getName().toLowerCase(Locale.ROOT));
-
     public static final SchemaCodec<ParticleSoundEmitter> CODEC = SchemaRecord.create(ParticleSoundEmitter.class, i -> i.group(
             i.field("sound", CodecUtils.forwardAwareSoundEvent(), ParticleSoundEmitter::sound),
-            i.optional("source", SOUND_SOURCE_CODEC, SoundSource.BLOCKS, ParticleSoundEmitter::category),
+            i.optional("source", CodecUtils.SOUND_SOURCE, SoundSource.BLOCKS, ParticleSoundEmitter::category),
             i.optional("chance", IParticleExp.CODEC_LEGACY, IParticleExp.ONE, ParticleSoundEmitter::chance),
             i.optional("x", IParticleExp.CODEC_LEGACY, IParticleExp.ZERO, ParticleSoundEmitter::x),
             i.optional("y", IParticleExp.CODEC_LEGACY, IParticleExp.ZERO, ParticleSoundEmitter::y),

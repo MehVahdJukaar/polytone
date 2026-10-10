@@ -35,7 +35,7 @@ public class ModelParticleRenderState implements ParticleGroupRenderState {
     }
 
     // Block until off-thread extraction (if any) has finished writing this state
-    private void awaitExtraction() {
+    void awaitExtraction() {
         ForkJoinTask<?> f = this.extractionFuture;
         if (f != null) {
             this.extractionFuture = null;

@@ -9,6 +9,7 @@ import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -17,11 +18,24 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.List;
+
 @Mixin(Screen.class)
 public abstract class ScreenMixin implements SlotifyScreen {
 
     @Shadow
     protected abstract void rebuildWidgets();
+
+    @Shadow
+    @Final
+    private List<Renderable> renderables;
+
+    @Shadow
+    @Final
+    private List<GuiEventListener> children;
+
+    @Shadow
+    public int width;
 
     @Unique
     private ScreenModifier polytone$modifier = null;
@@ -59,20 +73,37 @@ public abstract class ScreenMixin implements SlotifyScreen {
         this.rebuildWidgets();
     }
 
+    @Unique
+    private boolean polytone$widgetsDirty = false;
+
+    // applied on the next frame so mods moving widgets after init (mod menu) see vanilla positions
+    @Inject(method = {"init(II)V", "rebuildWidgets", "resize(II)V"}, at = @At("TAIL"))
+    private void onLayout(CallbackInfo ci) {
+        polytone$widgetsDirty = true;
+    }
+
     @Inject(method = "addWidget", at = @At("HEAD"))
-    public <T extends GuiEventListener & NarratableEntry> void modifyWidget2(T listener, CallbackInfoReturnable<T> cir) {
-        //gets it new as it might not have been init yet
-        var mod = Polytone.SLOTIFY.getGuiModifier((Screen) (Object) this);
-        if (mod != null && listener instanceof AbstractWidget aw) {
-            mod.modifyWidgets(aw);
-        }
+    public <T extends GuiEventListener & NarratableEntry> void onAddWidget(T listener, CallbackInfoReturnable<T> cir) {
+        polytone$widgetsDirty = true;
     }
 
     @Inject(method = "addRenderableOnly", at = @At("HEAD"))
-    public <T extends Renderable> void modifyRenderable(T listener, CallbackInfoReturnable<T> cir) {
+    public <T extends Renderable> void onAddRenderable(T listener, CallbackInfoReturnable<T> cir) {
+        polytone$widgetsDirty = true;
+    }
+
+    // final so no screen can skip it
+    @Inject(method = "extractRenderStateWithTooltipAndSubtitles", at = @At("HEAD"))
+    private void modifyWidgets(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+        if (!polytone$widgetsDirty) return;
+        polytone$widgetsDirty = false;
         var mod = Polytone.SLOTIFY.getGuiModifier((Screen) (Object) this);
-        if (mod != null && listener instanceof AbstractWidget aw) {
-            mod.modifyWidgets(aw);
+        if (mod == null) return;
+        for (Renderable r : this.renderables) {
+            if (r instanceof AbstractWidget aw) mod.modifyWidgets(aw, this.width);
+        }
+        for (GuiEventListener c : this.children) {
+            if (c instanceof AbstractWidget aw) mod.modifyWidgets(aw, this.width);
         }
     }
 
