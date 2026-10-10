@@ -19,6 +19,7 @@ val packed_packs_api_version: String by extra
 dependencies {
     modImplementation("net.mehvahdjukaar:codecui-fabric:${codecui_version}")
     include("net.mehvahdjukaar:codecui-fabric:${codecui_version}")
+
     modImplementation("net.mehvahdjukaar:nautilus_studio-fabric:${nautilus_studio_version}")
 
     apiInclude("net.objecthunter:exp4j:${exp4j_version}")
