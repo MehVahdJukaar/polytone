@@ -44,6 +44,7 @@ dependencies {
      //modImplementation ("curse.maven:distant-horizons-508933:6387715")
     // Compile-only: pulling Iris into the dev runtime changes how the whole render path behaves.
     modImplementation("maven.modrinth:iris:1.11.7+26.3-fabric")
+    modCompileOnly("maven.modrinth:distanthorizons:3.3.3-26.2")
     // replaces the vanilla pack screen
     modImplementation("maven.modrinth:packed-packs:${packed_packs_fabric_version}")
     compileOnly("io.github.fishstiz.packed_packs.api:packed_packs_api-fabric:${packed_packs_api_version}")

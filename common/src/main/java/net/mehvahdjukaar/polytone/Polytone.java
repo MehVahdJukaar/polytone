@@ -8,6 +8,7 @@ import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.common.reloader.PolytoneReloadManager;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
+import net.mehvahdjukaar.polytone.compat.DistantHorizonsCompat;
 import net.mehvahdjukaar.polytone.compat.IrisCompat;
 import net.mehvahdjukaar.polytone.content.biome.BiomeEffectsManager;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapperManager;
@@ -142,6 +143,7 @@ public class Polytone {
         PolytoneRenderTypes.init();
         if (CompatHandler.IRIS) IrisCompat.init();
         if (CompatHandler.NAUTILUS) PolytoneNautilus.init();
+        if (CompatHandler.DISTANT_HORIZONS) DistantHorizonsCompat.init();
 
         //weather darken and other fog custom
         //independent fog env fog and sky fog stuff. also independent from render distnace

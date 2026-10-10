@@ -171,6 +171,11 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
         return modifiers.get(water);
     }
 
+    @Nullable
+    public IColorGetter getTint(Fluid fluid) {
+        return tintByFluid.get(fluid);
+    }
+
     public FluidModel getTintedModel(Fluid fluid, FluidModel model) {
         if (tintByFluid.isEmpty()) return model;
         IColorGetter tint = tintByFluid.get(fluid);
