@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.common.expressions.impl;
 
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.polytone.common.exp.ExpressionUtils;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -18,8 +19,7 @@ public interface IBlockExp {
                             aDouble -> (IBlockExp) (level, pos, state) -> aDouble,
                             i -> 0.0
                     ),
-                    BlockContextExpression.CODEC,
-                    BlockExp.TYPE.codec()),
+                    ExpressionUtils.scriptOrLegacy(BlockExp.TYPE.codec(), BlockContextExpression.CODEC)),
             SchemaCodecs.alt("constant", Codec.DOUBLE),
             SchemaCodecs.alt("expression", BlockExp.TYPE.codec()),
             SchemaCodecs.alt("legacy expression", BlockContextExpression.CODEC)));
@@ -34,7 +34,6 @@ public interface IBlockExp {
     double evaluate(ClientLevel level, Vec3 pos, @Nullable BlockState state);
 
     // Variant that binds v, an externally supplied value (e.g. an expression-driven model selector's result).
-    // Implementations that don't support it simply ignore the value.
     default double evaluate(ClientLevel level, Vec3 pos, @Nullable BlockState state, double v) {
         return evaluate(level, pos, state);
     }

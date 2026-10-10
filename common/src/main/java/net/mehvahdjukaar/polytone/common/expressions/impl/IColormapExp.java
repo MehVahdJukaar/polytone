@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.polytone.common.exp.ExpressionUtils;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.common.expressions.preview.PreviewContext;
 import net.mehvahdjukaar.polytone.common.expressions.preview.SimProxies;
@@ -31,14 +32,9 @@ public interface IColormapExp {
             aDouble -> (a, b, c, d, e, f) -> aDouble,
             iBlockExp -> 0.0f);
 
-    // Same wire codec as always; the labels only name the editor's picker options.
-    // The "constant" branch is displayed as a plain number, NOT via CONSTANT_CODEC: that one wraps
-    // LENIENT_FLOAT (a float-or-string union), whose schema is an AnyOf that anyOf() splices flat -
-    // leaking two unlabeled "number"/"text" options and, worse, a "text" branch that EXACT-matches
-    // expression strings on load so expressions would open under "text". Codec.FLOAT keeps it one option.
     Codec<IColormapExp> CODEC_LEGACY = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
             SchemaCodecs.referenceOrDirect(BUILTIN_EXP,
-                    SchemaCodecs.alternatives(CONSTANT_CODEC, ColormapExpressionProvider.CODEC, ColormapExp.TYPE.codec()), true),
+                    SchemaCodecs.alternatives(CONSTANT_CODEC, ExpressionUtils.scriptOrLegacy(ColormapExp.TYPE.codec(), ColormapExpressionProvider.CODEC)), true),
             SchemaCodecs.alt("preset", BUILTIN_EXP),
             SchemaCodecs.alt("constant", Codec.FLOAT),
             SchemaCodecs.alt("expression", ColormapExp.TYPE.codec()),

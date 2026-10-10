@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.content.lightmap;
 
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.polytone.common.exp.ExpressionUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.LightmapExp;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.minecraft.util.Mth;
@@ -13,7 +14,7 @@ public interface ILightmapNumberProvider {
 
     Codec<ILightmapNumberProvider> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
             SchemaCodecs.referenceOrDirect(BUILTIN_PROVIDERS,
-                    SchemaCodecs.alternatives(LightmapContextExpression.CODEC, LightmapExp.TYPE.codec()), true),
+                    ExpressionUtils.scriptOrLegacy(LightmapExp.TYPE.codec(), LightmapContextExpression.CODEC), true),
             SchemaCodecs.alt("preset", BUILTIN_PROVIDERS),
             SchemaCodecs.alt("expression", LightmapExp.TYPE.codec()),
             SchemaCodecs.alt("legacy expression", LightmapContextExpression.CODEC)));

@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.common.expressions.impl;
 
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.polytone.common.exp.ExpressionUtils;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.exp.impl.ColormapModContextExpression;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
@@ -20,8 +21,7 @@ public interface IColormapModExp {
                             aDouble -> (IColormapModExp) (a, b, c, d, e, f, g, h, i) -> aDouble,
                             i -> 0.0f
                     ),
-                    ColormapModContextExpression.CODEC,
-                    ColormapModExp.TYPE.codec()),
+                    ExpressionUtils.scriptOrLegacy(ColormapModExp.TYPE.codec(), ColormapModContextExpression.CODEC)),
             SchemaCodecs.alt("constant", Codec.FLOAT),
             SchemaCodecs.alt("expression", ColormapModExp.TYPE.codec()),
             SchemaCodecs.alt("legacy expression", ColormapModContextExpression.CODEC)));

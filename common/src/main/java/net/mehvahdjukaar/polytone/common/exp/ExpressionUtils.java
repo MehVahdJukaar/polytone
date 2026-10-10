@@ -1,5 +1,10 @@
 package net.mehvahdjukaar.polytone.common.exp;
 
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
 import net.minecraft.resources.Identifier;
@@ -267,22 +272,40 @@ public class ExpressionUtils {
         ).toArray(Operator[]::new);
     }
 
+    //hack to tell ones that compile in both apart
+    private static final Pattern MEANS_SOMETHING_ELSE_IN_SCRIPTS = Pattern.compile("\\^|\\b(lerp|smoothstep|color)\\s*\\(");
+
+    //prioritizing new ones
+    public static <A> Codec<A> scriptOrLegacy(Codec<? extends A> script, Codec<? extends A> legacy) {
+        Codec<A> scriptFirst = SchemaCodecs.alternatives(script, legacy);
+        Codec<A> legacyFirst = SchemaCodecs.alternatives(legacy, script);
+        return new Codec<>() {
+            @Override
+            public <T> DataResult<Pair<A, T>> decode(DynamicOps<T> ops, T input) {
+                String source = ops.getStringValue(input).result().orElse("");
+                boolean writtenForLegacy = MEANS_SOMETHING_ELSE_IN_SCRIPTS.matcher(source).find();
+                return (writtenForLegacy ? legacyFirst : scriptFirst).decode(ops, input);
+            }
+
+            @Override
+            public <T> DataResult<T> encode(A input, DynamicOps<T> ops, T prefix) {
+                return scriptFirst.encode(input, ops, prefix);
+            }
+        };
+    }
+
     private static final Pattern HEX_PATTERN = Pattern.compile("(?:#|0x)[0-9a-fA-F]+");
 
     public static String removeHex(String s) {
-        // Create a Matcher object
         Matcher matcher = HEX_PATTERN.matcher(s);
-        // StringBuffer to build the modified expression
         StringBuilder sb = new StringBuilder();
 
-        // Iterate through the matches and replace each with its decimal equivalent
         while (matcher.find()) {
             String hexString = matcher.group().replace("#", "").replace("0x", ""); // Remove the prefix
             long decimalValue = Long.parseLong(hexString, 16);
             matcher.appendReplacement(sb, Long.toString(decimalValue));
         }
 
-        // Append the remaining part of the original expression
         matcher.appendTail(sb);
 
         return sb.toString();
