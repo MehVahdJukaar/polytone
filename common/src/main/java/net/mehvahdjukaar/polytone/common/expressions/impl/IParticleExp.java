@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.common.expressions.impl;
 
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.polytone.common.exp.ExpressionUtils;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.exp.impl.ParticleContextExpression;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -15,8 +16,7 @@ public interface IParticleExp {
                             aDouble -> (IParticleExp) (p, l) -> aDouble,
                             i -> 0.0
                     ),
-                    ParticleContextExpression.CODEC,
-                    ParticleExp.TYPE.codec()),
+                    ExpressionUtils.scriptOrLegacy(ParticleExp.TYPE.codec(), ParticleContextExpression.CODEC)),
             SchemaCodecs.alt("constant", Codec.DOUBLE),
             SchemaCodecs.alt("expression", ParticleExp.TYPE.codec()),
             SchemaCodecs.alt("legacy expression", ParticleContextExpression.CODEC)));
