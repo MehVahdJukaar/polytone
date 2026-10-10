@@ -79,6 +79,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
 
     private Integer xpBar = null;
     private Integer splash = null;
+    private Integer blackSignGlow = null;
     private Integer enchantTableXp = null;
 
     @Nullable
@@ -112,6 +113,11 @@ public class ColorManager extends SingleFileContentManager<Void> {
 
     public float getWaterVisionTimeScale() {
         return waterFogBrighteningTime / 600f;
+    }
+
+    @Nullable
+    public Integer getBlackSignGlow() {
+        return blackSignGlow;
     }
 
     @Nullable
@@ -362,6 +368,8 @@ public class ColorManager extends SingleFileContentManager<Void> {
                 splash = parseHex(v);
             } else if (k.equals("xpbar")) {
                 xpBar = parseHex(v);
+            } else if (k.equals("black_sign_glow")) {
+                blackSignGlow = parseHex(v);
             } else if (k.startsWith("code:")) {
                 String s = k.substring(5);
                 int code = Integer.parseInt(s);
@@ -478,6 +486,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
         //PotionContents.EMPTY_COLOR = 16253176;
         PotionContents.BASE_POTION_COLOR = 3694022;
         xpBar = null;
+        blackSignGlow = null;
         xpOrbParticle = null;
         xpOrbColor = null;
         xpOrbColorR = null;

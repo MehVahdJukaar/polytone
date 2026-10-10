@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.chunk.RenderChunkRegion;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -69,8 +70,10 @@ public class BiomeCompoundColorGetter implements IColorGetter {
         if(level instanceof RenderChunkRegion rc){
             level = rc.level;
         }
-        if (level instanceof LevelReader l) {
-            Biome biome = l.getBiome(pos).value();
+        //sodium meshes with its own slice. again could be abad idea
+        LevelReader reader = level instanceof LevelReader l ? l : Minecraft.getInstance().level;
+        if (reader != null) {
+            Biome biome = reader.getBiome(pos).value();
             IColorGetter g = getters.get(biome);
             if (g != null) {
                 return g.getColor(blockState, level, pos, i);

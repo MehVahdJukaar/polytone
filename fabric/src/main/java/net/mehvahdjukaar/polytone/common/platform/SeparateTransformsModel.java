@@ -224,7 +224,8 @@ public class SeparateTransformsModel extends BlockModel {
 
         @Override
         public boolean usesBlockLight() {
-            return isSideLit;
+            BakedModel gui = perspectives.get(ItemDisplayContext.GUI);
+            return gui != null ? gui.usesBlockLight() : isSideLit;
         }
 
 

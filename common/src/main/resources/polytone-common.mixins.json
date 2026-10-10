@@ -57,6 +57,7 @@
     "PostPassMixin",
     "ProgramMixin",
     "ShaderInstanceMixin",
+    "SignRendererMixin",
     "ScreenMixin",
     "SlotMixin",
     "SmithingScreenMixin",

@@ -299,8 +299,9 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
         if (level == null) return null;
         IColorGetter colormap = this.sunsetColormaps.get(level.dimensionType());
         if (colormap == null) return null;
-        var color = colormap.sampleColor(null, ClientFrameTicker.getCameraPos(),
-                ClientFrameTicker.getCameraBiome().value(), null);
+        var cameraBiome = ClientFrameTicker.getCameraBiome();
+        if (cameraBiome == null) return null;
+        var color = colormap.sampleColor(null, ClientFrameTicker.getCameraPos(), cameraBiome.value(), null);
 
         float deltaTime = ClientFrameTicker.getDeltaTime();
         float interpolationFactor = deltaTime * 0.1f;

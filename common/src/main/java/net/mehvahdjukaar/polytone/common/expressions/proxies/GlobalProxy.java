@@ -61,6 +61,11 @@ public class GlobalProxy {
         return level == null ? 63 : level.getSeaLevel();
     }
 
+    public double difficulty() {
+        Level level = delegate();
+        return level == null ? 2 : level.getDifficulty().getId();
+    }
+
     public double rain() {
         return ClientFrameTicker.getRainAndThunder();
     }

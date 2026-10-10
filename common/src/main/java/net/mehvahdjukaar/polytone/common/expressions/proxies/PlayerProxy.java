@@ -87,6 +87,11 @@ public class PlayerProxy extends AbstractEntityProxy {
         return s != null ? s.crouching() : super.crouching();
     }
 
+    public String gameMode() {
+        var gameMode = Minecraft.getInstance().gameMode;
+        return gameMode == null ? "survival" : gameMode.getPlayerMode().getName();
+    }
+
     public double itemUseTicks() {
         return entity().getTicksUsingItem();
     }

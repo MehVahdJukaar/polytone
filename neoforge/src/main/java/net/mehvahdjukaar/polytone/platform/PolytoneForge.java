@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.platform;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
@@ -114,10 +115,14 @@ public class PolytoneForge {
     }
 
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
     public void fogEvent(ViewportEvent.RenderFog fogEvent) {
         if (fogEvent.getType() != FogType.NONE || fogEvent.getMode() != FogRenderer.FogMode.FOG_TERRAIN) return;
-        Vec2 targetFog = Polytone.BIOME_MODIFIERS.modifyFogParameters(fogEvent.getNearPlaneDistance(), fogEvent.getFarPlaneDistance());
+        //event values only get applied when cancelled. otherwise the fog in use is whats in RenderSystem
+        boolean changedByOthers = fogEvent.isCanceled();
+        float near = changedByOthers ? fogEvent.getNearPlaneDistance() : RenderSystem.getShaderFogStart();
+        float far = changedByOthers ? fogEvent.getFarPlaneDistance() : RenderSystem.getShaderFogEnd();
+        Vec2 targetFog = Polytone.BIOME_MODIFIERS.modifyFogParameters(near, far);
         if (targetFog != null) {
             fogEvent.setNearPlaneDistance(targetFog.x);
             fogEvent.setFarPlaneDistance(targetFog.y);

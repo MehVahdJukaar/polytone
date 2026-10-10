@@ -189,8 +189,12 @@ public final class Colormap implements IColorGetter, ColorResolver {
         }
         //else we sample normally
         Biome biome = null;
-        if (usesBiome && level instanceof LevelReader l) {
-            biome = l.getBiome(pos).value();
+        if (usesBiome) {
+            //RenderChunkRegion (or sodium slice) when meshing... could be a bad idea..
+            LevelReader reader = level instanceof LevelReader l ? l : Minecraft.getInstance().level;
+            if (reader != null) {
+                biome = reader.getBiome(pos).value();
+            }
         }
 
         return sampleColor(state, pos, biome, null);
