@@ -60,6 +60,7 @@
     "LevelRendererMixin",
     "SkyRendererMixin",
     "ShaderManagerMixin",
+    "SignRendererMixin",
     "LocalPlayerMixin",
     "MinecraftMixin",
     "ModelBakeryMixin",

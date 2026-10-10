@@ -101,9 +101,7 @@ public class SemiCustomParticleType implements ICustomParticleFactory {
                     particle.hasPhysics = this.hasPhysics;
 
                     if (this.colormap != null && particle instanceof SingleQuadParticle sqp) {
-                        int color = state != null ? this.colormap.colorInWorld(state, level, pos)
-                                : this.colormap.sampleColor(level, null, pos.getCenter(), null, null);
-                        float[] unpack = ColorUtils.unpack(color);
+                        float[] unpack = ColorUtils.unpack(this.colormap.sampleColor(level, state, pos.getCenter(), level.getBiome(pos).value(), null));
                         sqp.setColor(unpack[0], unpack[1], unpack[2]);
                     }
 
