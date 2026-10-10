@@ -5,7 +5,6 @@ import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.TokenBucketTracker;
-import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.content.block.BlockClientTickable;
@@ -23,7 +22,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTest;
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -73,7 +71,7 @@ public record BlockParticleEmitter(
             i.optional("roll", IBlockExp.CODEC_LEGACY, BlockParticleEmitter::roll),
             i.optional("size", IBlockExp.CODEC_LEGACY, BlockParticleEmitter::size),
             i.optional("custom", IBlockExp.CODEC_LEGACY, BlockParticleEmitter::custom),
-            i.field("state_predicate", SchemaCodecs.lenientWithLog(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE), RuleTest.CODEC, BlockParticleEmitter::predicate),
+            i.field("state_predicate", CodecUtils.STATE_PREDICATE, RuleTest.CODEC, BlockParticleEmitter::predicate),
             i.optional("biomes", CodecUtils.forwardAwareHomogeneousList(Registries.BIOME), BlockParticleEmitter::biomes),
             i.optional("spawn_location", SpawnLocation.CODEC, SpawnLocation.CENTER, BlockParticleEmitter::spawnLocation),
             i.optional("tick_source", TickSource.CODEC, TickSource.ANIMATE_TICK, BlockParticleEmitter::spawnSource)

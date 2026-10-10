@@ -7,7 +7,6 @@ import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.content.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.content.block.TickSource;
-import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -52,7 +51,7 @@ public record BlockSoundEmitter(
             i.optional("volume", IBlockExp.CODEC_LEGACY, IBlockExp.ZERO, BlockSoundEmitter::volume),
             i.optional("pitch", IBlockExp.CODEC_LEGACY, IBlockExp.ZERO, BlockSoundEmitter::pitch),
             i.optional("distance_delay", Codec.BOOL, false, BlockSoundEmitter::distanceDelay),
-            i.field("state_predicate", SchemaCodecs.lenientWithLog(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE), RuleTest.CODEC, BlockSoundEmitter::predicate),
+            i.field("state_predicate", CodecUtils.STATE_PREDICATE, RuleTest.CODEC, BlockSoundEmitter::predicate),
             i.optional("spawn_source", TickSource.CODEC, TickSource.ANIMATE_TICK, BlockSoundEmitter::spawnSource),
             i.optional("biomes", CodecUtils.forwardAwareHomogeneousList(Registries.BIOME), BlockSoundEmitter::biomes)
     ).apply(i, BlockSoundEmitter::new));

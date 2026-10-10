@@ -5,7 +5,6 @@ import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.TokenBucketTracker;
-import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
@@ -69,7 +68,7 @@ public record ParticleParticleEmitter(
             i.optional("custom", IParticleExp.CODEC_LEGACY, ParticleParticleEmitter::custom),
             i.optional("customs", Codec.unboundedMap(Codec.STRING, IParticleExp.CODEC_LEGACY), Map.of(),
                     ParticleParticleEmitter::customs),
-            i.field("state_predicate", SchemaCodecs.lenientWithLog(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE), RuleTest.CODEC, ParticleParticleEmitter::predicate),
+            i.field("state_predicate", CodecUtils.STATE_PREDICATE, RuleTest.CODEC, ParticleParticleEmitter::predicate),
             i.optional("biomes", CodecUtils.forwardAwareHomogeneousList(Registries.BIOME), ParticleParticleEmitter::biomes)
     ).apply(i, ParticleParticleEmitter::new));
 
