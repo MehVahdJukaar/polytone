@@ -87,8 +87,16 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
 
     @Override
     protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
+        restoreVanillaEffects(access);
 
-        //reset vanilla
+        //apply to current dimension
+        Level level = Minecraft.getInstance().level;
+        if (level != null) {
+            onDimensionChanged(level.dimensionTypeRegistration(), access);
+        }
+    }
+
+    private void restoreVanillaEffects(HolderLookup.Provider access) {
         var entries = alteredVanillaEffects.entrySet().iterator();
         while (entries.hasNext()) {
             var v = entries.next();
@@ -100,17 +108,13 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
                 entries.remove();
             }
         }
-
-        //apply to current dimension
-        Level level = Minecraft.getInstance().level;
-        if (level != null) {
-            onDimensionChanged(level.dimensionTypeRegistration(), access);
-        }
     }
 
     public void onDimensionChanged(Holder<DimensionType> currentDimHolder, HolderLookup.Provider access) {
         DimensionType currentDim = currentDimHolder.value();
         ResourceKey<DimensionType> key = currentDimHolder.unwrapKey().get();
+        //note this also runs on respawn, applying twice would save the modified values as the vanilla ones
+        restoreVanillaEffects(access);
         rainFogStrength = null;
         noWeatherFogDarken = false;
         translucentSunAndMoon = false;
