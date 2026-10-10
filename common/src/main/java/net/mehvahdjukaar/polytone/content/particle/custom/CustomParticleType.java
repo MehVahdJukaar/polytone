@@ -176,8 +176,7 @@ public class CustomParticleType implements ICustomParticleFactory {
             // thread; the batch joins before render extract, so the first frame is identical
             PolytoneAsyncParticles.enqueueInit(newParticle);
         } else {
-            this.ticker.tick(newParticle, world);
-            newParticle.setAge(0); //reset age after tick, so that it doesn't get affected by initializer tick
+            newParticle.initTick();
             if (!newParticle.isAlive()) {
                 return null;
             }

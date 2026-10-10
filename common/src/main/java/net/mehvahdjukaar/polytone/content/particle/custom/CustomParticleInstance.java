@@ -37,6 +37,10 @@ public class CustomParticleInstance extends SingleQuadParticle {
     protected final @Nullable QuadCollection model;
     protected final List<IParticleTickable> tickables;
     protected float oQuadSize;
+    private float oRCol;
+    private float oGCol;
+    private float oBCol;
+    private float oAlpha;
     private float renderScale = 1;
     protected double custom;
     // named counterpart of `custom`. Lazy because most particles never declare one, and
@@ -100,6 +104,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
         this.colormapCache = this.type.colormap == null ? null
                 : new ParticleColor.Cache(this, this.type.colormap, state, pos);
         this.lightCache = new ParticleLightCache.Entry(super::getLightCoords);
+        this.syncOldColor();
 
     }
 
@@ -150,6 +155,25 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     @Override
     public void extract(QuadParticleRenderState quadParticleRenderState, Camera camera, float f) {
+        float red = this.rCol;
+        float green = this.gCol;
+        float blue = this.bCol;
+        float currentAlpha = this.alpha;
+        //hack:vanilla reads the fields directly. Lerped color has to sit in them while we extract
+        this.rCol = Mth.lerp(f, this.oRCol, red);
+        this.gCol = Mth.lerp(f, this.oGCol, green);
+        this.bCol = Mth.lerp(f, this.oBCol, blue);
+        this.alpha = Mth.lerp(f, this.oAlpha, currentAlpha);
+
+        this.extractRotated(quadParticleRenderState, camera, f);
+
+        this.rCol = red;
+        this.gCol = green;
+        this.bCol = blue;
+        this.alpha = currentAlpha;
+    }
+
+    private void extractRotated(QuadParticleRenderState quadParticleRenderState, Camera camera, float f) {
         Quaternionf quaternionf = new Quaternionf();
         IRotationProvider rotProv = this.type.rotationProvider;
         if (rotProv.updatesEveryRenderTick() || this.customRotationO == null) {
@@ -195,7 +219,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
                 quaternionf.z,
                 quaternionf.w,
                 this.getQuadSize(f),
-                this.rCol, this.gCol, this.bCol, this.alpha,
+                Mth.lerp(f, this.oRCol, this.rCol), Mth.lerp(f, this.oGCol, this.gCol), Mth.lerp(f, this.oBCol, this.bCol), Mth.lerp(f, this.oAlpha, this.alpha),
                 this.getLightCoords(f),
                 this.model
         );
@@ -281,6 +305,15 @@ public class CustomParticleInstance extends SingleQuadParticle {
     void initTick() {
         this.type.ticker.tick(this, level);
         this.setAge(0); // reset so the spawn-time pass doesn't age the particle
+        // otherwise first frame fades in from the initializer colors
+        this.syncOldColor();
+    }
+
+    private void syncOldColor() {
+        this.oRCol = this.rCol;
+        this.oGCol = this.gCol;
+        this.oBCol = this.bCol;
+        this.oAlpha = this.alpha;
     }
 
     void tickInternal() {
@@ -302,6 +335,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
         //interpolate our states
         this.oRoll = this.roll;
         this.oQuadSize = this.quadSize;
+        this.syncOldColor();
 
         if (!this.type.rotationProvider.updatesEveryRenderTick()) {
             //handle initialized state where both are null
