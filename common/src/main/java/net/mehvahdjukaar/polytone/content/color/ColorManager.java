@@ -85,6 +85,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
 
     private Integer xpBar = null;
     private Integer xpBarBack = null;
+    private Integer blackSignGlow = null;
     private Integer enchantTableXp = null;
 
     private Integer skyFlashColor = null;
@@ -137,6 +138,11 @@ public class ColorManager extends SingleFileContentManager<Void> {
 
     public Integer getHorizonHeight() {
         return horizonHeight;
+    }
+
+    @Nullable
+    public Integer getBlackSignGlow() {
+        return blackSignGlow;
     }
 
     @Nullable
@@ -429,6 +435,8 @@ public class ColorManager extends SingleFileContentManager<Void> {
                         }
                     }
                 }
+            } else if (k.equals("black_sign_glow")) {
+                blackSignGlow = parseColor(v);
             } else if (k.startsWith("code:") || k.equals("code")) {
                 Polytone.LOGGER.warn("Recoloring legacy chat formatting codes ('{}') is no longer supported as of MC 26.2", k);
             } else {
@@ -588,6 +596,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
         //PotionContents.EMPTY_COLOR = 16253176;
         PotionContents.BASE_POTION_COLOR = 3694022;
         xpBar = null;
+        blackSignGlow = null;
         xpOrbParticle = null;
         xpOrbColor = null;
         xpOrbColorR = null;

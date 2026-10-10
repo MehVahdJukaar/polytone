@@ -58,6 +58,7 @@
     "LeashMixin",
     "LevelExtractorMixin",
     "LevelRendererMixin",
+    "SignRendererMixin",
     "LocalPlayerMixin",
     "MinecraftMixin",
     "ModelBakeryMixin",
