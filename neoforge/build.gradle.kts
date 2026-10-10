@@ -35,15 +35,13 @@ dependencies {
     // modCompileOnly("curse.maven:farmers-delight-398521:5772720")
     //
 
-    // must be the SAME sodium jar common compiles against: common's sources land in this module too
     compileOnly(files(layout.buildDirectory.file("sodium/sodium-neoforge-mod.jar")).builtBy(tasks.named("extractSodiumNeoforge")))
     modCompileOnly("curse.maven:entity-model-features-844662:7400754")
     modCompileOnly("curse.maven:entity-texture-features-fabric-568563:7392425")
     modCompileOnly("curse.maven:serene-seasons-291874:6182596")
     modCompileOnly("maven.modrinth:iris:1.11.7+26.3-neoforge")
     modCompileOnly("maven.modrinth:distanthorizons:3.3.3-26.2")
-    // replaces the vanilla pack screen
-    modImplementation("maven.modrinth:packed-packs:${packed_packs_neoforge_version}")
+    modCompileOnly("maven.modrinth:packed-packs:${packed_packs_neoforge_version}")
     compileOnly("io.github.fishstiz.packed_packs.api:packed_packs_api-neoforge:${packed_packs_api_version}")
 }
 
