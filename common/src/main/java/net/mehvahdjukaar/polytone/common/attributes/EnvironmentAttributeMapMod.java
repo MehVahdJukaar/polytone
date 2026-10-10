@@ -31,11 +31,20 @@ public class EnvironmentAttributeMapMod {
 
     private final Map<EnvironmentAttribute<?>, EnvironmentAttributeMap.Entry<?, ?>> entriesToReplace;
     private final Set<EnvironmentAttribute<?>> entriesToRemove;
+    //only on vanilla backups. modify puts this back as it was, dropping whatever a pack added
+    private final @Nullable EnvironmentAttributeMap vanillaMap;
 
     private EnvironmentAttributeMapMod(Map<EnvironmentAttribute<?>, EnvironmentAttributeMap.Entry<?, ?>> entriesToReplace,
                                        Set<EnvironmentAttribute<?>> entriesToRemove) {
         this.entriesToReplace = entriesToReplace;
         this.entriesToRemove = entriesToRemove;
+        this.vanillaMap = null;
+    }
+
+    private EnvironmentAttributeMapMod(EnvironmentAttributeMap vanillaMap) {
+        this.entriesToReplace = Map.of();
+        this.entriesToRemove = Set.of();
+        this.vanillaMap = vanillaMap;
     }
 
     private static EnvironmentAttributeMapMod fromEntriesOrRemovals(
@@ -63,8 +72,7 @@ public class EnvironmentAttributeMapMod {
     }
 
     public static EnvironmentAttributeMapMod wrapVanilla(EnvironmentAttributeMap attributes) {
-        if (attributes == EnvironmentAttributeMap.EMPTY) return EMPTY;
-        return new EnvironmentAttributeMapMod(EnvironmentAttributeMap.builder().putAll(attributes).entries, Set.of());
+        return new EnvironmentAttributeMapMod(attributes);
     }
 
     public static Builder builder() {
@@ -72,7 +80,7 @@ public class EnvironmentAttributeMapMod {
     }
 
     public boolean isEmpty() {
-        return entriesToReplace.isEmpty() && entriesToRemove.isEmpty();
+        return vanillaMap == null && entriesToReplace.isEmpty() && entriesToRemove.isEmpty();
     }
 
     public Collection<EnvironmentAttribute<?>> getAlteredEntries() {
@@ -103,6 +111,7 @@ public class EnvironmentAttributeMapMod {
 
     // owner is the biome this map is being built for, if any. See bindToBiome
     public EnvironmentAttributeMap modify(EnvironmentAttributeMap original, @Nullable Biome owner) {
+        if (vanillaMap != null) return vanillaMap;
         if (isEmpty()) return original;
         EnvironmentAttributeMap.Builder builder = EnvironmentAttributeMap.builder();
         for (var key : original.keySet()) {
