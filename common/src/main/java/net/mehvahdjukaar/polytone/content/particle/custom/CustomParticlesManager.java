@@ -22,7 +22,6 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.world.level.Level;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
@@ -67,7 +66,9 @@ public class CustomParticlesManager extends ContentManager<ICustomParticleFactor
             var model = CustomParticleType.CUSTOM_MODEL_ONLY_CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Custom Particle with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
-            model.ifPresent(m -> Polytone.addCustomModel(new ModelResourceLocation(m, "standalone")));
+            if (model.orElse(null) instanceof BakedParticleModel baked) {
+                Polytone.addCustomModel(baked.getModelLocation());
+            }
         }
     }
 

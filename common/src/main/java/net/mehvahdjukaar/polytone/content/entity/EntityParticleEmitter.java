@@ -70,6 +70,7 @@ public record EntityParticleEmitter(
                 ParticleOptions po = getParticleOptions(entity);
                 if (po == null) return;
                 if (!TokenBucketTracker.canEmitParticle(this)) return;
+                //TODO: spawn from a model bone like newer versions do
                 level.addParticle(po,
                         entity.getX() + x.evaluate(entity),
                         entity.getY() + y.evaluate(entity),

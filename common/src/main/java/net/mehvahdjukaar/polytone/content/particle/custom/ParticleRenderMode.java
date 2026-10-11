@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
 
 import java.util.Locale;
@@ -29,6 +30,16 @@ public enum ParticleRenderMode implements StringRepresentable {
             case INVISIBLE -> RenderType.cutout();
             // OPAQUE default - cutout mipped, matching the legacy default
             default -> RenderType.cutoutMipped();
+        };
+    }
+
+    public RenderType getEntity(ResourceLocation texture) {
+        return switch (this) {
+            case TERRAIN, SOLID -> RenderType.entitySolid(texture);
+            case CUTOUT -> RenderType.entityCutout(texture);
+            case ADDITIVE_TRANSLUCENT -> PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_ENTITY.apply(texture);
+            case TRANSLUCENT -> RenderType.entityTranslucent(texture);
+            default -> RenderType.entityCutoutNoCull(texture);
         };
     }
 

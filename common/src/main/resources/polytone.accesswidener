@@ -269,3 +269,5 @@ accessible field net/minecraft/client/gui/screens/inventory/AbstractContainerScr
 
 # editor button swaps its icon per frame
 mutable field net/minecraft/client/gui/components/SpriteIconButton sprite Lnet/minecraft/resources/ResourceLocation;
+
+accessible field net/minecraft/client/model/geom/ModelPart children Ljava/util/Map;

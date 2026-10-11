@@ -16,8 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.HashMap;
 import java.util.Map;
 
-// Layers are merged into the game's EntityModelSet so they bake through the vanilla pipeline, which
-// keeps them visible to model replacing mods such as EMF.
+//gas to work with emf
 public class CustomModelsManager extends ContentManager<ModelDefinition> {
 
     public static final String LAYER = "main";
@@ -53,7 +52,7 @@ public class CustomModelsManager extends ContentManager<ModelDefinition> {
 
     @Override
     protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
-        // layers are already built during parse; nothing level dependent to apply
+        //layers are already built during parse; nothing level dependent to apply
     }
 
     @Override

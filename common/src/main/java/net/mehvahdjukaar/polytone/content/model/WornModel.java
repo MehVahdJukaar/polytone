@@ -15,11 +15,11 @@ import java.util.Optional;
 public final class WornModel {
 
     public static final Codec<WornModel> CODEC = RecordCodecBuilder.create(i -> i.group(
-            WornModelGeometry.CODEC.fieldOf("model").forGetter(w -> w.geometry),
+            EntityModelGeometry.CODEC.fieldOf("model").forGetter(w -> w.geometry),
             EquipmentSlot.CODEC.optionalFieldOf("slot").forGetter(w -> w.slot)
     ).apply(i, WornModel::new));
 
-    private final WornModelGeometry geometry;
+    private final EntityModelGeometry geometry;
     private final Optional<EquipmentSlot> slot;
 
     @Nullable
@@ -28,7 +28,7 @@ public final class WornModel {
     private EntityModelSet cachedFrom;
     private boolean failed;
 
-    public WornModel(WornModelGeometry geometry, Optional<EquipmentSlot> slot) {
+    public WornModel(EntityModelGeometry geometry, Optional<EquipmentSlot> slot) {
         this.geometry = geometry;
         this.slot = slot;
     }

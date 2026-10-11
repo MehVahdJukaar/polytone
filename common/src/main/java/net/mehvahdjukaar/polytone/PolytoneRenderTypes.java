@@ -3,12 +3,14 @@ package net.mehvahdjukaar.polytone;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL30;
@@ -17,6 +19,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.SequencedMap;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static com.mojang.blaze3d.vertex.DefaultVertexFormat.PARTICLE;
@@ -98,6 +101,22 @@ public class PolytoneRenderTypes extends RenderType {
                     //  .setOutputState(TRANSLUCENT_TARGET)
                     .createCompositeState(true)
     );
+
+    public static final Function<ResourceLocation, RenderType> ADDITIVE_TRANSLUCENT_ENTITY = Util.memoize(texture -> RenderType.create(
+            Polytone.MOD_ID + ":additive_translucent_entity",
+            DefaultVertexFormat.NEW_ENTITY,
+            VertexFormat.Mode.QUADS,
+            1536,
+            true, true,
+            RenderType.CompositeState.builder()
+                    .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_SHADER)
+                    .setTextureState(new TextureStateShard(texture, false, false))
+                    .setTransparencyState(ADDITIVE_TRANSLUCENT_TRANSPARENCY)
+                    .setCullState(NO_CULL)
+                    .setLightmapState(LIGHTMAP)
+                    .setOverlayState(OVERLAY)
+                    .createCompositeState(false)
+    ));
 
 
     public static void onRenderLast() {

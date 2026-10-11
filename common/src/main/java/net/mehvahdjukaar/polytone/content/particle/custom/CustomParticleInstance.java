@@ -2,8 +2,8 @@ package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.content.model.EntityModelAnimation;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -11,10 +11,8 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleGroup;
@@ -36,7 +34,6 @@ import java.util.Optional;
 public class CustomParticleInstance extends TextureSheetParticle {
 
     public final CustomParticleType type;
-    protected final @Nullable BakedModel model;
     protected final List<IParticleTickable> tickables;
     protected float oQuadSize;
     private float oRCol;
@@ -45,6 +42,7 @@ public class CustomParticleInstance extends TextureSheetParticle {
     private float oAlpha;
     private float renderScale = 1;
     protected double custom;
+    protected @Nullable EntityModelAnimation.Pose modelPose;
 
     private boolean inFrustumLastTick = true;
     private Quaternionf customRotation = null;
@@ -79,14 +77,6 @@ public class CustomParticleInstance extends TextureSheetParticle {
         this.xd = xSpeed;
         this.yd = ySpeed;
         this.zd = zSpeed;
-        BakedModel bm = null;
-        if (customType.model != null) {
-            bm = PlatStuff.getBakedModel(new ModelResourceLocation(customType.model, "standalone"));
-            if (bm == null) {
-                Polytone.LOGGER.error("Failed to load custom particle model: {}. Maybe model was missing", customType.model);
-            }
-        }
-        this.model = bm;
         CustomParticleInitializer initializer = customType.initializer;
         BlockPos pos = BlockPos.containing(x, y, z);
         if (initializer != null) {
@@ -164,7 +154,7 @@ public class CustomParticleInstance extends TextureSheetParticle {
         }
 
         this.renderRotatedQuad(buffer, camera, quaternionf, partialTicks);
-        if (!rotProv.alwaysFacesCamera() && model == null) {
+        if (!rotProv.alwaysFacesCamera() && type.model == null) {
             quaternionf.rotateX(Mth.PI);
             //render back face
             this.renderRotatedQuad(buffer, camera, quaternionf, partialTicks);
@@ -175,7 +165,7 @@ public class CustomParticleInstance extends TextureSheetParticle {
 
     private boolean canUseSodiumFastPath() {
         return !PREVIEW_FORCE_FULL_PATH
-                && this.model == null
+                && this.type.model == null
                 && this.type.rotationProvider == RotationMode.LOOK_AT_XYZ
                 && this.type.offset.equals(CustomParticleType.RenderOffset.NONE)
                 && this.type.renderType != ParticleRenderMode.TRANSLUCENT
@@ -207,22 +197,18 @@ public class CustomParticleInstance extends TextureSheetParticle {
             y *= renderScale;
             z *= renderScale;
         }
-        if (model == null) {
+        if (type.model == null) {
             consumer = this.type.renderType.modifyParticleConsumer(consumer);
             super.renderRotatedQuad(consumer, quaternion, x, y, z, partialTicks);
         } else {
-            consumer = this.type.renderType.modifyBlockConsumer(consumer);
-
             float size = this.getQuadSize(partialTicks);
 
             PoseStack poseStack = new PoseStack();
             poseStack.translate(x, y, z);
             poseStack.scale(size, size, size);
             poseStack.mulPose(quaternion);
-            poseStack.translate(-0.5, -0.5, -0.5);
 
-            putModelBulkData(this.model, this.getLightColor(partialTicks),
-                    OverlayTexture.NO_OVERLAY, poseStack, consumer, this.rCol, this.gCol, this.bCol, this.alpha);
+            type.model.render(this, poseStack, this.getLightColor(partialTicks), this.rCol, this.gCol, this.bCol, this.alpha, partialTicks);
         }
         renderScale = 1;
     }
@@ -292,6 +278,7 @@ public class CustomParticleInstance extends TextureSheetParticle {
 
     void initTick() {
         this.type.ticker.tick(this, level);
+        if (type.model != null) type.model.tick(this, level);
         this.setAge(0);
         // otherwise first frame fades in from the initializer colors
         this.syncOldColor();
@@ -344,6 +331,7 @@ public class CustomParticleInstance extends TextureSheetParticle {
         if (type.ticker != null && isTickTime) {
             type.ticker.tick(this, level);
         }
+        if (type.model != null) type.model.tick(this, level);
         if (colormapCache != null) colormapCache.tick();
 
         if (this.age > 1 && type.killWhenStill && this.x == this.xo && this.y == this.yo && this.z == this.zo) {
@@ -394,7 +382,7 @@ public class CustomParticleInstance extends TextureSheetParticle {
 
     @Override
     public ParticleRenderType getRenderType() {
-        return this.model == null ? type.renderType.getParticle() : ParticleRenderType.CUSTOM;
+        return type.model == null ? type.renderType.getParticle() : ParticleRenderType.CUSTOM;
     }
 
 

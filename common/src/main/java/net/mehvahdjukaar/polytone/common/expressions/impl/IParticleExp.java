@@ -16,7 +16,7 @@ public interface IParticleExp {
                             i -> 0.0
                     ),
                     ParticleContextExpression.CODEC.xmap(
-                            pce ->  (particle, level) -> pce.getValue(particle, level),
+                            pce -> pce::getValue,
                             i -> ParticleContextExpression.ZERO
                     ),
                     ParticleExp.TYPE.codec()),
