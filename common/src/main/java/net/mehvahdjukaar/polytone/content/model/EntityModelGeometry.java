@@ -8,9 +8,7 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
-// Either a reference to a registered CustomModelsManager layer (baked through the game's
-// EntityModelSet, so model replacing mods like EMF can hook it) or an inlined ModelDefinition.
-public final class WornModelGeometry {
+public final class EntityModelGeometry {
 
     @Nullable
     private final Identifier reference;
@@ -19,14 +17,14 @@ public final class WornModelGeometry {
     @Nullable
     private LayerDefinition inlineLayer;
 
-    private WornModelGeometry(@Nullable Identifier reference, @Nullable ModelDefinition inline) {
+    private EntityModelGeometry(@Nullable Identifier reference, @Nullable ModelDefinition inline) {
         this.reference = reference;
         this.inline = inline;
     }
 
-    public static final Codec<WornModelGeometry> CODEC = SchemaCodecs.referenceOrDirect(
-            Identifier.CODEC.xmap(id -> new WornModelGeometry(id, null), g -> g.reference),
-            ModelDefinition.CODEC.xmap(d -> new WornModelGeometry(null, d), g -> g.inline)
+    public static final Codec<EntityModelGeometry> CODEC = SchemaCodecs.referenceOrDirect(
+            Identifier.CODEC.xmap(id -> new EntityModelGeometry(id, null), g -> g.reference),
+            ModelDefinition.CODEC.xmap(d -> new EntityModelGeometry(null, d), g -> g.inline)
     );
 
     public ModelPart bake(EntityModelSet modelSet) {

@@ -66,7 +66,9 @@ public class CustomParticlesManager extends ContentManager<ICustomParticleFactor
             var model = CustomParticleType.CUSTOM_MODEL_ONLY_CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Custom Particle with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
-            model.ifPresent(SpecialModelsHandler::addSpecialModel);
+            if (model.orElse(null) instanceof BakedParticleModel baked) {
+                SpecialModelsHandler.addSpecialModel(baked.getModelLocation());
+            }
         }
     }
 

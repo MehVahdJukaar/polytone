@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.StringRepresentable;
 
 import java.util.Locale;
@@ -30,6 +31,16 @@ public enum ParticleRenderMode implements StringRepresentable {
             case TRANSLUCENT -> RenderTypes.translucentMovingBlock();
             // default was cutout mipped but it no longer exists
             default -> RenderTypes.cutoutMovingBlock();
+        };
+    }
+
+    public RenderType getEntity(Identifier texture) {
+        return switch (this) {
+            case TERRAIN, SOLID -> RenderTypes.entitySolid(texture);
+            case CUTOUT -> RenderTypes.entityCutoutCull(texture);
+            case ADDITIVE_TRANSLUCENT -> PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_ENTITY.apply(texture);
+            case TRANSLUCENT -> RenderTypes.entityTranslucent(texture);
+            default -> RenderTypes.entityCutout(texture);
         };
     }
 

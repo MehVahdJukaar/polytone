@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.SpecialModelsHandler;
+import net.mehvahdjukaar.polytone.content.model.EntityModelAnimation;
 import net.mehvahdjukaar.polytone.content.particle.ParticlePreviewState;
 import net.mehvahdjukaar.polytone.content.particle.custom.render.ModelParticleRenderState;
 import net.minecraft.client.Camera;
@@ -12,7 +12,6 @@ import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.geometry.QuadCollection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleLimit;
 import net.minecraft.util.Mth;
@@ -34,7 +33,6 @@ import java.util.TreeMap;
 public class CustomParticleInstance extends SingleQuadParticle {
 
     public final CustomParticleType type;
-    protected final @Nullable QuadCollection model;
     protected final List<IParticleTickable> tickables;
     protected float oQuadSize;
     private float oRCol;
@@ -44,6 +42,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
     private float renderScale = 1;
     protected double custom;
     private @Nullable Map<String, Double> namedCustoms;
+    protected @Nullable EntityModelAnimation.Pose modelPose;
 
     private boolean inFrustumLastTick = true;
 
@@ -80,14 +79,6 @@ public class CustomParticleInstance extends SingleQuadParticle {
         this.xd = xSpeed;
         this.yd = ySpeed;
         this.zd = zSpeed;
-        QuadCollection qc = null;
-        if (customType.model != null) {
-            qc = SpecialModelsHandler.getSpecialModel(customType.model);
-            if (qc == null) {
-                Polytone.LOGGER.error("Failed to load custom particle model: {}. Maybe model was missing", customType.model);
-            }
-        }
-        this.model = qc;
         CustomParticleInitializer initializer = customType.initializer;
         BlockPos pos = BlockPos.containing(x, y, z);
         if (initializer != null) {
@@ -183,7 +174,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
             quaternionf.rotateZ(Mth.lerp(f, this.oRoll, this.roll));
         }
         this.extractRotatedQuad(quadParticleRenderState, camera, quaternionf, f);
-        if (!rotProv.alwaysFacesCamera() && model == null) {
+        if (!rotProv.alwaysFacesCamera() && type.model == null) {
             quaternionf.rotateX(Mth.PI);
             //render back face
             this.extractRotatedQuad(quadParticleRenderState, camera, quaternionf, f);
@@ -191,7 +182,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
     }
 
     public void extractModel(ModelParticleRenderState modelParticleRenderState, Camera camera, float f) {
-        if (this.model == null) {
+        if (this.type.model == null) {
             //failsafe
             return;
         }
@@ -216,7 +207,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
                 this.getQuadSize(f),
                 Mth.lerp(f, this.oRCol, this.rCol), Mth.lerp(f, this.oGCol, this.gCol), Mth.lerp(f, this.oBCol, this.bCol), Mth.lerp(f, this.oAlpha, this.alpha),
                 this.getLightCoords(f),
-                this.model
+                this.type.model, this, f
         );
         renderScale = 1;
     }
@@ -292,6 +283,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     void initTick() {
         this.type.ticker.tick(this, level);
+        if (type.model != null) type.model.tick(this, level);
         this.setAge(0);
         this.syncOldColor();
     }
@@ -343,7 +335,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
         if (type.ticker != null && isTickTime) {
             type.ticker.tick(this, level);
         }
-
+        if (type.model != null) type.model.tick(this, level);
         if (colormapCache != null) colormapCache.tick();
 
         if (this.age > 1 && type.killWhenStill && this.x == this.xo && this.y == this.yo && this.z == this.zo) {
@@ -394,7 +386,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     @Override
     protected Layer getLayer() {
-        return type.renderType.getLayer(model != null);
+        return type.renderType.getLayer(type.model != null);
     }
 
     @Override
