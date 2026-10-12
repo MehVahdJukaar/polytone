@@ -172,5 +172,7 @@ public class EntityModelAnimation<E> {
         public boolean isVisible(int bone) {
             return current[bone * CHANNELS + VISIBLE] > 0;
         }
+
+
     }
 }
