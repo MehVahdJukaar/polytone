@@ -65,8 +65,8 @@ public class LevelRendererMixin {
                                ChunkSectionsToRender chunkSectionsToRender,
                                CallbackInfo ci) {
         Polytone.SHADER_UNIFORMS.updateAll();
+        if (!LevelRenderPassTracker.pushAndIsMain()) return;
         Camera camera = minecraft.gameRenderer.getMainCamera();
-        if (!LevelRenderPassTracker.pushAndIsMain(camera)) return;
         Polytone.GLOBAL_UNIFORMS.capture(cameraState.projectionMatrix, modelViewMatrix, deltaTracker.getGameTimeDeltaTicks());
         Polytone.SHADOW_MAP.updateBeforeRenderLevel(terrainFog, camera, modelViewMatrix, cameraState.projectionMatrix);
         Polytone.COLORED_LIGHTS.beforeRenderLevel(camera.position());
@@ -75,9 +75,8 @@ public class LevelRendererMixin {
     //the frame graph already ran here, no pass is open
     @Inject(method = "renderLevel", at = @At("RETURN"))
     public void poly$popLevelRenderPass(CallbackInfo ci) {
-        Camera camera = LevelRenderPassTracker.currentCamera();
         if (!LevelRenderPassTracker.popAndWasMain()) return;
-        Polytone.VOXEL_VOLUME.updateAfterRenderLevel(camera);
+        Polytone.VOXEL_VOLUME.updateAfterRenderLevel(minecraft.gameRenderer.getMainCamera());
     }
 
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addMainPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lnet/minecraft/client/renderer/culling/Frustum;Lorg/joml/Matrix4fc;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;ZLnet/minecraft/client/renderer/state/level/LevelRenderState;Lnet/minecraft/client/DeltaTracker;Lnet/minecraft/util/profiling/ProfilerFiller;Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;)V",

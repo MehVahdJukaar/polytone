@@ -1,9 +1,13 @@
 package net.mehvahdjukaar.polytone.mixins;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfo;
+import net.mehvahdjukaar.polytone.content.packinfo.PackInfo.OpenGLVersion;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfoBadge;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfoScreen;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfos;
+import net.mehvahdjukaar.polytone.content.shaders.GLHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ObjectSelectionList;
@@ -15,6 +19,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.packs.repository.PackCompatibility;
 import net.minecraft.sounds.SoundEvents;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -107,5 +112,31 @@ public abstract class PackEntryMixin extends  ObjectSelectionList.Entry<Transfer
         Runnable reload = parent instanceof PackSelectionScreen p ? p::reload : () -> {};
         minecraft.setScreen(new PackInfoScreen(parent, this.pack.getTitle(), info, reload));
         cir.setReturnValue(true);
+    }
+
+    @WrapOperation(method = {"extractContent", "handlePackSelection"}, at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/server/packs/repository/PackCompatibility;isCompatible()Z"))
+    private boolean polytone$incompatibleWithoutOpenGL(PackCompatibility compatibility, Operation<Boolean> original) {
+        return original.call(compatibility) && PackInfos.missingOpenGL(this.pack.getId()) == null;
+    }
+
+    @WrapOperation(method = "extractContent", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/server/packs/repository/PackCompatibility;getDescription()Lnet/minecraft/network/chat/Component;"))
+    private Component polytone$explainMissingOpenGL(PackCompatibility compatibility, Operation<Component> original) {
+        OpenGLVersion missing = PackInfos.missingOpenGL(this.pack.getId());
+        if (compatibility.isCompatible() && missing != null) {
+            return Component.translatable("pack.polytone.needs_opengl", missing.toString(), GLHelper.getContextVersionStr());
+        }
+        return original.call(compatibility);
+    }
+
+    @WrapOperation(method = "handlePackSelection", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/server/packs/repository/PackCompatibility;getConfirmation()Lnet/minecraft/network/chat/Component;"))
+    private Component polytone$confirm(PackCompatibility compatibility, Operation<Component> original) {
+        OpenGLVersion missing = PackInfos.missingOpenGL(this.pack.getId());
+        if (compatibility.isCompatible() && missing != null) {
+            return Component.translatable("pack.polytone.needs_opengl.confirm", missing.toString(), GLHelper.getContextVersionStr());
+        }
+        return original.call(compatibility);
     }
 }

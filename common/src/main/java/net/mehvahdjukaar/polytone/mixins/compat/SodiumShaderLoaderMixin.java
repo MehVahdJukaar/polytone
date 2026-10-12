@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 @Mixin(ShaderLoader.class)
 public abstract class SodiumShaderLoaderMixin {
 
-    @ModifyArg(method = "loadShader", remap = false, at = @At(value = "INVOKE", remap = false,
+    @ModifyArg(method = "loadShader", remap = false, require = 0, at = @At(value = "INVOKE", remap = false,
             target = "Lnet/caffeinemc/mods/sodium/client/gl/shader/ShaderParser;parseShader(Ljava/lang/String;Lnet/caffeinemc/mods/sodium/client/gl/shader/ShaderConstants;)Lnet/caffeinemc/mods/sodium/client/gl/shader/ShaderParser$ParsedShader;"))
     private static String polytone$patchChunkShader(String source, @Local(argsOnly = true) ShaderType type) {
         boolean builtInLights = Polytone.CONFIGS.coloredLightsBackend.get().tintsVanillaBlockLight();

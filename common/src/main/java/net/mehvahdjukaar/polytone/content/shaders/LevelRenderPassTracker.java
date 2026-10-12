@@ -1,13 +1,12 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
-import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 
-// mods like Vista or portal mods call LevelRenderer.renderLevel again for their own cameras, skipping GameRenderer.renderLevel
+//mods like Vista or portal mods call LevelRenderer.renderLevel again for their own cameras, skipping GameRenderer.renderLevel
 public final class LevelRenderPassTracker {
 
     private static boolean inVanillaFrame = false;
@@ -23,8 +22,8 @@ public final class LevelRenderPassTracker {
         inVanillaFrame = false;
     }
 
-    public static boolean pushAndIsMain(Camera camera) {
-        passesStack.push(new Pass(camera, Minecraft.getInstance().level));
+    public static boolean pushAndIsMain() {
+        passesStack.push(new Pass(Minecraft.getInstance().level));
         return inVanillaFrame && passesStack.size() == 1;
     }
 
@@ -38,18 +37,12 @@ public final class LevelRenderPassTracker {
         return !passesStack.isEmpty();
     }
 
-    public static Camera currentCamera() {
-        Pass pass = passesStack.peek();
-        return pass != null ? pass.camera :
-                Minecraft.getInstance().gameRenderer.getMainCamera();
-    }
-
     @Nullable
     public static ClientLevel currentLevel() {
         Pass pass = passesStack.peek();
         return pass != null ? pass.level : Minecraft.getInstance().level;
     }
 
-    private record Pass(Camera camera, @Nullable ClientLevel level) {
+    private record Pass(@Nullable ClientLevel level) {
     }
 }
