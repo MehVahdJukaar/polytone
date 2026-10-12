@@ -9,7 +9,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL42;
 import org.lwjgl.opengl.GL43;
 
-//pairs with polytone_red_black.glsl
+//pairs with polytone:red_black.glsl
 public abstract class RedBlackComputeShader extends ComputeProgramInstance {
 
     //4x4x4 groups. 64 workers each. that means 2 wraps each. maybe make 1 wrap each. maybe makke 1?

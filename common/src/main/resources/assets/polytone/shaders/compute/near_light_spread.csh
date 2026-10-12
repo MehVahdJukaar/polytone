@@ -1,6 +1,6 @@
 #version 430
 
-#moj_import <polytone_red_black.glsl>
+#moj_import <polytone:red_black.glsl>
 
 //RB flood fill algorithm here
 
