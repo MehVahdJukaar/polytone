@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.ModelPartUtils;
 import net.mehvahdjukaar.polytone.common.TokenBucketTracker;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
@@ -32,7 +33,7 @@ import java.util.*;
 import java.util.function.Predicate;
 
 public record EntityParticleEmitter(
-        List<String> bone,
+        String bone,
         Optional<Predicate<Identifier>> textureId,
         Optional<Predicate<Integer>> etfVariant,
         Optional<Predicate<Integer>> emfVariant,
@@ -55,13 +56,8 @@ public record EntityParticleEmitter(
         Optional<IEntityExp> custom
 ) {
 
-    private static final Codec<List<String>> BONE_CODEC = Codec.STRING.xmap(
-            s -> List.of(s.split("\\.")),
-            list -> String.join(".", list)
-    );
-
     public static final SchemaCodec<EntityParticleEmitter> CODEC = SchemaRecord.create(EntityParticleEmitter.class, i -> i.group(
-                    i.optional("bone", BONE_CODEC, List.of(), EntityParticleEmitter::bone),
+                    i.optional("bone", Codec.STRING, "", EntityParticleEmitter::bone),
                     i.optional("target_texture", SchemaCodecs.predicate(Identifier.CODEC), EntityParticleEmitter::textureId),
                     i.optional("target_etf_variant", SchemaCodecs.predicate(Codec.INT), EntityParticleEmitter::etfVariant),
                     i.optional("target_emf_variant", SchemaCodecs.predicate(Codec.INT), EntityParticleEmitter::emfVariant),
@@ -186,17 +182,8 @@ public record EntityParticleEmitter(
             return new PoseStack();
         }
 
-
-        ModelPart part = model.root();
-        List<ModelPart> parts = new ArrayList<>();
-        parts.add(part);
-        for (String b : bone) {
-            part = part.children.get(b);
-            if (part == null) {
-                return null; //fail
-            }
-            parts.add(part);
-        }
+        List<ModelPart> parts = ModelPartUtils.findBonePath(model.root(), bone);
+        if (parts == null) return null;
         PoseStack poseStack = new PoseStack();
         for (ModelPart p : parts) {
             p.translateAndRotate(poseStack);
