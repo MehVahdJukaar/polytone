@@ -50,6 +50,7 @@ public class PolyShaderPointLights implements PointLightStorage {
         if (!inOurLevel || lights.isEmpty() || CompatHandler.irisShaderPackActive()) {
             if (uploadedVersionByProgram.remove(program) != Integer.MIN_VALUE) {
                 GLHelper.setProgramUniform(program, COUNT, 0);
+                shader.getUniform(COUNT).set(0);
             }
             return;
         }
@@ -60,6 +61,17 @@ public class PolyShaderPointLights implements PointLightStorage {
         GLHelper.setProgramUniform4fv(program, POSITIONS, positionsUpload);
         GLHelper.setProgramUniform4fv(program, COLORS, colorsUpload);
         GLHelper.setProgramUniform(program, COUNT, count);
+        if (shader.hasUniform(COUNT)) setUniformObjects(shader);
+    }
+
+    //specifically for veil sinc it keeps its own Uniform for every array element and uploads those after us
+    private void setUniformObjects(IShader shader) {
+        shader.getUniform(COUNT).set(count);
+        for (int i = 0; i < count; i++) {
+            int o = i * 4;
+            shader.getUniform(POSITIONS + "[" + i + "]").set(positionsUpload[o], positionsUpload[o + 1], positionsUpload[o + 2], positionsUpload[o + 3]);
+            shader.getUniform(COLORS + "[" + i + "]").set(colorsUpload[o], colorsUpload[o + 1], colorsUpload[o + 2], colorsUpload[o + 3]);
+        }
     }
 
     private void repackIfStale(Vec3 camera) {

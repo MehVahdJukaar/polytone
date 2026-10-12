@@ -155,14 +155,17 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
     @Override
     public boolean isUsedBy(IShader shader) {
         int programId = shader.programId();
-        return declaresVolumeUniforms(shader)
+        return IShaderModifier.super.isUsedBy(shader)
                 || GLHelper.usesUniform(programId, SAMPLER)
                 || GLHelper.usesUniform(programId, CELLS_SAMPLER)
                 || GLHelper.usesUniform(programId, FAR_SAMPLER);
     }
 
     private boolean declaresVolumeUniforms(IShader shader) {
-        return IShaderModifier.super.isUsedBy(shader);
+        for (String name : UNIFORM_NAMES) {
+            if (shader.declaresUniform(name)) return true;
+        }
+        return false;
     }
 
     @Override
@@ -179,7 +182,7 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
         if (v == null) {
             shader.setSampler(PALETTE_SAMPLER, 0);
             bindPlacement(shader, 0f, 0f, 0f, 0, 0, 0, 0, 0);
-            bindFarLight(shader.programId(), null, Vec3.ZERO);
+            bindFarLight(shader, null, Vec3.ZERO);
             return;
         }
         PaletteGrid grid = v.grid();
@@ -195,7 +198,7 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
                 (float) (origin.getY() - cameraPos.y),
                 (float) (origin.getZ() - cameraPos.z),
                 originTexel.x, originTexel.y, originTexel.z, grid.widthInBlocks(), grid.heightInBlocks());
-        bindFarLight(shader.programId(), v.farLight(), cameraPos);
+        bindFarLight(shader, v.farLight(), cameraPos);
 
         for (var e : palette.flagBitByName().entrySet()) {
             String uniform = FLAG_PREFIX + e.getKey();
@@ -219,8 +222,10 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
         GLHelper.setProgramUniform(program, HEIGHT, height);
     }
 
-    private static void bindFarLight(int program, @Nullable FarLightGrid far, Vec3 cameraPos) {
+    private static void bindFarLight(IShader shader, @Nullable FarLightGrid far, Vec3 cameraPos) {
+        int program = shader.programId();
         if (far == null) {
+            shader.getUniform(FAR_SIZE).set(0, 0, 0);
             GLHelper.setProgramUniform(program, FAR_SIZE, 0, 0, 0);
             return;
         }
@@ -228,8 +233,13 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
         BlockPos origin = far.origin();
         Vector3i originTexel = far.originTexel();
         Vector3i size = far.sizeInCells();
-        GLHelper.setProgramUniform(program, FAR_ORIGIN, (float) (origin.getX() - cameraPos.x),
-                (float) (origin.getY() - cameraPos.y), (float) (origin.getZ() - cameraPos.z));
+        float originX = (float) (origin.getX() - cameraPos.x);
+        float originY = (float) (origin.getY() - cameraPos.y);
+        float originZ = (float) (origin.getZ() - cameraPos.z);
+        shader.getUniform(FAR_ORIGIN).set(originX, originY, originZ);
+        shader.getUniform(FAR_ORIGIN_TEXEL).set(originTexel.x, originTexel.y, originTexel.z);
+        shader.getUniform(FAR_SIZE).set(size.x, size.y, size.z);
+        GLHelper.setProgramUniform(program, FAR_ORIGIN, originX, originY, originZ);
         GLHelper.setProgramUniform(program, FAR_ORIGIN_TEXEL, originTexel.x, originTexel.y, originTexel.z);
         GLHelper.setProgramUniform(program, FAR_SIZE, size.x, size.y, size.z);
     }

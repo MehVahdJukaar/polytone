@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
 import com.mojang.blaze3d.shaders.AbstractUniform;
+import com.mojang.blaze3d.shaders.Uniform;
 import net.minecraft.client.renderer.EffectInstance;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
@@ -15,6 +16,9 @@ public interface IShader {
 
     boolean hasUniform(String uniformName);
 
+    //listed in the shader json for veil nonsense
+    boolean declaresUniform(String uniformName);
+
     void setSampler(String name, int textureId);
 
     int programId();
@@ -22,7 +26,7 @@ public interface IShader {
     //what shader_modifiers files are matched against. post effects have none
     List<ResourceLocation> getIds();
 
-    static IShader ofShaderInstance(ShaderInstance shader) {
+    static IShader ofShaderInstance(ShaderInstance shader, List<Uniform> jsonUniforms) {
         List<ResourceLocation> ids = new ArrayList<>(3);
         addCoreId(ids, shader.getName());
         addCoreId(ids, shader.getVertexProgram().getName());
@@ -36,6 +40,14 @@ public interface IShader {
             @Override
             public boolean hasUniform(String uniformName) {
                 return shader.getUniform(uniformName) != null;
+            }
+
+            @Override
+            public boolean declaresUniform(String uniformName) {
+                for (Uniform u : jsonUniforms) {
+                    if (u.getName().equals(uniformName)) return true;
+                }
+                return false;
             }
 
             @Override
@@ -68,6 +80,11 @@ public interface IShader {
             }
 
             @Override
+            public boolean declaresUniform(String uniformName) {
+                return hasUniform(uniformName);
+            }
+
+            @Override
             public void setSampler(String name, int textureId) {
                 effect.setSampler(name, () -> textureId);
             }
@@ -94,6 +111,11 @@ public interface IShader {
 
             @Override
             public boolean hasUniform(String uniformName) {
+                return false;
+            }
+
+            @Override
+            public boolean declaresUniform(String uniformName) {
                 return false;
             }
 
