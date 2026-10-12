@@ -21,8 +21,11 @@ public class PolyShaderPointLights implements PointLightStorage {
     private static final String POSITIONS = "PolyPointLightPos";
     private static final String COLORS = "PolyPointLightColor";
 
+    private static final String[] POSITION_ELEMENT_UNIFORMS = elementNames(POSITIONS);
+    private static final String[] COLOR_ELEMENT_UNIFORMS = elementNames(COLORS);
+
     private final Map<Object, LightAt> lights = new HashMap<>();
-    private int generation;
+    private int lightsVersion;
 
     private final float[] positionsUpload = new float[MAX_LIGHTS * 4];
     private final float[] colorsUpload = new float[MAX_LIGHTS * 4];
@@ -39,7 +42,7 @@ public class PolyShaderPointLights implements PointLightStorage {
     public void clear() {
         lights.clear();
         uploadedVersionByProgram.clear();
-        generation++;
+        lightsVersion++;
     }
 
     public void bindTo(IShader shader) {
@@ -69,14 +72,20 @@ public class PolyShaderPointLights implements PointLightStorage {
         shader.getUniform(COUNT).set(count);
         for (int i = 0; i < count; i++) {
             int o = i * 4;
-            shader.getUniform(POSITIONS + "[" + i + "]").set(positionsUpload[o], positionsUpload[o + 1], positionsUpload[o + 2], positionsUpload[o + 3]);
-            shader.getUniform(COLORS + "[" + i + "]").set(colorsUpload[o], colorsUpload[o + 1], colorsUpload[o + 2], colorsUpload[o + 3]);
+            shader.getUniform(POSITION_ELEMENT_UNIFORMS[i]).set(positionsUpload[o], positionsUpload[o + 1], positionsUpload[o + 2], positionsUpload[o + 3]);
+            shader.getUniform(COLOR_ELEMENT_UNIFORMS[i]).set(colorsUpload[o], colorsUpload[o + 1], colorsUpload[o + 2], colorsUpload[o + 3]);
         }
     }
 
+    private static String[] elementNames(String arrayUniform) {
+        String[] names = new String[MAX_LIGHTS];
+        for (int i = 0; i < MAX_LIGHTS; i++) names[i] = arrayUniform + "[" + i + "]";
+        return names;
+    }
+
     private void repackIfStale(Vec3 camera) {
-        if (packedVersion == generation && packedForCamera.equals(camera)) return;
-        packedVersion = generation;
+        if (packedVersion == lightsVersion && packedForCamera.equals(camera)) return;
+        packedVersion = lightsVersion;
         packedForCamera = camera;
 
         List<LightAt> all = new ArrayList<>(lights.values());
@@ -106,7 +115,7 @@ public class PolyShaderPointLights implements PointLightStorage {
         LightAt l = lights.computeIfAbsent(key, k -> new LightAt());
         l.setPos(x,y,z);
         l.light = light;
-        generation++;
+        lightsVersion++;
     }
 
     @Override
@@ -114,12 +123,12 @@ public class PolyShaderPointLights implements PointLightStorage {
         LightAt l = lights.get(key);
         if (l == null) return;
         l.setPos(x,y,z);
-        generation++;
+        lightsVersion++;
     }
 
     @Override
     public void remove(Object key) {
-        if (lights.remove(key) != null) generation++;
+        if (lights.remove(key) != null) lightsVersion++;
     }
 
     private static class LightAt {
