@@ -43,8 +43,8 @@ public class LevelRendererMixin {
                                boolean consistentDepthRequired,
                                CallbackInfo ci) {
         Polytone.SHADER_UNIFORMS.updateAll();
+        if (!LevelRenderPassTracker.pushAndIsMain()) return;
         Camera camera = Minecraft.getInstance().gameRenderer.mainCamera();
-        if (!LevelRenderPassTracker.pushAndIsMain(camera)) return;
         DeltaTracker deltaTracker = Minecraft.getInstance().getDeltaTracker();
         Polytone.GLOBAL_UNIFORMS.capture(cameraState.projectionMatrix, cameraState.viewRotationMatrix, deltaTracker.getGameTimeDeltaTicks());
         //Polytone.COLORED_LIGHTS.beforeRenderLevel(camera.position());
@@ -53,9 +53,8 @@ public class LevelRendererMixin {
     //the frame graph already ran here, no pass is open
     @Inject(method = "render", at = @At("RETURN"))
     public void poly$popLevelRenderPass(CallbackInfo ci) {
-        Camera camera = LevelRenderPassTracker.currentCamera();
         if (!LevelRenderPassTracker.popAndWasMain()) return;
-        //Polytone.VOXEL_VOLUME.updateAfterRenderLevel(camera);
+        //Polytone.VOXEL_VOLUME.updateAfterRenderLevel(Minecraft.getInstance().gameRenderer.mainCamera());
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", shift = At.Shift.AFTER,
