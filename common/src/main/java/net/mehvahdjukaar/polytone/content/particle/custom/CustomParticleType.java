@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+//TODO: clear shit up. this and instance  needs serious care
 public class CustomParticleType implements ICustomParticleFactory {
 
     protected final ParticleRenderMode renderType;
@@ -169,11 +170,7 @@ public class CustomParticleType implements ICustomParticleFactory {
 
         //tick once
         //todo replace   initializer with ticker
-        // The editor preview spawns on the render thread and can't drive the async batch, so it runs
-        // the spawn pass synchronously (ParticlePreviewMode.active() is only ever true there).
         if (Polytone.CONFIGS.particlesOffThread.get() && !ParticlePreviewState.active()) {
-            // run the spawn-time ticker pass in this tick's parallel batch instead of on the main
-            // thread; the batch joins before render extract, so the first frame is identical
             PolytoneAsyncParticles.enqueueInit(newParticle);
         } else {
             newParticle.initTick();
@@ -227,8 +224,6 @@ public class CustomParticleType implements ICustomParticleFactory {
         }
     }
 
-    // The baked sprites last handed to setSpriteSet, or null if none yet. The editor preview borrows these
-    // from the pack's already-registered particle of the same id.
     public @Nullable SpriteSet getSpriteSet() {
         return this.spriteSet;
     }
