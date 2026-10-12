@@ -15,7 +15,7 @@ import java.util.function.LongConsumer;
 import java.util.function.Supplier;
 
 //world section modulo size = slot. we refill the edges only when moving. todo: account for spherical radius
-public abstract class SectionGrid<S extends SectionGrid.Slot> implements AutoCloseable {
+public abstract class SectionGrid<S extends SectionGrid.Slot> {
 
     protected final int widthInSections;
     protected final int heightInSections;
