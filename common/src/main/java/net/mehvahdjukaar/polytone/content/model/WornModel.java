@@ -28,11 +28,11 @@ public final class WornModel {
             t -> t.name().toLowerCase(Locale.ROOT));
 
     public static final Codec<WornModel> CODEC = RecordCodecBuilder.create(i -> i.group(
-            WornModelGeometry.CODEC.fieldOf("model").forGetter(w -> w.geometry),
+            EntityModelGeometry.CODEC.fieldOf("model").forGetter(w -> w.geometry),
             LAYER_TYPE_CODEC.optionalFieldOf("layer_type", EquipmentClientInfo.LayerType.HUMANOID).forGetter(w -> w.layerType)
     ).apply(i, WornModel::new));
 
-    private final WornModelGeometry geometry;
+    private final EntityModelGeometry geometry;
     private final EquipmentClientInfo.LayerType layerType;
 
     // baked model cache, invalidated when the EntityModelSet instance changes (i.e. on resource reload)
@@ -42,7 +42,7 @@ public final class WornModel {
     private EntityModelSet cachedFrom;
     private boolean failed;
 
-    public WornModel(WornModelGeometry geometry, EquipmentClientInfo.LayerType layerType) {
+    public WornModel(EntityModelGeometry geometry, EquipmentClientInfo.LayerType layerType) {
         this.geometry = geometry;
         this.layerType = layerType;
     }
