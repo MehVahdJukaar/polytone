@@ -144,7 +144,6 @@ public class PaletteGrid extends SectionGrid<PaletteGrid.BlockEntitySlot> {
         return ((z * SectionPos.SECTION_SIZE + y) * SectionPos.SECTION_SIZE + x) * BYTES_PER_CELL;
     }
 
-    @Override
     public void close() {
         GLHelper.safeDeleteTexture(textureId);
         MemoryUtil.memFree(sectionUpload);

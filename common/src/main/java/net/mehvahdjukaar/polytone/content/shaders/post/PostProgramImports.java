@@ -25,7 +25,10 @@ public class PostProgramImports extends GlslPreprocessor {
 
     @Override
     public @Nullable String applyImport(boolean useFullPath, String directory) {
-        String path = FileUtil.normalizeResourcePath((useFullPath ? PROGRAM_DIR : "shaders/include/") + directory);
+        //might aswell fix not supported namespace here
+        boolean isNamespaced = !useFullPath && directory.contains(":");
+        String path = isNamespaced ? ResourceLocation.parse(directory).withPrefix("shaders/include/").toString() :
+                FileUtil.normalizeResourcePath((useFullPath ? PROGRAM_DIR : "shaders/include/") + directory);
         if (!importedPaths.add(path)) return null;
         try (Reader reader = Minecraft.getInstance().getResourceManager().openAsReader(ResourceLocation.parse(path))) {
             return IOUtils.toString(reader);

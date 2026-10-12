@@ -126,7 +126,6 @@ public class FarLightGrid extends SectionGrid<SectionGrid.Slot> {
         return ((z * CELLS_PER_SECTION + y) * CELLS_PER_SECTION + x) * BYTES_PER_CELL;
     }
 
-    @Override
     public void close() {
         GLHelper.safeDeleteTexture(emissionTextureId);
         GLHelper.safeDeleteTexture(lightTextureId);

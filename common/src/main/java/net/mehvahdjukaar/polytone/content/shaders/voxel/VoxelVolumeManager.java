@@ -42,7 +42,7 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
     public static final String ORIGIN = "PolyVoxelVolumeOrigin";
     public static final String ORIGIN_TEXEL = "PolyVoxelVolumeOriginTexel";
     //size in blocks of the cube
-    public static final String SIZE = "PolyVoxelVolumeSize";
+    public static final String WIDTH = "PolyVoxelVolumeWidth";
     public static final String HEIGHT = "PolyVoxelVolumeHeight";
     public static final String CELLS_SAMPLER = "InVoxelCells";
     public static final String PALETTE_SAMPLER = "InVoxelPalette";
@@ -52,7 +52,7 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
     public static final String FAR_ORIGIN_TEXEL = "PolyFarLightOriginTexel";
     public static final String FAR_SIZE = "PolyFarLightSize";
 
-    private static final List<String> UNIFORM_NAMES = List.of(ORIGIN, ORIGIN_TEXEL, SIZE, HEIGHT);
+    private static final List<String> UNIFORM_NAMES = List.of(ORIGIN, ORIGIN_TEXEL, WIDTH, HEIGHT);
     //vanilla only binds up to 12 unit so these 2 arbitrary should probably be fine
     private static final int LIGHT_UNIT = 30;
     private static final int CELLS_UNIT = 31;
@@ -209,13 +209,13 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
                                       int texelX, int texelY, int texelZ, int width, int height) {
         shader.getUniform(ORIGIN).set(originX, originY, originZ);
         shader.getUniform(ORIGIN_TEXEL).set(texelX, texelY, texelZ);
-        shader.getUniform(SIZE).set(width);
+        shader.getUniform(WIDTH).set(width);
         shader.getUniform(HEIGHT).set(height);
         //lightmap patched vanilla shaders dont have these in their json
         int program = shader.programId();
         GLHelper.setProgramUniform(program, ORIGIN, originX, originY, originZ);
         GLHelper.setProgramUniform(program, ORIGIN_TEXEL, texelX, texelY, texelZ);
-        GLHelper.setProgramUniform(program, SIZE, width);
+        GLHelper.setProgramUniform(program, WIDTH, width);
         GLHelper.setProgramUniform(program, HEIGHT, height);
     }
 

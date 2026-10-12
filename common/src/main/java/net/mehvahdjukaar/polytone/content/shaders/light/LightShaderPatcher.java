@@ -24,8 +24,8 @@ public class LightShaderPatcher {
     //we steal last 3 bits of sodium material byte to store the direction of the face. Since sodium kills normals
     public static final int SODIUM_MATERIAL_DIRECTION_BITS_SHIFT = 5;
 
-    private static final String INCLUDE_IMPORT_LINE = "#moj_import <polytone_block_light.glsl>\n";
-    private static final ResourceLocation INCLUDE_LOCATION = ResourceLocation.withDefaultNamespace("shaders/include/polytone_block_light.glsl");
+    private static final String INCLUDE_IMPORT_LINE = "#moj_import <polytone_colored_light.glsl>\n";
+    private static final ResourceLocation INCLUDE_LOCATION = ResourceLocation.withDefaultNamespace("shaders/include/polytone_colored_light.glsl");
 
     public static boolean isIncludeAvailable() {
         return Minecraft.getInstance().getResourceManager()
@@ -53,7 +53,7 @@ public class LightShaderPatcher {
 
     //texel shift matchs how the vanilla read samples: terrain between texels, entities at their centers
     private static String wrapWithColoredLight(String vanillaRead, String lightLevels, String texelShift, String pos, String normal) {
-        return "polyColoredLightmap(" + vanillaRead + ", Sampler2, " + lightLevels + ", " + texelShift + ", " + pos + ", " + normal + ")";
+        return "_polyColoredLightmap(" + vanillaRead + ", Sampler2, " + lightLevels + ", " + texelShift + ", " + pos + ", " + normal + ")";
     }
 
     //its safer not to use moj_import as some mods resource provider might not see ours
@@ -80,7 +80,7 @@ public class LightShaderPatcher {
         //_vert_tex_light_coord is UV2 / 256
         String face = "((_material_params >> " + SODIUM_MATERIAL_DIRECTION_BITS_SHIFT + "u) & 7u)";
         String patched = SODIUM_LIGHTMAP_READ.matcher(vertexShaderText).replaceAll(m -> Matcher.quoteReplacement(
-                "polyColoredLightmapForFace(" + m.group() + ", u_LightTex, _vert_tex_light_coord * 16.0, 0.0, position, " + face + ")"));
+                "_polyColoredLightmapForFace(" + m.group() + ", u_LightTex, _vert_tex_light_coord * 16.0, 0.0, position, " + face + ")"));
 
         return insertInclude(patched, versionLine.end());
     }
