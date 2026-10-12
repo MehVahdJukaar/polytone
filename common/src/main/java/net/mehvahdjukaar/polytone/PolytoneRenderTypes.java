@@ -27,6 +27,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
@@ -36,6 +37,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.SequencedMap;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static net.minecraft.client.renderer.RenderPipelines.MATRICES_PROJECTION_SNIPPET;
@@ -105,6 +107,27 @@ public class PolytoneRenderTypes {
                     .setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
                     .sortOnUpload().bufferSize(786432)
                     .setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
+
+
+    public static final RenderPipeline ADDITIVE_TRANSLUCENT_ENTITY_PIPELINE = register(RenderPipeline.builder(
+                    RenderPipelines.ENTITY_SNIPPET)
+            .withLocation(Polytone.res("pipeline/additive_translucent_entity"))
+            .withSampler("Sampler1")
+            .withShaderDefine("ALPHA_CUTOUT", 0.1F)
+            .withShaderDefine("PER_FACE_LIGHTING")
+            .withColorTargetState(new ColorTargetState(ADDITIVE_TRANSLUCENT_BLEND))
+            .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
+            .withCull(false)
+            .build());
+
+    public static final Function<Identifier, RenderType> ADDITIVE_TRANSLUCENT_ENTITY = Util.memoize(texture -> RenderType.create(
+            Polytone.MOD_ID + ":additive_translucent_entity",
+            RenderSetup.builder(ADDITIVE_TRANSLUCENT_ENTITY_PIPELINE)
+                    .withTexture("Sampler0", texture)
+                    .useLightmap()
+                    .useOverlay()
+                    .sortOnUpload()
+                    .createRenderSetup()));
 
 
     //vanilla CELESTIAL but alpha blended instead of additive

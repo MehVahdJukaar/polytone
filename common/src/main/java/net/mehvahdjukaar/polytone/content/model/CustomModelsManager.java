@@ -16,8 +16,7 @@ import net.minecraft.resources.RegistryOps;
 import java.util.HashMap;
 import java.util.Map;
 
-// Layers are merged into the game's EntityModelSet so they bake through the vanilla pipeline, which
-// keeps them visible to model replacing mods such as EMF.
+//gas to work with emf
 public class CustomModelsManager extends ContentManager<ModelDefinition> {
 
     public static final String LAYER = "main";

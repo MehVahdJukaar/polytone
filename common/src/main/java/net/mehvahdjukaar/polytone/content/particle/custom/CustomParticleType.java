@@ -35,7 +35,7 @@ import java.util.Optional;
 public class CustomParticleType implements ICustomParticleFactory {
 
     protected final ParticleRenderMode renderType;
-    protected final @Nullable Identifier model;
+    protected final @Nullable IParticleModel model;
     protected final @Nullable CustomParticleInitializer initializer;
     protected final ICustomParticleTicker ticker;
     protected final List<ParticleSoundEmitter> sounds;
@@ -65,7 +65,7 @@ public class CustomParticleType implements ICustomParticleFactory {
     protected Identifier debugId = null;
 
     private CustomParticleType(ParticleRenderMode renderType, IRotationProvider rotationProvider,
-                               @Nullable Identifier model, RenderOffset offset,
+                               @Nullable IParticleModel model, RenderOffset offset,
                                int light, boolean hasPhysics, boolean killOnContact, boolean killWhenStill, boolean killWhenNotInView,
                                LiquidAffinity liquidAffinity, @Nullable ParticleColor colormap,
                                boolean randomSprite,
@@ -100,7 +100,7 @@ public class CustomParticleType implements ICustomParticleFactory {
     public static final SchemaCodec<CustomParticleType> CODEC = SchemaRecord.create(CustomParticleType.class, i -> i.group(
             i.optional("render_type", ParticleRenderMode.CODEC, ParticleRenderMode.OPAQUE, c -> c.renderType),
             i.optional("rotation_mode", IRotationProvider.CODEC, RotationMode.LOOK_AT_XYZ, c -> c.rotationProvider),
-            i.optional("model", Identifier.CODEC, c -> Optional.ofNullable(c.model)),
+            i.optional("model", IParticleModel.CODEC, c -> Optional.ofNullable(c.model)),
             i.optional("offset", RenderOffset.CODEC, RenderOffset.NONE, c -> c.offset),
             i.optional("light_level", Codec.intRange(0, 15), 0, c -> c.lightLevel),
             i.optional("has_physics", Codec.BOOL, true, c -> c.hasPhysics),
@@ -123,7 +123,7 @@ public class CustomParticleType implements ICustomParticleFactory {
     ).apply(i, CustomParticleType::new));
 
     private CustomParticleType(ParticleRenderMode renderType, IRotationProvider rotationProvider,
-                               Optional<Identifier> model, RenderOffset offset,
+                               Optional<IParticleModel> model, RenderOffset offset,
                                int light, boolean hasPhysics, boolean killOnContact, boolean killWhenStill, boolean killWhenNotInView,
                                LiquidAffinity liquidAffinity, Optional<ParticleColor> colormap,
                                boolean randomSprite,
@@ -244,8 +244,8 @@ public class CustomParticleType implements ICustomParticleFactory {
         this.isValid = false;
     }
 
-    public static final Codec<Optional<Identifier>> CUSTOM_MODEL_ONLY_CODEC = RecordCodecBuilder.create(i -> i.group(
-            Identifier.CODEC.optionalFieldOf("model").forGetter(e -> e)
+    public static final Codec<Optional<IParticleModel>> CUSTOM_MODEL_ONLY_CODEC = RecordCodecBuilder.create(i -> i.group(
+            IParticleModel.CODEC.optionalFieldOf("model").forGetter(e -> e)
     ).apply(i, r -> r));
 
     public record RenderOffset(Vec3 world, float camera) {

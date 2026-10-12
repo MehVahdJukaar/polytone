@@ -1,15 +1,13 @@
 package net.mehvahdjukaar.polytone.content.particle.custom.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.QuadInstance;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
+import net.mehvahdjukaar.polytone.content.particle.custom.IParticleModel;
 import net.mehvahdjukaar.polytone.content.particle.custom.ParticleRenderMode;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.state.level.ParticleGroupRenderState;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
-import net.minecraft.client.resources.model.geometry.QuadCollection;
+import net.minecraft.util.ARGB;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 
@@ -46,11 +44,11 @@ public class ModelParticleRenderState implements ParticleGroupRenderState {
     public void add(
             ParticleRenderMode layer, float x, float y, float z,
             float rx, float ry, float rz, float rw, float size, float r, float g, float b, float a, int light,
-            @NotNull QuadCollection modelData
+            @NotNull IParticleModel model, CustomParticleInstance particle, float partialTicks
     ) {
         this.particles.computeIfAbsent(layer, l -> new ArrayList<>())
                 .add(new ParticleRenderInstance(x, y, z, rx, ry, rz, rw, size,
-                        r, g, b, a, light, modelData));
+                        r, g, b, a, light, model, particle, partialTicks));
     }
 
     @Override
@@ -78,29 +76,14 @@ public class ModelParticleRenderState implements ParticleGroupRenderState {
 
                 poseStack.scale(p.size, p.size, p.size);
 
-                poseStack.translate(-0.5, -0.5, -0.5);
-
-                submitNodeCollector.submitCustomGeometry(poseStack, v.getKey().getBlock(), (pose1, vertexConsumer) -> {
-                    putModelBulkData(p.modelData, p.light, OverlayTexture.NO_OVERLAY, pose1, vertexConsumer, p.r, p.g, p.b, p.a);
-                });
+                p.model.submit(p.particle, submitNodeCollector, poseStack, p.light, ARGB.colorFromFloat(p.a, p.r, p.g, p.b), p.partialTicks);
             }
-        }
-    }
-
-    private static void putModelBulkData(@NotNull QuadCollection quadCollection, int combinedLight, int combinedOverlay,
-                                         PoseStack.Pose pose, VertexConsumer buffer, float r, float g, float b, float a) {
-        QuadInstance qi = new QuadInstance();
-        qi.setColor(((int)(a * 255) << 24) | ((int)(r * 255) << 16) | ((int)(g * 255) << 8) | (int)(b * 255));
-        qi.setLightCoords(combinedLight);
-        qi.setOverlayCoords(combinedOverlay);
-        for (BakedQuad bakedQuad : quadCollection.getAll()) {
-            buffer.putBakedQuad(pose, bakedQuad, qi);
         }
     }
 
     private record ParticleRenderInstance(float x, float y, float z,
                                           float rx, float ry, float rz, float rw, float size,
                                           float r, float g, float b, float a, int light,
-                                          @NotNull QuadCollection modelData) {
+                                          @NotNull IParticleModel model, CustomParticleInstance particle, float partialTicks) {
     }
 }
