@@ -43,8 +43,6 @@ public class CustomParticleInstance extends SingleQuadParticle {
     private float oAlpha;
     private float renderScale = 1;
     protected double custom;
-    // named counterpart of `custom`. Lazy because most particles never declare one, and
-    // case-insensitive so "customs": {"Speed": ..}, o.custom("speed") and CUSTOM_SPEED all agree
     private @Nullable Map<String, Double> namedCustoms;
 
     private boolean inFrustumLastTick = true;
@@ -52,10 +50,9 @@ public class CustomParticleInstance extends SingleQuadParticle {
     private Quaternionf customRotation = null;
     private Quaternionf customRotationO = null;
 
-    // newborn awaiting its spawn-time ticker pass in the parallel batch (see PolytoneAsyncParticles)
     boolean pendingInitTick = false;
 
-    // light cache: re-samples only when the particle crosses a block, or its section changed
+    //re-sampled only when the particle crosses a block, or its section changed
     private final ParticleLightCache.Entry lightCache;
     private final @Nullable ParticleColor.Cache colormapCache;
 
@@ -99,8 +96,6 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
         this.oQuadSize = quadSize;
 
-        // seed the spawn color; the cache also records the block so PER_POSITION only re-samples
-        // once the particle moves off it. null when this type has no colormap (the common case)
         this.colormapCache = this.type.colormap == null ? null
                 : new ParticleColor.Cache(this, this.type.colormap, state, pos);
         this.lightCache = new ParticleLightCache.Entry(super::getLightCoords);
@@ -248,8 +243,6 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     @Override
     protected int getLightCoords(float partialTick) {
-        // Editor preview: light it at full brightness so it looks the same regardless of the world's
-        // time of day (it ticks in the real level, which would otherwise darken it at night).
         if (ParticlePreviewState.active()) return LightCoordsUtil.pack(15, 15);
         int total = lightCache.get(this.x, this.y, this.z, partialTick);
         if (this.type.lightLevel > 0) {
@@ -278,8 +271,6 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     @Override
     public void tick() {
-        // Lifetime expires synchronously: the engine culls right after tick(), a deferred check
-        // makes every particle live one tick longer. super.tick()'s own check then never fires.
         if (this.removed) return; // removed off-thread last tick, culled right after this call
         if (this.age >= this.lifetime) {
             this.remove();
@@ -290,9 +281,6 @@ public class CustomParticleInstance extends SingleQuadParticle {
         } else tickInternal();
     }
 
-    // Preview-only synchronous tick: runs the physics/expression pass on the caller's thread, bypassing the
-    // async batch. Never called in normal gameplay (which always routes through tick()); only the editor
-    // particle preview drives its sandbox particles this way, since it cannot join the game's async batch.
     public void tickSync() {
         if (this.removed) return;
         if (this.age >= this.lifetime) {
@@ -304,8 +292,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     void initTick() {
         this.type.ticker.tick(this, level);
-        this.setAge(0); // reset so the spawn-time pass doesn't age the particle
-        // otherwise first frame fades in from the initializer colors
+        this.setAge(0);
         this.syncOldColor();
     }
 
@@ -357,8 +344,6 @@ public class CustomParticleInstance extends SingleQuadParticle {
             type.ticker.tick(this, level);
         }
 
-        // colormap: sampled once at spawn (see constructor); the cache policy decides whether to
-        // re-evaluate here (ON_SPAWN freezes, PER_POSITION on block change, NONE every tick)
         if (colormapCache != null) colormapCache.tick();
 
         if (this.age > 1 && type.killWhenStill && this.x == this.xo && this.y == this.yo && this.z == this.zo) {
