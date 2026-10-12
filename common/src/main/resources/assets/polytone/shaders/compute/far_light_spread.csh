@@ -1,6 +1,6 @@
 #version 430
 
-#moj_import <polytone_red_black.glsl>
+#moj_import <polytone:red_black.glsl>
 
 //near_light_spread without the occlusion, on 4 block cells
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;

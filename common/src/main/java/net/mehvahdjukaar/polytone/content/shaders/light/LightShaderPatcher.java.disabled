@@ -33,8 +33,8 @@ public class LightShaderPatcher {
     private static volatile boolean terrainReadsFaceBits = false;
     private static volatile boolean blockReadsFaceBits = false;
 
-    private static final String INCLUDE_IMPORT_LINE = "#moj_import <polytone_block_light.glsl>\n";
-    public static final Identifier INCLUDE_LOCATION = Identifier.withDefaultNamespace("shaders/include/polytone_block_light.glsl");
+    private static final String INCLUDE_IMPORT_LINE = "#moj_import <polytone_colored_light.glsl>\n";
+    public static final Identifier INCLUDE_LOCATION = Identifier.withDefaultNamespace("shaders/include/polytone_colored_light.glsl");
     private static final Identifier TERRAIN = Identifier.withDefaultNamespace("core/terrain");
     private static final Identifier BLOCK = Identifier.withDefaultNamespace("core/block");
     private static final Set<Identifier> SOLID_FACE_SHADERS = Set.of(TERRAIN, BLOCK);
@@ -55,7 +55,7 @@ public class LightShaderPatcher {
 
     public static String onLoadVertexShader(Identifier shaderId, String vertexShaderText, boolean canPatch) {
         String patched = canPatch ? patch(shaderId, vertexShaderText) : vertexShaderText;
-        boolean readsFaceBits = patched.contains("polyColoredLightmapForFace(");
+        boolean readsFaceBits = patched.contains("_polyColoredLightmapForFace(");
         if (shaderId.equals(TERRAIN)) terrainReadsFaceBits = readsFaceBits;
         else if (shaderId.equals(BLOCK)) blockReadsFaceBits = readsFaceBits;
         return patched;
@@ -79,12 +79,12 @@ public class LightShaderPatcher {
             //face bits live in the light coords so every read past the declaration gets them masked off
             String face = "uint((" + RAW_UV2 + ".x >> " + LIGHT_DIRECTION_BITS_SHIFT + ") & 7)";
             String body = LIGHTMAP_READ.matcher(vertexShaderText.substring(uv2Declaration.end())).replaceAll(m -> Matcher.quoteReplacement(
-                    "polyColoredLightmapForFace(" + m.group() + ", Sampler2, " + levels + ", 0.5, " + cameraRelativePos + ", " + face + ")"));
+                    "_polyColoredLightmapForFace(" + m.group() + ", Sampler2, " + levels + ", 0.5, " + cameraRelativePos + ", " + face + ")"));
             body = UV2_USE.matcher(body).replaceAll("ivec2(UV2.x & 0xFF, UV2.y)").replace(RAW_UV2, "UV2");
             patched = vertexShaderText.substring(0, uv2Declaration.end()) + body;
         } else {
             patched = LIGHTMAP_READ.matcher(vertexShaderText).replaceAll(m -> Matcher.quoteReplacement(isSolidFace ?
-                    "polyColoredLightmapBrightestSide(" + m.group() + ", Sampler2, " + levels + ", 0.5, " + cameraRelativePos + ")" :
+                    "_polyColoredLightmapBrightestSide(" + m.group() + ", Sampler2, " + levels + ", 0.5, " + cameraRelativePos + ")" :
                     wrapWithColoredLight(m.group(), levels, "0.5", cameraRelativePos, hasNormal ? "Normal" : "vec3(0.0)")));
         }
 
@@ -93,7 +93,7 @@ public class LightShaderPatcher {
     }
 
     private static String wrapWithColoredLight(String vanillaRead, String lightLevels, String texelShift, String pos, String normal) {
-        return "polyColoredLightmap(" + vanillaRead + ", Sampler2, " + lightLevels + ", " + texelShift + ", " + pos + ", " + normal + ")";
+        return "_polyColoredLightmap(" + vanillaRead + ", Sampler2, " + lightLevels + ", " + texelShift + ", " + pos + ", " + normal + ")";
     }
 
     //sodium #import only looks in its own jat and doesnt know #moj_import. paste ours in expanded
@@ -109,7 +109,7 @@ public class LightShaderPatcher {
         //_vert_tex_light_coord is UV2 / 256
         String face = "((_material_params >> " + SODIUM_MATERIAL_DIRECTION_BITS_SHIFT + "u) & 7u)";
         String patched = SODIUM_LIGHTMAP_READ.matcher(vertexShaderText).replaceAll(m -> Matcher.quoteReplacement(
-                "polyColoredLightmapForFace(" + m.group() + ", u_LightTex, _vert_tex_light_coord * 16.0, 0.0, position, " + face + ")"));
+                "_polyColoredLightmapForFace(" + m.group() + ", u_LightTex, _vert_tex_light_coord * 16.0, 0.0, position, " + face + ")"));
 
         int afterVersion = versionLine.end();
         return patched.substring(0, afterVersion) + include + "\n" + patched.substring(afterVersion);
