@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
 
+//TODO: class is too messy needs some refactoring
 public class CustomParticleInstance extends SingleQuadParticle {
 
     public final CustomParticleType type;
