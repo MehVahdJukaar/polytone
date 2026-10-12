@@ -1,1 +1,1 @@
-- added entity models for particles. support expression driven animations
+- more improvements to voxel volume code, should improve compat with veil
