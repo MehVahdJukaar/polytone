@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
 
-public class VoxelVolume implements AutoCloseable {
+public class VoxelVolume {
 
     private static final long MAX_TIME_NANOS = 1_000_000;
     private static final long FAR_MAX_TIME_NANOS = 500_000;
@@ -66,7 +66,6 @@ public class VoxelVolume implements AutoCloseable {
         nearLight.spreadLight(nearShader);
     }
 
-    @Override
     public void close() {
         grid.close();
         nearLight.close();
