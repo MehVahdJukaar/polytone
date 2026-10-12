@@ -23,13 +23,13 @@ public abstract class SodiumMeshBufferBuilderMixin {
     @Unique
     private boolean polytone$writesFaceBits;
 
-    @Inject(method = "<init>", remap = false, at = @At("TAIL"))
+    @Inject(method = "<init>", remap = false, require = 0, at = @At("TAIL"))
     private void polytone$checkFaceBits(ChunkVertexType vertexType, int initialCapacity, CallbackInfo ci) {
         polytone$writesFaceBits = Polytone.CONFIGS.coloredLightsBackend.get().tintsVanillaBlockLight()
                 && !CompatHandler.irisShaderPackActive();
     }
 
-    @ModifyArg(require = 2, method = {"push([Lnet/caffeinemc/mods/sodium/client/render/chunk/vertex/format/ChunkVertexEncoder$Vertex;I)V",
+    @ModifyArg(require = 0, method = {"push([Lnet/caffeinemc/mods/sodium/client/render/chunk/vertex/format/ChunkVertexEncoder$Vertex;I)V",
             "writeExternal"}, remap = false, index = 1,
             at = @At(value = "INVOKE", remap = false,
                     target = "Lnet/caffeinemc/mods/sodium/client/render/chunk/vertex/format/ChunkVertexEncoder;write(JI[Lnet/caffeinemc/mods/sodium/client/render/chunk/vertex/format/ChunkVertexEncoder$Vertex;I)J"))
