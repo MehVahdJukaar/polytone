@@ -24,8 +24,14 @@ dependencies {
     modImplementation("net.mehvahdjukaar:codecui-fabric:${codecui_version}")
     include("net.mehvahdjukaar:codecui-fabric:${codecui_version}")
 
-    modCompileOnly("curse.maven:irisshaders-455508:5726475")
-    modCompileOnly("maven.modrinth:sodium:mc1.21.1-0.8.12-fabric") // sodium 0.8.x line for 1.21.1
+    modCompileOnly("maven.modrinth:iris:1.8.14-beta.1+1.21.1-fabric")
+    modLocalRuntime("maven.modrinth:iris:1.8.14-beta.1+1.21.1-fabric")
+    modCompileOnly("maven.modrinth:sodium:mc1.21.1-0.8.13-fabric")
+    modLocalRuntime("maven.modrinth:sodium:mc1.21.1-0.8.13-fabric")
+    //iris nested libs, loom doesnt put them on the dev classpath
+    localRuntime("org.anarres:jcpp:1.4.14")
+    localRuntime("io.github.douira:glsl-transformer:3.0.0-pre3")
+    localRuntime("org.antlr:antlr4-runtime:4.13.1")
 
     modImplementation("net.mehvahdjukaar:nautilus_studio-fabric:${nautilus_studio_version}")
     modCompileOnly("curse.maven:serene-seasons-291874:6182595")

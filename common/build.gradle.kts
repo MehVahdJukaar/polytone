@@ -19,8 +19,8 @@ dependencies {
     compileOnly("net.mehvahdjukaar:codecui-common:${codecui_version}")
     compileOnly("net.mehvahdjukaar:nautilus_studio-common:${nautilus_studio_version}")
 
-    modCompileOnly("curse.maven:irisshaders-455508:5726475")
-    modCompileOnly(":sodium-neoforge-mod:0.8.12")
+    modCompileOnly("maven.modrinth:iris:1.8.14-beta.1+1.21.1-fabric")
+    modCompileOnly(":sodium-neoforge-mod:0.8.13")
     modCompileOnly("curse.maven:serene-seasons-291874:6182596")
     modCompileOnly("foundry.veil:veil-common-1.21.1:${veil_version}")
 }

@@ -28,6 +28,7 @@ import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackCompatibility;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -215,8 +216,19 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         }
     }
 
+    //for stuff that loads before us..
+    public void loadCurrentReloadConfigs(ResourceManager resourceManager) {
+        MapRegistry<OptionHolder<?>> reloadReg = new MapRegistry<>("Active Reload Configs");
+        registerBuiltins(reloadReg);
+        activeLoadConfigs.set(reloadReg);
+        parseConfigsInto(resourceManager, reloadReg);
+    }
+
     private void parsePackConfigsInto(PackResources pack, MapRegistry<OptionHolder<?>> reg) {
-        MultiPackResourceManager resourceManager = new MultiPackResourceManager(PackType.CLIENT_RESOURCES, List.of(pack));
+        parseConfigsInto(new MultiPackResourceManager(PackType.CLIENT_RESOURCES, List.of(pack)), reg);
+    }
+
+    private void parseConfigsInto(ResourceManager resourceManager, MapRegistry<OptionHolder<?>> reg) {
         var jsons = this.getJsonsInDirectories(resourceManager);
         for (var j : Parsed.batchParseOnlyEnabled(jsons, PolyConfig.CODEC, JsonOps.INSTANCE, "Configs")) {
             if (j != null) addConfig(j.getKey(), j.getValue(), reg, configFileSnapshot);

@@ -30,7 +30,7 @@ public abstract class SodiumMeshBufferBuilderMixin {
     }
 
     @ModifyArg(require = 2, method = {"push([Lnet/caffeinemc/mods/sodium/client/render/chunk/vertex/format/ChunkVertexEncoder$Vertex;I)V",
-            "writeExternal"}, remap = false, index = 1,
+            "writeExternal(Ljava/nio/ByteBuffer;I[Lnet/caffeinemc/mods/sodium/client/render/chunk/vertex/format/ChunkVertexEncoder$Vertex;Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/Material;)V"}, remap = false, index = 1,
             at = @At(value = "INVOKE", remap = false,
                     target = "Lnet/caffeinemc/mods/sodium/client/render/chunk/vertex/format/ChunkVertexEncoder;write(JI[Lnet/caffeinemc/mods/sodium/client/render/chunk/vertex/format/ChunkVertexEncoder$Vertex;I)J"))
     private int polytone$hackilyAddDirectionBits(int materialBits, @Local(argsOnly = true) ChunkVertexEncoder.Vertex[] quad) {
