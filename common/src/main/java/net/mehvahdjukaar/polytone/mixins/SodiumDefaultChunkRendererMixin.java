@@ -1,6 +1,12 @@
 package net.mehvahdjukaar.polytone.mixins;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import net.caffeinemc.mods.sodium.client.render.chunk.DefaultChunkRenderer;
 import net.mehvahdjukaar.polytone.content.shaders.shadow.sodium.SodiumShadowRenderer;
@@ -25,5 +31,16 @@ public abstract class SodiumDefaultChunkRendererMixin {
     private GpuTextureView polytone$shadowDepthAttachment(RenderTarget target) {
         GpuTextureView shadow = SodiumShadowRenderer.activeShadowDepthView();
         return shadow != null ? shadow : target.getDepthTextureView();
+    }
+
+    @WrapOperation(method = "render", require = 0, at = @At(value = "INVOKE",
+            target = "Lcom/mojang/blaze3d/systems/RenderPass;setPipeline(Lcom/mojang/blaze3d/pipeline/RenderPipeline;)V"))
+    private void polytone$bindVanillaGlobals(RenderPass pass, RenderPipeline pipeline, Operation<Void> original) {
+        original.call(pass, pipeline);
+        GpuBuffer globals = RenderSystem.getGlobalSettingsUniform();
+        if (globals != null) {
+            //we need vanilla global here
+            pass.setUniform("Globals", globals);
+        }
     }
 }
