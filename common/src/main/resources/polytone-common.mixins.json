@@ -88,6 +88,8 @@
     "compat.SodiumChunkRendererMixin",
     "compat.SodiumMeshBufferBuilderMixin",
     "SodiumDefaultChunkRendererMixin",
+    "SoundEventRegistrationSerializerMixin",
+    "SoundManagerMixin",
     "SpatialAttributeInterpolatorMixin",
     "SpriteContentsMixin",
     "SubmitNodeStorageMixin",

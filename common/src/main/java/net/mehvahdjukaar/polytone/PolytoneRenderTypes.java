@@ -104,11 +104,11 @@ public class PolytoneRenderTypes {
     public static final RenderPipeline ADDITIVE_TRANSLUCENT_ENTITY_PIPELINE = register(RenderPipeline.builder(
                     RenderPipelines.ENTITY_SNIPPET)
             .withLocation(Polytone.res("pipeline/additive_translucent_entity"))
-            .withSampler("Sampler1")
+            .withBindGroupLayout(BindGroupLayouts.SAMPLER1)
             .withShaderDefine("ALPHA_CUTOUT", 0.1F)
             .withShaderDefine("PER_FACE_LIGHTING")
             .withColorTargetState(new ColorTargetState(ADDITIVE_TRANSLUCENT_BLEND))
-            .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
+            .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
             .withCull(false)
             .build());
 
