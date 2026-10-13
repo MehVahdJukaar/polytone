@@ -7,6 +7,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MappableRingBuffer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
@@ -47,8 +48,7 @@ public class PolyGlobalUniforms implements IShaderModifier, AutoCloseable {
         Minecraft mc = Minecraft.getInstance();
         float sunAngle = mc.levelRenderer.levelRenderState.skyRenderState.sunAngle;
         float dayTime = (float) ClientFrameTicker.getDayTime();
-        // lerped player (feet) position, split like vanilla's CameraBlockPos/CameraOffset so shaders
-        // keep float precision at large coordinates: exact = vec3(PolyPlayerBlockPos) - PolyPlayerOffset
+        //we lerp player feet position and split like vanilla's CameraBlockPos/CameraOffset for more precision
         Vec3 playerPos = mc.player == null ? Vec3.ZERO
                 : mc.player.getPosition(mc.getDeltaTracker().getGameTimeDeltaPartialTick(false));
         BlockPos playerBlockPos = BlockPos.containing(playerPos);
