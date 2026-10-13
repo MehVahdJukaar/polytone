@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 
-//mods like Vista or portal mods call LevelRenderer.renderLevel again for their own cameras, skipping GameRenderer.renderLevel
+//static state that tracks level passes for reentrancy
 public final class LevelRenderPassTracker {
 
     private static boolean inVanillaFrame = false;
@@ -14,7 +14,6 @@ public final class LevelRenderPassTracker {
 
     public static void onStartRenderLevel() {
         inVanillaFrame = true;
-        // renderLevel's RETURN doesn't run if the pass throws, so re-anchor rather than trusting the pops.
         passesStack.clear();
     }
 

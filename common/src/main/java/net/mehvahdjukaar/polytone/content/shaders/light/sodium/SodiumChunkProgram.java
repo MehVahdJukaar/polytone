@@ -68,7 +68,6 @@ public class SodiumChunkProgram implements IShader {
         GL30C.glBindBufferRange(GL31C.GL_UNIFORM_BUFFER, FIRST_BINDING_POINT + i, buffer, value.offset(), value.length());
     }
 
-    //voxel textures go on their raw units, nothing in here samples a 2d texture of ours
     @Override
     public void setSampler(String name, GpuTextureView texture, GpuSampler sampler) {
     }
