@@ -82,6 +82,8 @@
     "SkyRendererMixin",
     "SmithingScreenMixin",
     "compat.SodiumBlockRendererMixin",
+    "SoundEventRegistrationSerializerMixin",
+    "SoundManagerMixin",
     "SpatialAttributeInterpolatorMixin",
     "SpriteContentsMixin",
     "SubmitNodeStorageMixin",
