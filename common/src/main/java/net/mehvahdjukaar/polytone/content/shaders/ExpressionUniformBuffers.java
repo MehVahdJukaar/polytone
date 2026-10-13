@@ -6,31 +6,36 @@ import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
 import net.mehvahdjukaar.polytone.mixins.accessor.GlBufferAccessor;
+import net.minecraft.util.ExtraCodecs;
 import org.lwjgl.opengl.GL30C;
 import org.lwjgl.opengl.GL31C;
 import org.lwjgl.opengl.GL32C;
 import org.lwjgl.system.MemoryStack;
 
-import java.nio.ByteBuffer;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-// A map of block name -> expression; each entry becomes a single-float UBO block of that name
+// A map of block name -> expressions; each entry becomes a UBO block of that name, one float per expression
 public final class ExpressionUniformBuffers {
 
-    public static final Codec<ExpressionUniformBuffers> CODEC =
-            Codec.unboundedMap(Codec.STRING, ISimpleExp.CODEC)
-                    .xmap(ExpressionUniformBuffers::new, ExpressionUniformBuffers::getExpressions);
+    public static final Codec<Map<String, List<ISimpleExp>>> UNIFORMS_CODEC = Codec.unboundedMap(Codec.STRING,
+            ExtraCodecs.nonEmptyList(SchemaCodecs.singleOrList(ISimpleExp.CODEC)));
 
+    public static final Codec<ExpressionUniformBuffers> CODEC =
+            UNIFORMS_CODEC.xmap(ExpressionUniformBuffers::new, ExpressionUniformBuffers::getExpressions);
+
+    // consecutive floats pack tightly in std140, unlike a float array
     private static final int FLOAT_UBO_SIZE = new Std140SizeCalculator().putFloat().get();
 
-    private final Map<String, ISimpleExp> expressions;
+    private final Map<String, List<ISimpleExp>> expressions;
     private Map<String, GpuBuffer> buffers = null;
 
-    public ExpressionUniformBuffers(Map<String, ISimpleExp> expressions) {
+    public ExpressionUniformBuffers(Map<String, List<ISimpleExp>> expressions) {
         this.expressions = expressions;
     }
 
@@ -38,7 +43,7 @@ public final class ExpressionUniformBuffers {
         return expressions.isEmpty();
     }
 
-    public Map<String, ISimpleExp> getExpressions() {
+    public Map<String, List<ISimpleExp>> getExpressions() {
         return expressions;
     }
 
@@ -49,7 +54,7 @@ public final class ExpressionUniformBuffers {
                 buffers.put(name, RenderSystem.getDevice().createBuffer(
                         () -> debugLabel + ": " + name,
                         GpuBuffer.USAGE_COPY_DST | GpuBuffer.USAGE_UNIFORM,
-                        FLOAT_UBO_SIZE));
+                        FLOAT_UBO_SIZE * expressions.get(name).size()));
             }
         }
     }
@@ -60,10 +65,10 @@ public final class ExpressionUniformBuffers {
         for (var e : expressions.entrySet()) {
             GpuBuffer buf = buffers.get(e.getKey());
             if (buf == null) continue;
-            float val = (float) e.getValue().evaluate();
             try (MemoryStack stack = MemoryStack.stackPush()) {
-                ByteBuffer bb = Std140Builder.onStack(stack, FLOAT_UBO_SIZE).putFloat(val).get();
-                encoder.writeToBuffer(buf.slice(), bb);
+                Std140Builder builder = Std140Builder.onStack(stack, FLOAT_UBO_SIZE * e.getValue().size());
+                for (ISimpleExp exp : e.getValue()) builder.putFloat((float) exp.evaluate());
+                encoder.writeToBuffer(buf.slice(), builder.get());
             }
         }
     }

@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.google.gson.JsonElement;
+import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
@@ -9,12 +10,10 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.*;
 import org.jetbrains.annotations.Nullable;
@@ -42,22 +41,20 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
                 .folders("gui_modifiers"));
     }
 
+    // not level dependant so screens outside a world (title screen) get them too
     @Override
-    protected void resetWithLevel(boolean logOff) {
+    protected void applyNormal(AssetsFiles resources) {
         slotsByMenuId.clear();
         slotsByClass.clear();
         slotsByTitle.clear();
         byMenuId.clear();
         byClass.clear();
         byTitle.clear();
-    }
 
-    @Override
-    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         Map<Identifier, JsonElement> jsons = resources.jsons();
         List<GuiModifier> allModifiers = new ArrayList<>();
 
-        for (var entry : parseEnabledJsons(jsons, ops)) {
+        for (var entry : parseEnabledJsons(jsons, JsonOps.INSTANCE)) {
             allModifiers.add(entry.getValue());
         }
 
@@ -112,12 +109,8 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
 
         }
 
-    }
-
-    @Override
-    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
-        if (!slotsByMenuId.isEmpty() || !slotsByClass.isEmpty() || !slotsByTitle.isEmpty()) {
-            Polytone.LOGGER.info("Loaded GUI modifiers for: {} {} {} {}", slotsByMenuId.keySet(), slotsByClass.keySet(), byMenuId.keySet(), byClass.keySet());
+        if (!byMenuId.isEmpty() || !byClass.isEmpty() || !byTitle.isEmpty()) {
+            Polytone.LOGGER.info("Loaded GUI modifiers for: {} {} {}", byMenuId.keySet(), byClass.keySet(), byTitle.keySet());
         }
     }
 

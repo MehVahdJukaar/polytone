@@ -25,8 +25,17 @@ public class PackMixin {
                                                     PackFormat packFormat, PackType packType,
                                                     CallbackInfoReturnable<Pack.Metadata> cir,
                                                     @Local PackResources packResources) {
-        Polytone.CONFIGS.loadCurrentPackConfigs(packResources, resourcesSupplier, packLocationInfo, packFormat, packType);
-        PackInfos.readFrom(packResources, packType);
+        // an exception escaping here makes vanilla treat the pack as unreadable and remove it from the selected packs
+        try {
+            Polytone.CONFIGS.loadCurrentPackConfigs(packResources, resourcesSupplier, packLocationInfo, packFormat, packType);
+        } catch (Exception e) {
+            Polytone.LOGGER.error("Failed to load configs of pack {}", packLocationInfo.id(), e);
+        }
+        try {
+            PackInfos.readFrom(packResources, packType);
+        } catch (Exception e) {
+            Polytone.LOGGER.error("Failed to read pack info of pack {}", packLocationInfo.id(), e);
+        }
     }
 
     // The per-pack registry is only meant to be visible while this pack's own overlay conditions are being

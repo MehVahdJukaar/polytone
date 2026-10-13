@@ -15,6 +15,8 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.state.level.ParticleGroupRenderState;
 import net.minecraft.world.phys.AABB;
 
+import java.util.function.Predicate;
+
 public class ModelParticleRenderGroup extends ParticleGroup<CustomParticleInstance> {
 
     final ModelParticleRenderState particleTypeRenderState = new ModelParticleRenderState();
@@ -35,6 +37,14 @@ public class ModelParticleRenderGroup extends ParticleGroup<CustomParticleInstan
             extractAll(frustum, camera, f);
         }
         return this.particleTypeRenderState;
+    }
+
+    // for viewpoints: into another state, once the main pass's off-thread extract is done with these particles
+    public void extract(ModelParticleRenderState state, Predicate<Particle> filter, Camera camera, float f) {
+        this.particleTypeRenderState.awaitExtraction();
+        for (CustomParticleInstance particle : this.particles) {
+            if (filter.test(particle)) particle.extractModel(state, camera, f);
+        }
     }
 
     private void extractAll(Frustum frustum, Camera camera, float f) {

@@ -28,6 +28,10 @@ public interface IRotationProvider extends SingleQuadParticle.FacingCameraMode {
 
     boolean alwaysFacesCamera();
 
+    // re-aims a rotation cached against the tick camera for another camera (a viewpoint's)
+    default void reaim(Quaternionf rotation, Camera camera) {
+    }
+
     void setRotation(@Nullable SingleQuadParticle particle, Quaternionf quaternionf, Camera camera, float partialTicks);
 
     @Override
@@ -110,6 +114,13 @@ public interface IRotationProvider extends SingleQuadParticle.FacingCameraMode {
             double z = this.z.evaluate(particle, level);
 
             orientOverDirection(quaternionf, camera, new Vector3f((float) x, (float) y, (float) z));
+        }
+
+        @Override
+        public void reaim(Quaternionf rotation, Camera camera) {
+            // orientOverDirection leaves the axis on local -Y
+            Vector3f dir = rotation.transform(new Vector3f(0, -1, 0));
+            orientOverDirection(rotation.identity(), camera, dir);
         }
 
     }

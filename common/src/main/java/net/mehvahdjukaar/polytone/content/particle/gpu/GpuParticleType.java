@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
 import net.mehvahdjukaar.polytone.content.particle.custom.ParticleRenderMode;
 import net.mehvahdjukaar.polytone.content.particle.custom.RotationMode;
+import net.mehvahdjukaar.polytone.content.shaders.ExpressionUniformBuffers;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.phys.Vec3;
@@ -37,7 +38,7 @@ public record GpuParticleType(Identifier texture,
                               boolean randomSprite,
                               Optional<Area> area,
                               boolean killBelowHeightmap,
-                              Map<String, ISimpleExp> uniforms) {
+                              Map<String, List<ISimpleExp>> uniforms) {
 
     public static final Identifier DEFAULT_SHADER = Polytone.res("gpu_particle");
     public static final int MAX_LIMIT = 1_000_000;
@@ -63,7 +64,7 @@ public record GpuParticleType(Identifier texture,
             i.optional("random_sprite", Codec.BOOL, false, GpuParticleType::randomSprite),
             i.optional("area", Area.CODEC, GpuParticleType::area),
             i.optional("kill_below_heightmap", Codec.BOOL, false, GpuParticleType::killBelowHeightmap),
-            i.optional("uniforms", Codec.unboundedMap(Codec.STRING, ISimpleExp.CODEC), Map.of(), GpuParticleType::uniforms)
+            i.optional("uniforms", ExpressionUniformBuffers.UNIFORMS_CODEC, Map.of(), GpuParticleType::uniforms)
     ).apply(i, GpuParticleType::new));
 
     // one spawn becomes count quads spread over a size box around the spawn point

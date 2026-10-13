@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.content.sound;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
@@ -21,7 +20,6 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTes
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Locale;
 import java.util.Optional;
 
 public record BlockSoundEmitter(
@@ -38,13 +36,9 @@ public record BlockSoundEmitter(
         @Deprecated(forRemoval = true) TickSource spawnSource,
         Optional<HolderSet<Biome>> biomes) implements BlockClientTickable {
 
-    private static final Codec<SoundSource> SOUND_SOURCE_CODEC =
-            Codec.STRING.comapFlatMap(s -> DataResult.success(SoundSource.valueOf(s.toLowerCase(Locale.ROOT))),
-                    s -> s.getName().toLowerCase(Locale.ROOT));
-
     public static final SchemaCodec<BlockSoundEmitter> CODEC = SchemaRecord.create(BlockSoundEmitter.class, i -> i.group(
             i.field("sound", CodecUtils.forwardAwareSoundEvent(), BlockSoundEmitter::sound),
-            i.optional("source", SOUND_SOURCE_CODEC, SoundSource.BLOCKS, BlockSoundEmitter::category),
+            i.optional("source", CodecUtils.SOUND_SOURCE, SoundSource.BLOCKS, BlockSoundEmitter::category),
             i.optional("chance", IBlockExp.CODEC_LEGACY, IBlockExp.ONE, BlockSoundEmitter::chance),
             i.optional("x", IBlockExp.CODEC_LEGACY, IBlockExp.ZERO, BlockSoundEmitter::x),
             i.optional("y", IBlockExp.CODEC_LEGACY, IBlockExp.ZERO, BlockSoundEmitter::y),

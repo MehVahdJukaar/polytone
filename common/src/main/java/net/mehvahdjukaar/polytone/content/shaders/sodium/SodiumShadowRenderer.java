@@ -7,6 +7,7 @@ import net.caffeinemc.mods.sodium.client.render.SodiumWorldRenderer;
 import net.caffeinemc.mods.sodium.client.render.chunk.ChunkRenderMatrices;
 import net.caffeinemc.mods.sodium.client.render.chunk.RenderSectionManager;
 import net.caffeinemc.mods.sodium.client.render.chunk.UniformBufferManager;
+import net.caffeinemc.mods.sodium.client.render.chunk.lists.DeferredTaskList;
 import net.caffeinemc.mods.sodium.client.render.viewport.Viewport;
 import net.caffeinemc.mods.sodium.client.render.viewport.ViewportProvider;
 import net.caffeinemc.mods.sodium.client.util.FogParameters;
@@ -54,6 +55,9 @@ public final class SodiumShadowRenderer {
 
         RenderSectionManager sectionManager = renderSectionManager();
         boolean mutatedRenderLists = sectionManager != null;
+        // the light cull also swaps in its own chunk build queue, which the list rebuild doesn't put back
+        DeferredTaskList cameraTasks = mutatedRenderLists
+                ? ((SodiumRenderSectionManagerAccessor) sectionManager).polytone$getTaskLists() : null;
         try {
             if (mutatedRenderLists) cullTerrainToLightVolume(sectionManager, cam, volume, camPos);
 
@@ -82,6 +86,8 @@ public final class SodiumShadowRenderer {
             }
         } finally {
             if (mutatedRenderLists) {
+                // before the rebuild, which may hand in a fresher camera queue of its own
+                ((SodiumRenderSectionManagerAccessor) sectionManager).polytone$setTaskLists(cameraTasks);
                 rebuildCameraRenderList(mc, cam);
             }
         }
@@ -99,15 +105,22 @@ public final class SodiumShadowRenderer {
         sectionManager.finalizeRenderLists(camera, viewport, FogParameters.NONE, true);
     }
 
+    // rebuilt now rather than marked dirty, which would force a full occlusion search next frame
     private static void rebuildCameraRenderList(Minecraft mc, Camera camera) {
         RenderSectionManager sectionManager = renderSectionManager();
         if (sectionManager == null) return;
-        sectionManager.markGraphDirty();
-        Viewport viewport = ((ViewportProvider) camera.getCullFrustum()).sodium$createViewport();
-        FogParameters fog = ((FogStorage) mc.gameRenderer).sodium$getFogParameters();
-        sectionManager.prepareRender();
+        try {
+            Viewport viewport = ((ViewportProvider) camera.getCullFrustum()).sodium$createViewport();
+            FogParameters fog = ((FogStorage) mc.gameRenderer).sodium$getFogParameters();
+            sectionManager.prepareRender();
 
-        ((SodiumRenderSectionManagerAccessor) sectionManager).polytone$readRenderListFromTree(viewport, fog);
+            // straight into the tree read, finalizeRenderLists would now fall back to a frustum-only list
+            ((SodiumRenderSectionManagerAccessor) sectionManager).polytone$readRenderListFromTree(viewport, fog);
+        } catch (RuntimeException e) {
+            // the camera list may be left holding the light volume: have Sodium cull afresh next frame
+            sectionManager.markGraphDirty();
+            throw e;
+        }
     }
 
     private static RenderSectionManager renderSectionManager() {

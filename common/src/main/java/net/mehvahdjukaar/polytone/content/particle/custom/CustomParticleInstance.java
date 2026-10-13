@@ -157,6 +157,8 @@ public class CustomParticleInstance extends SingleQuadParticle {
         } else {
             // 3-arg slerp writes to dest, keeps customRotationO intact for next frame
             this.customRotationO.slerp(this.customRotation, f, quaternionf);
+            // cached against the tick camera, any other one (a viewpoint's) re-aims it
+            if (camera != PolytoneAsyncParticles.camera()) rotProv.reaim(quaternionf, camera);
         }
 
         if (this.roll != 0.0F) {
