@@ -1,9 +1,12 @@
 package net.mehvahdjukaar.polytone.mixins.accessor;
 
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.opengl.GlRenderPipeline;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
+
+import java.util.HashMap;
 
 // 26.1's frontend RenderPass delegates to a package-private GlRenderPass backend. This accessor exposes that
 // backend's compiled pipeline so we can read the program's declared uniform/UBO block names (see
@@ -13,4 +16,10 @@ public interface GlRenderPassAccessor {
     @Accessor("pipeline")
     @Nullable
     GlRenderPipeline polytone$getPipeline();
+
+    @Accessor("uniforms")
+    HashMap<String, GpuBufferSlice> polytone$getUniforms();
+
+    @Accessor("samplers")
+    HashMap<String, ?> polytone$getSamplers();
 }
