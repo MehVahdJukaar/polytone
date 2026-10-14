@@ -7,11 +7,11 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MappableRingBuffer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;
 
@@ -39,8 +39,26 @@ public class PolyGlobalUniforms implements IShaderModifier, AutoCloseable {
     private GpuBuffer buffer = null;
     private boolean boundThisFrame = false;
 
+    private final Matrix4f projectionIncludingBob = new Matrix4f();
+    private boolean projectionIncludingBobIsValid = false;
+
+    //thanks vanila i guess...
+    public void captureRenderedProjectionWithBob(Matrix4fc projection) {
+        projectionIncludingBob.set(projection);
+        projectionIncludingBobIsValid = true;
+    }
+
+    private Matrix4fc consumeBobProjection(Matrix4fc currentWithoutBob) {
+        if (!projectionIncludingBobIsValid){
+            return currentWithoutBob;
+        }
+        projectionIncludingBobIsValid = false;
+        return projectionIncludingBob;
+    }
+
     // once per frame from the main level pass, while no render pass is open
     public void capture(Matrix4fc projectionMat, Matrix4fc viewMat, float deltaTime) {
+        projectionMat = consumeBobProjection(projectionMat);
         boolean wanted = boundThisFrame;
         boundThisFrame = false;
         if (!wanted && !Polytone.isDevEnv) return;

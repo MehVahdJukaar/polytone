@@ -5,6 +5,9 @@ import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.resource.ResourceHandle;
+import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
@@ -78,8 +81,10 @@ public class PostTargetsManager extends ContentManager<PostTargetsManager.PostTa
             destroyAll();
             for (var e : specs.entrySet()) {
                 PostTargetDef s = e.getValue();
-                targets.put(e.getKey(), new TextureTarget(e.getKey().toString(),
-                        s.width().orElse(frameWidth), s.height().orElse(frameHeight), s.useDepth()));
+                RenderTarget target = new TextureTarget(e.getKey().toString(),
+                        s.width().orElse(frameWidth), s.height().orElse(frameHeight), s.useDepth());
+                clear(target);
+                targets.put(e.getKey(), target);
             }
             dirty = false;
         } else {
@@ -87,9 +92,21 @@ public class PostTargetsManager extends ContentManager<PostTargetsManager.PostTa
                 PostTargetDef s = e.getValue();
                 int w = s.width().orElse(frameWidth), h = s.height().orElse(frameHeight);
                 RenderTarget t = targets.get(e.getKey());
-                if (t != null && (t.width != w || t.height != h)) t.resize(w, h);
+                if (t != null && (t.width != w || t.height != h)) {
+                    t.resize(w, h);
+                    clear(t);
+                }
             }
         }
+    }
+
+    private static void clear(RenderTarget target) {
+        GpuTexture color = target.getColorTexture();
+        if (color == null) return;
+        CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
+        GpuTexture depth = target.useDepth ? target.getDepthTexture() : null;
+        if (depth != null) encoder.clearColorAndDepthTextures(color, 0, depth, 1.0);
+        else encoder.clearColorTexture(color, 0);
     }
 
     // Wraps the vanilla bundle so custom ids resolve to the persistent targets

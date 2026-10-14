@@ -227,6 +227,9 @@ public class ShadowCasterRenderer {
                             !level.tickRateManager().isEntityFrozen(entity));
                     try {
                         EntityRenderState state = entityDispatcher.extractEntity(entity, partialTick);
+                        //name tags can cask a shadow!
+                        state.nameTag = null;
+                        state.scoreText = null;
                         entityDispatcher.submit(state, camState, state.x - camPos.x, state.y - camPos.y,
                                 state.z - camPos.z, poseStack, featureDispatcher.getSubmitNodeStorage());
                     } catch (Exception e) {

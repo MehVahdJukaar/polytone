@@ -14,7 +14,7 @@ import net.mehvahdjukaar.polytone.content.shaders.IShaderModifier;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.Mth;
@@ -95,7 +95,7 @@ public class ShadowMapManager extends SingleFileContentManager<ShadowMapSettings
         GpuTextureView shadowTexture = getShadowTexture();
         if (shadowTexture == null) {
             shadowTexture = Minecraft.getInstance().getTextureManager()
-                    .getTexture(TextureManager.INTENTIONAL_MISSING_TEXTURE).getTextureView();
+                    .getTexture(MissingTextureAtlasSprite.getLocation()).getTextureView();
         }
         shader.setSampler(SAMPLER, shadowTexture, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
         GpuBufferSlice slice = getUniformsSlice();
