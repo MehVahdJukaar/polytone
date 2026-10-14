@@ -6,6 +6,9 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.blaze3d.resource.ResourceHandle;
+import com.mojang.renderpearl.api.commands.CommandEncoder;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.renderpearl.api.textures.GpuTexture;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
@@ -18,6 +21,8 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.ExtraCodecs;
+
+import org.joml.Vector4f;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -78,9 +83,11 @@ public class PostTargetsManager extends ContentManager<PostTargetsManager.PostTa
             destroyAll();
             for (var e : specs.entrySet()) {
                 PostTargetDef spec = e.getValue();
-                targets.put(e.getKey(), new TextureTarget(e.getKey().toString(),
+                RenderTarget target = new TextureTarget(e.getKey().toString(),
                         spec.width().orElse(frameWidth), spec.height().orElse(frameHeight),
-                        GpuFormat.RGBA8_UNORM, spec.useDepth() ? GpuFormat.D32_FLOAT : null));
+                        GpuFormat.RGBA8_UNORM, spec.useDepth() ? GpuFormat.D32_FLOAT : null);
+                clear(target);
+                targets.put(e.getKey(), target);
             }
             dirty = false;
         } else {
@@ -89,9 +96,22 @@ public class PostTargetsManager extends ContentManager<PostTargetsManager.PostTa
                 int width = spec.width().orElse(frameWidth);
                 int height = spec.height().orElse(frameHeight);
                 RenderTarget target = targets.get(e.getKey());
-                if (target != null && (target.width != width || target.height != height)) target.resize(width, height);
+                if (target != null && (target.width != width || target.height != height)) {
+                    target.resize(width, height);
+                    clear(target);
+                }
             }
         }
+    }
+
+    private static void clear(RenderTarget target) {
+        GpuTexture color = target.getColorTexture();
+        if (color == null) return;
+        CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
+        GpuTexture depth = target.getDepthTexture();
+        Vector4f transparent = new Vector4f(0, 0, 0, 0);
+        if (depth != null) encoder.clearColorAndDepthTextures(color, transparent, depth, 0.0);
+        else encoder.clearColorTexture(color, transparent);
     }
 
     public PostChain.TargetBundle wrap(PostChain.TargetBundle vanilla, FrameGraphBuilder builder) {
