@@ -35,15 +35,12 @@ dependencies {
 //modImplementation "curse.maven:continuity-531351:5425853"
     // modImplementation ("curse.maven:continuity-531351:5425853")
     modImplementation("curse.maven:sodium-394468:8396480") // 0.9.1+mc26.1.2
-    // re-enables vanilla core-shader replacement under Sodium (terrain/block shaders); version-locked to Sodium above
     modCompileOnly("curse.maven:sodium-core-shader-support-956376:8267839") // 1.5.0-mc26.1.2-sodium0.9.0beta.1
      //modImplementation ("curse.maven:distant-horizons-508933:6387715")
     modCompileOnly("maven.modrinth:iris:1.11.2+26.1-fabric")
-    // replaces the vanilla pack screen
     modImplementation("maven.modrinth:packed-packs:${packed_packs_fabric_version}")
     compileOnly("io.github.fishstiz.packed_packs.api:packed_packs_api-fabric:${packed_packs_api_version}")
     // modCompileOnly("curse.maven:serene-seasons-291874:6182595")
-    // modmenu 4.0.6 is for 1.18.2 - no 26.1 build available
     // modCompileOnly("curse.maven:modmenu-308702:5810603")
 
     // modCompileOnly("curse.maven:entity-model-features-844662:7400754")
