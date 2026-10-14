@@ -1,1 +1,2 @@
-- more improvements to voxel volume code, should improve compat with veil
+- more minor fixes
+- made sounds.json support polytone conditions
