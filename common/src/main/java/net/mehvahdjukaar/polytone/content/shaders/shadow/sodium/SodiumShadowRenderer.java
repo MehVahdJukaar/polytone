@@ -7,6 +7,7 @@ import net.caffeinemc.mods.sodium.client.render.SodiumWorldRenderer;
 import net.caffeinemc.mods.sodium.client.render.chunk.ChunkRenderMatrices;
 import net.caffeinemc.mods.sodium.client.render.chunk.RenderSectionManager;
 import net.caffeinemc.mods.sodium.client.render.chunk.UniformBufferManager;
+import net.caffeinemc.mods.sodium.client.render.chunk.lists.DeferredTaskList;
 import net.caffeinemc.mods.sodium.client.render.viewport.Viewport;
 import net.caffeinemc.mods.sodium.client.render.viewport.ViewportProvider;
 import net.caffeinemc.mods.sodium.client.util.FogParameters;
@@ -53,6 +54,8 @@ public final class SodiumShadowRenderer {
 
         RenderSectionManager sectionManager = renderSectionManager();
         boolean mutatedRenderLists = sectionManager != null;
+        SodiumRenderSectionManagerAccessor sectionManagerAccess = (SodiumRenderSectionManagerAccessor) sectionManager;
+        DeferredTaskList cameraTaskLists = mutatedRenderLists ? sectionManagerAccess.polytone$getTaskLists() : null;
         try {
             if (mutatedRenderLists) cullTerrainToLightVolume(sectionManager, cam, volume, camPos);
 
@@ -81,6 +84,7 @@ public final class SodiumShadowRenderer {
             }
         } finally {
             if (mutatedRenderLists) {
+                sectionManagerAccess.polytone$setTaskLists(cameraTaskLists);
                 rebuildCameraRenderList(mc, cam);
             }
         }
@@ -100,12 +104,16 @@ public final class SodiumShadowRenderer {
     private static void rebuildCameraRenderList(Minecraft mc, Camera camera) {
         RenderSectionManager sectionManager = renderSectionManager();
         if (sectionManager == null) return;
-        sectionManager.markGraphDirty();
-        Viewport viewport = ((ViewportProvider) camera.getCullFrustum()).sodium$createViewport();
-        FogParameters fog = ((FogStorage) mc.gameRenderer).sodium$getFogParameters();
-        sectionManager.prepareRender();
+        try {
+            Viewport viewport = ((ViewportProvider) camera.getCullFrustum()).sodium$createViewport();
+            FogParameters fog = ((FogStorage) mc.gameRenderer).sodium$getFogParameters();
+            sectionManager.prepareRender();
 
-        ((SodiumRenderSectionManagerAccessor) sectionManager).polytone$readRenderListFromTree(viewport, fog);
+            ((SodiumRenderSectionManagerAccessor) sectionManager).polytone$readRenderListFromTree(viewport, fog);
+        } catch (RuntimeException e) {
+            sectionManager.markGraphDirty();
+            throw e;
+        }
     }
 
     private static RenderSectionManager renderSectionManager() {
