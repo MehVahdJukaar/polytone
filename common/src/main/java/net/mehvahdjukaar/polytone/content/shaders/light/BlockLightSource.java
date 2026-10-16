@@ -49,7 +49,7 @@ public class BlockLightSource extends LightSource {
             if (rules == null) return;
             for (var rule : rules) {
                 if (rule.matches(lightState, random)) {
-                    found.add(new LitBlockRecord(new BlockPos(x, y, z), lightState, rule));
+                    found.add(new LitBlockRecord(new BlockPos(x, y, z), state, lightState, rule));
                     return;
                 }
             }
@@ -79,7 +79,7 @@ public class BlockLightSource extends LightSource {
 
         for (LitBlockRecord lit : found) {
             Vec3 center = lit.pos.getCenter();
-            ResolvedPointLight resolved = lit.rule.light().resolve(lit.state, center, level);
+            ResolvedPointLight resolved = lit.rule.resolve(lit.state, lit.lightState, center, level);
             if (resolved != null) {
                 set(lit.pos, center.x, center.y, center.z, resolved);
             }
@@ -93,9 +93,6 @@ public class BlockLightSource extends LightSource {
         litBlocksPerSection.clear();
     }
 
-    private record LitBlockRecord(BlockPos pos, BlockState state, ColoredLightsManager.BlockRule rule) {
-        ResolvedPointLight resolve(ClientLevel level) {
-            return rule.light().resolve(state, pos.getCenter(), level);
-        }
+    private record LitBlockRecord(BlockPos pos, BlockState state, BlockState lightState, ColoredLightsManager.BlockRule rule) {
     }
 }
