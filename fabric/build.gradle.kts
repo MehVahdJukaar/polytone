@@ -34,6 +34,7 @@ dependencies {
     // modRuntimeOnly("maven.modrinth:sodium:mc1.21-0.6.0-beta.1-fabric")
 //modImplementation "curse.maven:continuity-531351:5425853"
     modImplementation("maven.modrinth:continuity:3.0.1+26.2")
+    modRuntimeOnly("maven.modrinth:malilib:KvjmGjAV") // malilib 0.29.6, issue 409
 
     modImplementation("maven.modrinth:sodium:mc26.2-0.9.1-fabric")
 
