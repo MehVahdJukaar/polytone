@@ -33,7 +33,7 @@ public final class ExpressionModel {
     // One unbaked routing case: render model when when evaluates non-zero
     public record Case(BlockExp when, BlockStateModel.Unbaked model) {
         public static final SchemaCodec<Case> CODEC = SchemaRecord.create(Case.class, i -> i.group(
-                i.field("when", BlockExp.TYPE.codec(), Case::when),
+                i.field("when", BlockExp.TYPE_RAND_SEEDED.codec(), Case::when),
                 i.field("model", BlockStateModel.Unbaked.CODEC, Case::model)
         ).apply(i, Case::new));
     }

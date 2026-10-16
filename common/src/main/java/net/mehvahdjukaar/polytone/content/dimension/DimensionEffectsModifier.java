@@ -39,7 +39,7 @@ public record DimensionEffectsModifier(DimensionEnvAttributeModifications attrib
                     i.optional("cardinal_light", CardinalLighting.Type.CODEC, DimensionEffectsModifier::cardinalLightType),
                     i.optional("ambient_light", Codec.FLOAT, DimensionEffectsModifier::ambientLight),
                     i.optional("has_skylight", Codec.BOOL, DimensionEffectsModifier::hasSkylight),
-                    i.optional("rain_fog_strength", IBlockExp.CODEC_LEGACY, DimensionEffectsModifier::rainFogStrength),
+                    i.optional("rain_fog_strength", IBlockExp.CODEC_LEGACY_RAND_SEEDED, DimensionEffectsModifier::rainFogStrength),
                     i.optional("no_weather_fog_darken", Codec.BOOL, false, DimensionEffectsModifier::noWeatherFogDarken),
                     i.optional("translucent_sun_and_moon", Codec.BOOL, false, DimensionEffectsModifier::translucentSunAndMoon),
 

@@ -107,6 +107,7 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
                                              RandomSource rand) {
         BlockPos pos = BlockPos.containing(x, y, z);
         GpuParticleInitializer.SpawnValues values = type.initializer().evaluate(level, new Vec3(x, y, z), level.getBlockState(pos));
+        if (values == null) return null;
         if (options instanceof ExtraDataParticleOptions extra) {
             extra.extraData().forEach(values::override);
         }
