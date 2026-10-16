@@ -1,2 +1,1 @@
-- more minor fixes
-- made sounds.json support polytone conditions
+more api improvments

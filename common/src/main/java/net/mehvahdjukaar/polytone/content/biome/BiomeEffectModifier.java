@@ -69,7 +69,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                 newMod.waterColor().isPresent() ? newMod.waterColor() : this.waterColor(),
                 newMod.waterFogColor().isPresent() ? newMod.waterFogColor() : this.waterFogColor(),
                 newMod.skyColor().isPresent() ? newMod.skyColor() : this.skyColor(),
-                newMod.foliageColorOverride().isPresent() ? newMod.waterColor() : this.foliageColorOverride(),
+                newMod.foliageColorOverride().isPresent() ? newMod.foliageColorOverride() : this.foliageColorOverride(),
                 newMod.grassColorOverride().isPresent() ? newMod.grassColorOverride() : this.grassColorOverride(),
                 newMod.grassColorModifier().isPresent() ? newMod.grassColorModifier() : this.grassColorModifier(),
                 newMod.ambientParticleSettings().isPresent() ? newMod.ambientParticleSettings() : this.ambientParticleSettings(),
@@ -241,7 +241,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                         Codec.simpleMap(Weather.CODEC, SIMPLE_CODEC, StringRepresentable.keys(Weather.values()))
                                 .xmap(FogMap::new, FogMap::map).codec()
                 ),
-                IBlockExp.CODEC_LEGACY.xmap(
+                IBlockExp.CODEC_LEGACY_RAND_SEEDED.xmap(
                         FogExpression::new,
                         fogMap -> fogMap.map
                 )

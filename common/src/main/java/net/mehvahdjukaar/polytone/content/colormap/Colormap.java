@@ -71,7 +71,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     public static final Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
             Colormap::singleColor, c -> c instanceof Colormap cm ? cm.defaultColor : 0);
 
-    public static final Codec<IColorGetter> EXPRESSION_CODEC = IBlockExp.CODEC.xmap(
+    public static final Codec<IColorGetter> EXPRESSION_CODEC = IBlockExp.CODEC_RAND_SEEDED.xmap(
             IColorGetter.ExpressionColor::new,
             g -> g instanceof IColorGetter.ExpressionColor(IBlockExp exp) ? exp : IBlockExp.ZERO);
 
@@ -82,13 +82,13 @@ public final class Colormap implements IColorGetter, ColorResolver {
             SchemaCodecs.alt("single color", ColorUtils.CODEC),
             SchemaCodecs.alt("colormap reference", ResourceLocation.CODEC),
             SchemaCodecs.alt("inline colormap", DIRECT_CODEC),
-            SchemaCodecs.alt("expression", BlockExp.TYPE.codec()));
+            SchemaCodecs.alt("expression", BlockExp.TYPE_RAND_SEEDED.codec()));
 
     public static final Codec<IColorGetter> REFERENCE_OR_EXPRESSION = SchemaCodecs.labeled(
             SchemaCodecs.alternatives(SINGLE_COLOR_CODEC, Polytone.COLORMAPS.byNameCodec(), EXPRESSION_CODEC),
             SchemaCodecs.alt("single color", ColorUtils.CODEC),
             SchemaCodecs.alt("colormap reference", ResourceLocation.CODEC),
-            SchemaCodecs.alt("expression", BlockExp.TYPE.codec()));
+            SchemaCodecs.alt("expression", BlockExp.TYPE_RAND_SEEDED.codec()));
 
     public static final Codec<IColorGetter> CODEC = SchemaCodecs.labeled(
             Codec.withAlternative(Colormap.DIRECT_REFERENCE_OR_EXPRESSION, BiomeCompoundColorGetter.CODEC),

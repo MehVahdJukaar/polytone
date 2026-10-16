@@ -74,7 +74,7 @@ public class ExpressionModel extends MultiVariant {
     }
 
     private static BlockExp parseExpression(JsonElement json) {
-        return BlockExp.TYPE.codec().parse(JsonOps.INSTANCE, json).getOrThrow(JsonParseException::new);
+        return BlockExp.TYPE_RAND_SEEDED.codec().parse(JsonOps.INSTANCE, json).getOrThrow(JsonParseException::new);
     }
 
     @Override

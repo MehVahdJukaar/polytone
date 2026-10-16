@@ -10,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
@@ -39,10 +40,13 @@ public record GpuParticleInitializer(IBlockExp size,
             i.optional("custom", IBlockExp.CODEC, DEFAULT.custom, GpuParticleInitializer::custom)
     ).apply(i, GpuParticleInitializer::new));
 
+    @Nullable
     public SpawnValues evaluate(Level level, Vec3 pos, BlockState state) {
+        double life = lifetime.evaluate(level, pos, state);
+        if (life <= 0) return null;
         SpawnValues v = new SpawnValues();
+        v.lifetime = (float) Math.max(1, life);
         v.size = (float) size.evaluate(level, pos, state);
-        v.lifetime = (float) Math.max(1, lifetime.evaluate(level, pos, state));
         v.red = (float) red.evaluate(level, pos, state);
         v.green = (float) green.evaluate(level, pos, state);
         v.blue = (float) blue.evaluate(level, pos, state);
@@ -59,7 +63,7 @@ public record GpuParticleInitializer(IBlockExp size,
         return v;
     }
 
-    // mutable so emitter overrides can be applied on top before the record is written
+    //mutable so emitter overrides can be applied on top before the record is written
     public static final class SpawnValues {
         public float size, lifetime, red, green, blue, alpha, roll, custom;
 

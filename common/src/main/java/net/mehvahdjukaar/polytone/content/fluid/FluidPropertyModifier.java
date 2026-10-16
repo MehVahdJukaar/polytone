@@ -25,8 +25,8 @@ public record FluidPropertyModifier(Optional<? extends BlockColor> colormap, Opt
             instance.group(
                     Colormap.CODEC.optionalFieldOf("colormap").forGetter(c -> (Optional<IColorGetter>) c.colormap),
                     Colormap.CODEC.optionalFieldOf("fog_colormap").forGetter(FluidPropertyModifier::fogColormap),
-                    IBlockExp.CODEC_LEGACY.optionalFieldOf("fog_radius").forGetter(FluidPropertyModifier::fogRadius),
-                    IBlockExp.CODEC_LEGACY.optionalFieldOf("fog_fade").forGetter(FluidPropertyModifier::fogFade),
+                    IBlockExp.CODEC_LEGACY_RAND_SEEDED.optionalFieldOf("fog_radius").forGetter(FluidPropertyModifier::fogRadius),
+                    IBlockExp.CODEC_LEGACY_RAND_SEEDED.optionalFieldOf("fog_fade").forGetter(FluidPropertyModifier::fogFade),
                     Targets.codec(Registries.FLUID).optionalFieldOf("targets", Targets.EMPTY).forGetter(FluidPropertyModifier::targets)
             ).apply(instance, FluidPropertyModifier::new));
 

@@ -37,7 +37,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, IBlockExp>> cloudL
 
     public static final Codec<DimensionEffectsModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    Codec.either(Codec.FLOAT, IBlockExp.CODEC_LEGACY).optionalFieldOf("cloud_level").forGetter(DimensionEffectsModifier::cloudLevel),
+                    Codec.either(Codec.FLOAT, IBlockExp.CODEC_LEGACY_RAND_SEEDED).optionalFieldOf("cloud_level").forGetter(DimensionEffectsModifier::cloudLevel),
                     Codec.BOOL.optionalFieldOf("has_ground").forGetter(DimensionEffectsModifier::hasGround),
                     SKY_TYPE_CODEC.optionalFieldOf("sky_type").forGetter(DimensionEffectsModifier::skyType),
                     Codec.BOOL.optionalFieldOf("force_bright_lightmap").forGetter(DimensionEffectsModifier::forceBrightLightmap),
