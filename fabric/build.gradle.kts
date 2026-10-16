@@ -37,7 +37,7 @@ dependencies {
     modCompileOnly("curse.maven:serene-seasons-291874:6182595")
     modCompileOnly("curse.maven:fabric-seasons-413523:5789846")
     modCompileOnly("foundry.veil:veil-fabric-1.21.1:${veil_version}") { exclude(group = "maven.modrinth") }
-  //  modRuntimeOnly("foundry.veil:veil-fabric-1.21.1:${veil_version}") { exclude(group = "maven.modrinth") }
+    modRuntimeOnly("foundry.veil:veil-fabric-1.21.1:${veil_version}") { exclude(group = "maven.modrinth") }
 
    // modRuntimeOnly("maven.modrinth:entity-model-features:3.2.4-fabric-1.21")
    // modRuntimeOnly("maven.modrinth:entitytexturefeatures:7.1-fabric-1.21")
