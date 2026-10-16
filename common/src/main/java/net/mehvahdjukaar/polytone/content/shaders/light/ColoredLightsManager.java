@@ -30,6 +30,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTest;
+import net.mehvahdjukaar.polytone.api.ResolvedPointLight;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -43,6 +45,14 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
     public record BlockRule(PointLightProvider.ForBlock light, RuleTest predicate) {
         public boolean matches(BlockState state, RandomSource random) {
             return predicate == AlwaysTrueTest.INSTANCE || predicate.test(state, random);
+        }
+
+        @Nullable
+        public ResolvedPointLight resolve(BlockState state, BlockState lightState, Vec3 pos, ClientLevel level) {
+            ResolvedPointLight resolved = light.resolve(lightState, pos, level);
+            if (resolved == null || state == lightState) return resolved;
+            //alias only copies the color!
+            return new ResolvedPointLight(resolved.color(), state.getLightEmission(), resolved.brightness());
         }
     }
 
