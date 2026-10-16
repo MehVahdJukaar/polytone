@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.common.expressions.impl;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.common.expressions.PolyExpType;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
@@ -11,12 +12,17 @@ import org.jetbrains.annotations.Nullable;
 
 public interface IBlockExp {
 
-    Codec<IBlockExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
-            SchemaCodecs.alternatives(
-                    CodecUtils.LENIENT_DOUBLE.xmap(IBlockExp::constant, i -> 0.0),
-                    BlockExp.TYPE.codec()),
-            SchemaCodecs.alt("constant", Codec.DOUBLE),
-            SchemaCodecs.alt("expression", BlockExp.TYPE.codec())));
+    Codec<IBlockExp> CODEC = Codec.lazyInitialized(() -> scriptCodec(BlockExp.TYPE));
+    Codec<IBlockExp> CODEC_RAND_SEEDED = Codec.lazyInitialized(() -> scriptCodec(BlockExp.TYPE_RAND_SEEDED));
+
+    private static Codec<IBlockExp> scriptCodec(PolyExpType<BlockExp> type) {
+        return SchemaCodecs.labeled(
+                SchemaCodecs.alternatives(
+                        CodecUtils.LENIENT_DOUBLE.xmap(IBlockExp::constant, i -> 0.0),
+                        type.codec()),
+                SchemaCodecs.alt("constant", Codec.DOUBLE),
+                SchemaCodecs.alt("expression", type.codec()));
+    }
 
     double evaluate(ClientLevel level, Vec3 pos, @Nullable BlockState state);
 

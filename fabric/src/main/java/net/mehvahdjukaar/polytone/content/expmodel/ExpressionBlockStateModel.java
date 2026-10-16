@@ -63,7 +63,7 @@ public record ExpressionBlockStateModel(ExpressionModel.Selector selector) imple
 
         public static final MapCodec<Unbaked> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
                 ExpressionModel.Case.CODEC.listOf().fieldOf("cases").forGetter(Unbaked::cases),
-                BlockExp.TYPE.codec().optionalFieldOf("selector").forGetter(Unbaked::selector),
+                BlockExp.TYPE_RAND_SEEDED.codec().optionalFieldOf("selector").forGetter(Unbaked::selector),
                 BlockStateModel.Unbaked.CODEC.fieldOf("fallback").forGetter(Unbaked::fallback)
         ).apply(i, Unbaked::new));
 
