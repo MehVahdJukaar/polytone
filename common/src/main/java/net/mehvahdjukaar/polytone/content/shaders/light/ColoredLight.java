@@ -41,7 +41,7 @@ public sealed interface ColoredLight<E> permits ColoredLight.BlockLight, Colored
     record BlockLight(IBlockExp color, Optional<IBlockExp> radius, Optional<IBlockExp> brightness)
             implements ColoredLight<IBlockExp>, PointLightProvider.ForBlock {
 
-        public static final Codec<BlockLight> CODEC = codec(IBlockExp.CODEC, IBlockExp::constant, BlockLight::new);
+        public static final Codec<BlockLight> CODEC = codec(IBlockExp.CODEC_RAND_SEEDED, IBlockExp::constant, BlockLight::new);
 
         @Override
         public ResolvedPointLight resolve(BlockState state, Vec3 pos, ClientLevel level) {
