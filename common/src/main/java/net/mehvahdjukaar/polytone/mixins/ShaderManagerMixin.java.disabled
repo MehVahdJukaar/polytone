@@ -16,7 +16,6 @@ import java.util.Map;
 @Mixin(ShaderManager.class)
 public abstract class ShaderManagerMixin {
 
-    //startup preloads gui shaders from the vanilla pack alone, a missing include NPEs in vanilla's import
     @ModifyArg(method = "loadShader(Lnet/minecraft/resources/Identifier;Lnet/minecraft/server/packs/resources/Resource;Lcom/mojang/blaze3d/shaders/ShaderType;Ljava/util/Map;Lcom/google/common/collect/ImmutableMap$Builder;)V",
             at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/preprocessor/GlslPreprocessor;process(Ljava/lang/String;)Ljava/util/List;"))
     private static String polytone$patchLightmapLookups(String source, @Local(argsOnly = true) Identifier location,
@@ -30,6 +29,9 @@ public abstract class ShaderManagerMixin {
         if (shaderId.getNamespace().equals("sodium")) {
             return canPatch ? LightShaderPatcher.patchSodiumChunkShader(source) : source;
         }
-        return LightShaderPatcher.onLoadVertexShader(shaderId, source, canPatch);
+        //our includ pulls in Globals, which clashes with mods that declare its members in their own blocks with same name!!
+        boolean areWeSafeToAddGlobals = shaderId.getNamespace().equals("minecraft") ||
+                LightShaderPatcher.importsMojGlobals(source);
+        return LightShaderPatcher.onLoadVertexShader(shaderId, source, canPatch && areWeSafeToAddGlobals);
     }
 }

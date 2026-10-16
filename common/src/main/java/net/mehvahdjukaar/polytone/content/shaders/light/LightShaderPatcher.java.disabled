@@ -20,6 +20,7 @@ public class LightShaderPatcher {
     private static final Pattern DECLARES_UV2 = Pattern.compile("\\bin\\s+ivec2\\s+UV2\\s*;");
     private static final Pattern UV2_USE = Pattern.compile("\\bUV2\\b");
     private static final Pattern VERSION_LINE = Pattern.compile("^\\s*#version[^\\n]*\\n", Pattern.MULTILINE);
+    private static final Pattern GLOBALS_IMPORT = Pattern.compile("#moj_import\\s*<(minecraft:)?globals\\.glsl>");
 
     private static final Pattern SODIUM_LIGHTMAP_READ = Pattern.compile("texture\\s*\\(\\s*u_LightTex\\s*,\\s*_vert_tex_light_coord\\s*\\)");
     private static final Pattern SODIUM_DECLARES_POSITION = Pattern.compile("\\bvec3\\s+position\\s*=");
@@ -51,6 +52,10 @@ public class LightShaderPatcher {
     //both, any block mesh can end up drawn by either
     public static boolean canStoreFaceInLight() {
         return terrainReadsFaceBits && blockReadsFaceBits && !CompatHandler.irisShaderPackActive();
+    }
+
+    public static boolean importsMojGlobals(String shaderSource) {
+        return GLOBALS_IMPORT.matcher(shaderSource).find();
     }
 
     public static String onLoadVertexShader(Identifier shaderId, String vertexShaderText, boolean canPatch) {
