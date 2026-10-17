@@ -13,8 +13,8 @@ public class RenderSetupMixin {
     //ordinal 1 is the lightmap
     @ModifyVariable(method = "prepareTextures", at = @At("HEAD"), argsOnly = true, ordinal = 1)
     public GpuTextureView polytone$onGetGuiLightTexture(GpuTextureView lightmapTexture) {
-        if (Polytone.LIGHTMAPS.isGui()) {
-            return Polytone.LIGHTMAPS.getGuiLightTexture().getTextureView();
+        if (Polytone.GUI_LIGHTMAP.isActive()) {
+            return Polytone.GUI_LIGHTMAP.getTexture().getTextureView();
         }
         return lightmapTexture;
     }

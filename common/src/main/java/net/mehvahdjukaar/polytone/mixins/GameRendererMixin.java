@@ -28,12 +28,12 @@ public abstract class GameRendererMixin {
     @Inject(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/render/GuiRenderer;render()V"))
     private void polytone$setupGuiLightmap(CallbackInfo ci) {
-        Polytone.LIGHTMAPS.setupForGUI(true);
+        Polytone.GUI_LIGHTMAP.setRenderingGui(true);
     }
 
     @Inject(method = "render", at = @At(value = "TAIL"))
     private void polytone$resetGuiLightmap(CallbackInfo ci) {
-        Polytone.LIGHTMAPS.setupForGUI(false);
+        Polytone.GUI_LIGHTMAP.setRenderingGui(false);
         LevelRenderPassTracker.onEndRenderLevel();
     }
 

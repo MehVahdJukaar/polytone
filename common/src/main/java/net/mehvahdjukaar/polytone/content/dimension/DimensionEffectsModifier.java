@@ -3,11 +3,9 @@ package net.mehvahdjukaar.polytone.content.dimension;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
-import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributeMapMod;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
-import net.mehvahdjukaar.polytone.content.lightmap.Lightmap;
 import net.mehvahdjukaar.polytone.mixins.accessor.DimensionTypeAccessor;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.attribute.WeatherAttributes;
@@ -27,7 +25,6 @@ public record DimensionEffectsModifier(DimensionEnvAttributeModifications attrib
                                        Optional<IBlockExp> rainFogStrength,
                                        boolean noWeatherFogDarken,
                                        boolean translucentSunAndMoon,
-                                       Optional<Lightmap> lightmap, //TODO: finish adding
                                        //TODO: ad timelines
                                        DimensionTarget targets) {
 
@@ -43,7 +40,6 @@ public record DimensionEffectsModifier(DimensionEnvAttributeModifications attrib
                     i.optional("no_weather_fog_darken", Codec.BOOL, false, DimensionEffectsModifier::noWeatherFogDarken),
                     i.optional("translucent_sun_and_moon", Codec.BOOL, false, DimensionEffectsModifier::translucentSunAndMoon),
 
-                    i.optional("lightmap", Polytone.LIGHTMAPS.byNameCodec(), DimensionEffectsModifier::lightmap),
                     i.optional("targets", DimensionTarget.CODEC, DimensionTarget.EMPTY, DimensionEffectsModifier::targets)
             ).apply(i, DimensionEffectsModifier::new));
 
@@ -58,7 +54,6 @@ public record DimensionEffectsModifier(DimensionEnvAttributeModifications attrib
                 newMod.rainFogStrength.or(this::rainFogStrength),
                 newMod.noWeatherFogDarken | this.noWeatherFogDarken,
                 newMod.translucentSunAndMoon | this.translucentSunAndMoon,
-                newMod.lightmap.or(this::lightmap),
                 newMod.targets //ignore, not used after merging
         );
     }
@@ -101,7 +96,7 @@ public record DimensionEffectsModifier(DimensionEnvAttributeModifications attrib
                 oldHasSkylight,
                 Optional.empty(),
                 false, false,
-                Optional.empty(), DimensionTarget.EMPTY);
+                DimensionTarget.EMPTY);
 
 
     }
