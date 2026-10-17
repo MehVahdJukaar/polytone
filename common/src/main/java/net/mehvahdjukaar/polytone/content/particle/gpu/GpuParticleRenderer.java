@@ -115,7 +115,7 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
         if (type.lightLevel() > 0) {
             light = LightCoordsUtil.pack(Math.max(LightCoordsUtil.block(light), type.lightLevel()), LightCoordsUtil.sky(light));
         }
-        records.add(x, y, z, (float) dx, (float) dy, (float) dz, level.getGameTime(), random.nextFloat(), light, values);
+        records.add(x, y, z, (float) dx + values.dx, (float) dy + values.dy, (float) dz + values.dz, level.getGameTime(), random.nextFloat(), light, values);
         return null;
     }
 
