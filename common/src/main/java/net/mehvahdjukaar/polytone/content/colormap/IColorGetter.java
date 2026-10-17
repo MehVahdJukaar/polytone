@@ -164,16 +164,22 @@ public interface IColorGetter extends BlockTintSource, BarColor {
     record ExpressionColor(IBlockExp exp) implements IColorGetter {
         @Override
         public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome, @Nullable ItemStack item) {
+            //item tints of leaves and grass come here with no pos
+            if (pos == null) return evaluateWithoutPos(state == null ? Blocks.AIR.defaultBlockState() : state);
             ClientLevel cl = Minecraft.getInstance().level;
-            if (cl == null || pos == null) return -1;
-            return (int) (long) exp.evaluate(cl, pos, state);
+            if (cl == null) return -1;
+            return (int) (long) exp.evaluate(cl, pos, state, biome, 0);
         }
 
         @Override
         public int getItemColor(ItemStack stack, int tintIndex) {
+            return evaluateWithoutPos(Blocks.AIR.defaultBlockState());
+        }
+
+        private int evaluateWithoutPos(BlockState state) {
             ClientLevel cl = Minecraft.getInstance().level;
             if (cl == null) return -1;
-            return (int) (long) exp.evaluate(cl, Vec3.ZERO, Blocks.AIR.defaultBlockState());
+            return (int) (long) exp.evaluate(cl, Vec3.ZERO, state) | 0xff000000;
         }
 
         @Override
