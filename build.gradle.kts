@@ -1,3 +1,14 @@
+//triangle 1.4.252 pulls a loom snapshot that needs gradle 9.7
+buildscript {
+    configurations.classpath {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "com.possible-triangle" && requested.version?.startsWith("1.4.") == true) {
+                useVersion("1.4.248")
+            }
+        }
+    }
+}
+
 plugins {
     id("com.possible-triangle.core")
     id("com.possible-triangle.common") apply false
