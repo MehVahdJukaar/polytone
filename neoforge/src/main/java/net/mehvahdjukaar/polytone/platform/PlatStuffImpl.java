@@ -38,6 +38,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ColorResolver;
+import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
@@ -129,6 +130,14 @@ public class PlatStuffImpl {
     }
 
     public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
+        ((ModifiableBiomeInfoBiomeInfoAccessor) (Object) getOrCreateModifiedInfo(biome)).setEffects(newEffects);
+    }
+
+    public static void applyBiomeAttributeSurgery(Biome biome, EnvironmentAttributeMap newAttributes) {
+        ((ModifiableBiomeInfoBiomeInfoAccessor) (Object) getOrCreateModifiedInfo(biome)).setAttributes(newAttributes);
+    }
+
+    private static ModifiableBiomeInfo.BiomeInfo getOrCreateModifiedInfo(Biome biome) {
         //forge original biome effect object is never user and redirected by coremod
         //we apply to the biome modifier. We don't want to change the original
         ModifiableBiomeInfo modifiable = biome.modifiableBiomeInfo();
@@ -138,8 +147,7 @@ public class PlatStuffImpl {
             //assign modified info
             ((ModifiableBiomeAccessor) modifiable).setModifiedBiomeInfo(modifiedInfo);
         }
-        //assign new effects
-        ((ModifiableBiomeInfoBiomeInfoAccessor) (Object) modifiedInfo).setEffects(newEffects);
+        return modifiedInfo;
     }
 
     private static Field VANILLA_TABS = null;

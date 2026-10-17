@@ -45,8 +45,6 @@ accessible field net/minecraft/client/resources/SplashManager DEFAULT_STYLE Lnet
 mutable field net/minecraft/client/resources/SplashManager DEFAULT_STYLE Lnet/minecraft/network/chat/Style;
 accessible field net/minecraft/client/resources/SplashManager splashes Ljava/util/List;
 
-accessible field net/minecraft/world/level/biome/Biome attributes Lnet/minecraft/world/attribute/EnvironmentAttributeMap;
-mutable field net/minecraft/world/level/biome/Biome attributes Lnet/minecraft/world/attribute/EnvironmentAttributeMap;
 accessible field net/minecraft/world/attribute/EnvironmentAttributeMap$Builder entries Ljava/util/Map;
 accessible method net/minecraft/world/attribute/EnvironmentAttributeMap$Entry createCodec (Lnet/minecraft/world/attribute/EnvironmentAttribute;)Lcom/mojang/serialization/Codec;
 accessible method net/minecraft/world/attribute/EnvironmentAttributeMap$Entry createFullCodec (Lnet/minecraft/world/attribute/EnvironmentAttribute;Lnet/minecraft/world/attribute/modifier/AttributeModifier;)Lcom/mojang/serialization/MapCodec;

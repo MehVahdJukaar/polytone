@@ -5,6 +5,7 @@
   "package": "net.mehvahdjukaar.polytone.mixins.fabric",
   "mixins": [],
   "client": [
+    "BiomeAttributesAccessor",
     "ClientLevelFabricMixin",
     "ColorResolverRegistryAccessor",
     "CreativeTabAccessor",

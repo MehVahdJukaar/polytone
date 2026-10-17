@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.mixins.neoforge;
 
+import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,4 +13,8 @@ public interface ModifiableBiomeInfoBiomeInfoAccessor {
     @Mutable
     @Accessor("effects")
     void setEffects(BiomeSpecialEffects effects);
+
+    @Mutable
+    @Accessor("attributes")
+    void setAttributes(EnvironmentAttributeMap attributes);
 }

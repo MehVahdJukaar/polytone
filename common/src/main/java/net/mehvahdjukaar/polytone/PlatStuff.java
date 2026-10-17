@@ -21,6 +21,7 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.ColorResolver;
+import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
@@ -91,6 +92,11 @@ public class PlatStuff {
 
     @PlatformImpl
     public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
+        throw new AssertionError();
+    }
+
+    @PlatformImpl
+    public static void applyBiomeAttributeSurgery(Biome biome, EnvironmentAttributeMap newAttributes) {
         throw new AssertionError();
     }
 

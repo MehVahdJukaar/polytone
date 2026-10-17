@@ -18,26 +18,22 @@ import net.neoforged.neoforge.client.model.block.CustomUnbakedBlockStateModel;
 import java.util.List;
 import java.util.Optional;
 
-// NeoForge baked form of the polytone:expression model. See ExpressionModel for the shared selection logic and
-// JSON shape.
+// NeoForge baked form of the polytone:expression model
 public record ExpressionBlockStateModel(ExpressionModel.Selector selector) implements DynamicBlockStateModel {
 
     @Override
     public void collectParts(BlockAndTintGetter level, BlockPos pos, BlockState state, RandomSource random, List<BlockStateModelPart> parts) {
-        selector.select(pos, state).collectParts(random, parts);
+        selector.select(pos, state).collectParts(level, pos, state, random, parts);
     }
 
     @Override
     public void collectParts(RandomSource random, List<BlockStateModelPart> parts) {
-        // no world context (e.g. inventory/baking probes) -> deterministic fallback
         selector.fallback().collectParts(random, parts);
     }
 
     @Override
     public Object createGeometryKey(BlockAndTintGetter level, BlockPos pos, BlockState state, RandomSource random) {
-        // Fold the resolved case into the mesh-merge key so neighbours that pick different
-        // models are never greedily merged or wrongly culled against each other.
-        return selector.selectIndex(pos, state);
+        return selector.select(pos, state).createGeometryKey(level, pos, state, random);
     }
 
     @Override
@@ -48,6 +44,16 @@ public record ExpressionBlockStateModel(ExpressionModel.Selector selector) imple
     @Override
     public int materialFlags() {
         return selector.materialFlags();
+    }
+
+    @Override
+    public Material.Baked particleMaterial(BlockAndTintGetter level, BlockPos pos, BlockState state) {
+        return selector.select(pos, state).particleMaterial(level, pos, state);
+    }
+
+    @Override
+    public int materialFlags(BlockAndTintGetter level, BlockPos pos, BlockState state) {
+        return selector.select(pos, state).materialFlags(level, pos, state);
     }
 
     public record Unbaked(List<ExpressionModel.Case> cases, Optional<BlockExp> selector,

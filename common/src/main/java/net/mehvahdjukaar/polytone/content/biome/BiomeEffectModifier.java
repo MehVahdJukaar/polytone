@@ -267,7 +267,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
         public EnvironmentAttributeMap applyAllModifications(Biome biome) {
             EnvironmentAttributeMap oldBase = biome.getAttributes();
             if (!baseMod.isEmpty()) {
-                biome.attributes = baseMod.modify(oldBase, biome);
+                PlatStuff.applyBiomeAttributeSurgery(biome, baseMod.modify(oldBase, biome));
             }
 
             return oldBase;

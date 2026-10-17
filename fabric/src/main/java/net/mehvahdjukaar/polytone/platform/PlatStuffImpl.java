@@ -51,6 +51,7 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
@@ -101,6 +102,10 @@ public class PlatStuffImpl {
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void applyBiomeAttributeSurgery(Biome biome, EnvironmentAttributeMap newAttributes) {
+        ((BiomeAttributesAccessor) (Object) biome).setAttributes(newAttributes);
     }
 
     private static Field biomeSpecialEffectsField;
