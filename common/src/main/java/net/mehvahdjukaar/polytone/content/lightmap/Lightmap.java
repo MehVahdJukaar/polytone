@@ -13,7 +13,6 @@ import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.Mth;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.system.MemoryUtil;
@@ -171,9 +170,17 @@ public class Lightmap {
         Vector3f lightGray = new Vector3f(0.75F, 0.75F, 0.75F);
         float lightGrayAmount = baseLight;
 
-        ArrayImage image = selectImage(rainLevel, thunderLevel);
+        ArrayImage image = textures[0];
         float[][] torchLine = selectTorch(image, nightVisionScale, time, rainLevel, thunderLevel);
         float[][] skyLine = selectSky(image, nightVisionScale, time, rainLevel, thunderLevel, skyFlashTime);
+        if (textures[1] != null && rainLevel > 0) {
+            blendTowards(skyLine, selectSky(textures[1], nightVisionScale, time, rainLevel, thunderLevel, skyFlashTime), rainLevel);
+            blendTowards(torchLine, selectTorch(textures[1], nightVisionScale, time, rainLevel, thunderLevel), rainLevel);
+        }
+        if (textures[2] != null && thunderLevel > 0) {
+            blendTowards(skyLine, selectSky(textures[2], nightVisionScale, time, rainLevel, thunderLevel, skyFlashTime), thunderLevel);
+            blendTowards(torchLine, selectTorch(textures[2], nightVisionScale, time, rainLevel, thunderLevel), thunderLevel);
+        }
 
         // we need pow to simulate multiple lerps
 
@@ -205,11 +212,9 @@ public class Lightmap {
                 // we have no colors. use vanilla logic
                 float skyBrightness = net.minecraft.client.renderer.Lightmap.getBrightness(dimensionType,skyY) * skyLightIntensity;
                 skyBuffer.add(skyColor).mul(skyBrightness);
-                skyBuffer.mul(1 - lightGrayAmount);
             }
 
             for (int torchX = 0; torchX < 16; ++torchX) {
-                Vector3f addition = new Vector3f();
                 Vector3f torchBuffer = new Vector3f();
 
                 if (torchLine.length != 0) {
@@ -220,18 +225,12 @@ public class Lightmap {
                     float torchG = torchR * ((torchR * 0.6F + 0.4F) * 0.6F + 0.4F);
                     float torchB = torchR * (torchR * torchR * 0.6F + 0.4F);
                     torchBuffer.set(torchR, torchG, torchB);
-
-                    //vanilla logic
-                    addition.add(new Vector3f(lightGray).mul(lightGrayAmount));
-
-                    //torchBuffer.lerp(lightGray, lightGrayAmount);
-                    torchBuffer.mul(1 - lightGrayAmount);
                 }
 
-
                 Vector3f combined = new Vector3f();
-
-                combined.add(torchBuffer).add(skyBuffer).add(addition);
+                combined.add(torchBuffer).add(skyBuffer);
+                //vanilla does this once before gamma and once after
+                combined.lerp(lightGray, lightGrayAmount);
 
                 if (darkenWorldAmount > 0.0F) {
                     Vector3f discolored = (new Vector3f(combined)).mul(0.7F, 0.6F, 0.6F);
@@ -353,21 +352,13 @@ public class Lightmap {
         return torchLine;
     }
 
-    @Nullable
-    private ArrayImage selectImage(float rain, float thunder) {
-        ArrayImage image;
-        if (thunder != 0) {
-            image = textures[2];
-            if (image == null) {
-                image = textures[0];
+    private static void blendTowards(float[][] line, float[][] weatherLine, float amount) {
+        if (line.length != weatherLine.length) return;
+        for (int i = 0; i < line.length; i++) {
+            for (int c = 0; c < 3; c++) {
+                line[i][c] = Mth.lerp(amount, line[i][c], weatherLine[i][c]);
             }
-        } else if (rain != 0) {
-            image = textures[1];
-            if (image == null) {
-                image = textures[0];
-            }
-        } else image = textures[0];
-        return image;
+        }
     }
 
     private static void clampColor(Vector3f color) {
