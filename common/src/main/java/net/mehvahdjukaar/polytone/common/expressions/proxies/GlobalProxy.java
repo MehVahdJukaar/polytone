@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
 import net.mehvahdjukaar.polytone.compat.ISeason;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -36,6 +37,16 @@ public class GlobalProxy {
             return 0;
         }
         return ClientFrameTicker.getDayTime();
+    }
+
+    public int moonPhase() {
+        Level level = delegate();
+        return level == null ? 0 : level.environmentAttributes().getDimensionValue(EnvironmentAttributes.MOON_PHASE).index();
+    }
+
+    //1 at full moon, 0 at new moon
+    public double moonBrightness() {
+        return Math.abs(moonPhase() - 4) / 4.0;
     }
 
     public String season() {
