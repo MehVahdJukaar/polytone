@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.colormap;
 
+import net.mehvahdjukaar.polytone.common.expressions.impl.BlockExp;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
@@ -107,7 +108,8 @@ public interface IColorGetter extends BlockColor, ItemColor {
     record ExpressionColor(IBlockExp exp) implements IColorGetter {
         @Override
         public int getColor(BlockState state, @Nullable BlockAndTintGetter reader, @Nullable BlockPos pos, int tintIndex) {
-            if (pos == null) return -1;
+            //vanilla ItemColors forwards leaves and grass items here with no pos
+            if (pos == null) return evaluateWithoutPos(state);
             //RenderChunkRegion when meshing
             LevelReader level = reader instanceof LevelReader lr ? lr : Minecraft.getInstance().level;
             if (level == null) return -1;
@@ -116,15 +118,27 @@ public interface IColorGetter extends BlockColor, ItemColor {
 
         @Override
         public int getColor(ItemStack stack, int tintIndex) {
+            return evaluateWithoutPos(Blocks.AIR.defaultBlockState());
+        }
+
+        private int evaluateWithoutPos(BlockState state) {
             Level level = Minecraft.getInstance().level;
             if (level == null) return -1;
-            return evaluateColor(level, Vec3.ZERO, Blocks.AIR.defaultBlockState());
+            return evaluateColor(level, Vec3.ZERO, state) | 0xff000000;
         }
 
         @Override
         public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+            return sampleColorOver(0, state, pos, biome);
+        }
+
+        @Override
+        public int sampleColorOver(int vanillaColor, @Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome) {
             Level level = Minecraft.getInstance().level;
             if (level == null || pos == null) return -1;
+            if (exp instanceof BlockExp blockExp) {
+                return (int) (long) blockExp.evaluate(level, pos.getCenter(), state, biome, vanillaColor);
+            }
             return evaluateColor(level, pos.getCenter(), state);
         }
 
@@ -139,6 +153,10 @@ public interface IColorGetter extends BlockColor, ItemColor {
     }
 
     int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item);
+
+    default int sampleColorOver(int vanillaColor, @Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome) {
+        return sampleColor(state, pos, biome, null);
+    }
 
     default int sampleColorUncached(BlockAndTintGetter level, @Nullable BlockState state, BlockPos pos,
                                     @Nullable Biome biome) {
