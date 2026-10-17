@@ -12,8 +12,8 @@ public class RenderSetupMixin {
 
     @ModifyExpressionValue(method = "getTextures", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;lightmap()Lcom/mojang/blaze3d/textures/GpuTextureView;"))
     public GpuTextureView polytone$onGetGuiLightTexture(GpuTextureView original) {
-        if (Polytone.LIGHTMAPS.isGui()) {
-            return Polytone.LIGHTMAPS.getGuiLightTexture().getTextureView();
+        if (Polytone.GUI_LIGHTMAP.isActive()) {
+            return Polytone.GUI_LIGHTMAP.getTexture().getTextureView();
         }
         return original;
     }

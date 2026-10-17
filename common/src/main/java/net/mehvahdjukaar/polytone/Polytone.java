@@ -25,7 +25,7 @@ import net.mehvahdjukaar.polytone.content.global_expressions.GlobalExpressionsMa
 import net.mehvahdjukaar.polytone.content.item.CustomItemModelsManager;
 import net.mehvahdjukaar.polytone.content.item.ItemModifiersManager;
 import net.mehvahdjukaar.polytone.content.model.CustomModelsManager;
-import net.mehvahdjukaar.polytone.content.lightmap.LightmapsManager;
+import net.mehvahdjukaar.polytone.content.lightmap.GuiLightmap;
 import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticlesManager;
 import net.mehvahdjukaar.polytone.content.particle.modifiers.ParticleModifiersManager;
@@ -88,7 +88,7 @@ public class Polytone {
     public static final BiomeEffectsManager BIOME_MODIFIERS = new BiomeEffectsManager();
     public static final NoiseManager NOISES = new NoiseManager();
     public static final ColormapsManager COLORMAPS = new ColormapsManager();
-    public static final LightmapsManager LIGHTMAPS = new LightmapsManager();
+    public static final GuiLightmap GUI_LIGHTMAP = new GuiLightmap();
     public static final BiomeIdMapperManager BIOME_ID_MAPPERS = new BiomeIdMapperManager();
     public static final DimensionEffectsManager DIMENSION_MODIFIERS = new DimensionEffectsManager();
     public static final CustomParticlesManager CUSTOM_PARTICLES = new CustomParticlesManager();
@@ -116,7 +116,7 @@ public class Polytone {
             CONFIGS, GLOBAL_EXPRESSION,
             NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS, COLORED_LIGHTS,
             BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, CUSTOM_MODELS, ITEM_MODIFIERS, ITEM_MODELS,
-            BIOME_MODIFIERS, LIGHTMAPS,
+            BIOME_MODIFIERS,
             DIMENSION_MODIFIERS, POST_TARGETS, POST_CHAINS, SHADOW_MAP, VOXEL_VOLUME, SHADER_UNIFORMS,
             PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,
             CREATIVE_TABS_MODIFIERS);
@@ -138,9 +138,7 @@ public class Polytone {
 
         // CONFIGS goes first (see MANAGERS ordering): config values feed require_config conditions and
         // config() expressions used by everything else, so they must be up to date before any other reloader parses.
-        COMPOUND_RELOADER = new PolytoneReloadManager(MANAGERS.stream()
-                .filter(m -> m != LIGHTMAPS) // lightmaps reload through their own path
-                .toArray(ContentManager[]::new));
+        COMPOUND_RELOADER = new PolytoneReloadManager(MANAGERS.toArray(ContentManager[]::new));
         PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
                 res("polytone_stuff"));
         isDevEnv = devEnv;

@@ -25,12 +25,12 @@ public abstract class GameRendererMixin {
     @Inject(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/render/GuiRenderer;render(Lcom/mojang/blaze3d/buffers/GpuBufferSlice;)V"))
     private void polytone$setupGuiLightmap(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
-        Polytone.LIGHTMAPS.setupForGUI(true);
+        Polytone.GUI_LIGHTMAP.setRenderingGui(true);
     }
 
     @Inject(method = "render", at = @At(value = "TAIL"))
     private void polytone$resetGuiLightmap(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
-        Polytone.LIGHTMAPS.setupForGUI(false);
+        Polytone.GUI_LIGHTMAP.setRenderingGui(false);
         LevelRenderPassTracker.onEndRenderLevel();
     }
 
