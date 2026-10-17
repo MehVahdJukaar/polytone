@@ -22,11 +22,14 @@ public record GpuParticleInitializer(IBlockExp size,
                                      IBlockExp alpha,
                                      Optional<IColorGetter> colormap,
                                      IBlockExp roll,
-                                     IBlockExp custom) {
+                                     IBlockExp custom,
+                                     IBlockExp dx,
+                                     IBlockExp dy,
+                                     IBlockExp dz) {
 
     public static final GpuParticleInitializer DEFAULT = new GpuParticleInitializer(
             IBlockExp.constant(0.1), IBlockExp.constant(40), IBlockExp.ONE, IBlockExp.ONE, IBlockExp.ONE, IBlockExp.ONE,
-            Optional.empty(), IBlockExp.ZERO, IBlockExp.ZERO);
+            Optional.empty(), IBlockExp.ZERO, IBlockExp.ZERO, IBlockExp.ZERO, IBlockExp.ZERO, IBlockExp.ZERO);
 
     public static final SchemaCodec<GpuParticleInitializer> CODEC = SchemaRecord.create(GpuParticleInitializer.class, i -> i.group(
             i.optional("size", IBlockExp.CODEC, DEFAULT.size, GpuParticleInitializer::size),
@@ -37,7 +40,10 @@ public record GpuParticleInitializer(IBlockExp size,
             i.optional("alpha", IBlockExp.CODEC, DEFAULT.alpha, GpuParticleInitializer::alpha),
             i.optional("colormap", SchemaCodec.wrap(Colormap.CODEC), GpuParticleInitializer::colormap),
             i.optional("roll", IBlockExp.CODEC, DEFAULT.roll, GpuParticleInitializer::roll),
-            i.optional("custom", IBlockExp.CODEC, DEFAULT.custom, GpuParticleInitializer::custom)
+            i.optional("custom", IBlockExp.CODEC, DEFAULT.custom, GpuParticleInitializer::custom),
+            i.optional("dx", IBlockExp.CODEC, DEFAULT.dx, GpuParticleInitializer::dx),
+            i.optional("dy", IBlockExp.CODEC, DEFAULT.dy, GpuParticleInitializer::dy),
+            i.optional("dz", IBlockExp.CODEC, DEFAULT.dz, GpuParticleInitializer::dz)
     ).apply(i, GpuParticleInitializer::new));
 
     @Nullable
@@ -60,12 +66,15 @@ public record GpuParticleInitializer(IBlockExp size,
         }
         v.roll = (float) roll.evaluate(level, pos, state);
         v.custom = (float) custom.evaluate(level, pos, state);
+        v.dx = (float) dx.evaluate(level, pos, state);
+        v.dy = (float) dy.evaluate(level, pos, state);
+        v.dz = (float) dz.evaluate(level, pos, state);
         return v;
     }
 
     //mutable so emitter overrides can be applied on top before the record is written
     public static final class SpawnValues {
-        public float size, lifetime, red, green, blue, alpha, roll, custom;
+        public float size, lifetime, red, green, blue, alpha, roll, custom, dx, dy, dz;
 
         public void override(String key, float value) {
             switch (key) {
