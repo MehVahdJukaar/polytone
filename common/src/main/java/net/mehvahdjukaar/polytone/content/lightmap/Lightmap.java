@@ -165,12 +165,12 @@ public class Lightmap {
         float[][] torchLine = selectTorch(image, nightVisionScale, time, rainLevel, thunderLevel);
         float[][] skyLine = selectSky(image, nightVisionScale, time, rainLevel, thunderLevel, skyFlashTime);
         if (textures[1] != null && rainLevel > 0) {
-            blendTowards(skyLine, selectSky(textures[1], nightVisionScale, time, rainLevel, thunderLevel, skyFlashTime), rainLevel);
-            blendTowards(torchLine, selectTorch(textures[1], nightVisionScale, time, rainLevel, thunderLevel), rainLevel);
+            skyLine = blendTowards(skyLine, selectSky(textures[1], nightVisionScale, time, rainLevel, thunderLevel, skyFlashTime), rainLevel);
+            torchLine = blendTowards(torchLine, selectTorch(textures[1], nightVisionScale, time, rainLevel, thunderLevel), rainLevel);
         }
         if (textures[2] != null && thunderLevel > 0) {
-            blendTowards(skyLine, selectSky(textures[2], nightVisionScale, time, rainLevel, thunderLevel, skyFlashTime), thunderLevel);
-            blendTowards(torchLine, selectTorch(textures[2], nightVisionScale, time, rainLevel, thunderLevel), thunderLevel);
+            skyLine = blendTowards(skyLine, selectSky(textures[2], nightVisionScale, time, rainLevel, thunderLevel, skyFlashTime), thunderLevel);
+            torchLine = blendTowards(torchLine, selectTorch(textures[2], nightVisionScale, time, rainLevel, thunderLevel), thunderLevel);
         }
 
         // we need pow to simulate multiple lerps
@@ -320,13 +320,16 @@ public class Lightmap {
         return torchLine;
     }
 
-    private static void blendTowards(float[][] line, float[][] weatherLine, float amount) {
-        if (line.length != weatherLine.length) return;
+    private static float[][] blendTowards(float[][] line, float[][] weatherLine, float amount) {
+        //vanilla base has no line to blend with so just snap to the weather one
+        if (line.length == 0) return weatherLine;
+        if (line.length != weatherLine.length) return line;
         for (int i = 0; i < line.length; i++) {
             for (int c = 0; c < 3; c++) {
                 line[i][c] = Mth.lerp(amount, line[i][c], weatherLine[i][c]);
             }
         }
+        return line;
     }
 
     private static void clampColor(Vector3f color) {
