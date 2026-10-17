@@ -30,6 +30,16 @@ public class GlobalProxy {
         return level == null ? 0 : ClientFrameTicker.getDayTime();
     }
 
+    public int moonPhase() {
+        Level level = delegate();
+        return level == null ? 0 : level.getMoonPhase();
+    }
+
+    public double moonBrightness() {
+        Level level = delegate();
+        return level == null ? 1 : level.getMoonBrightness();
+    }
+
     public String season() {
         Level level = delegate();
         return level == null ? ISeason.SUMMER.lowercaseName() : ISeason.get(level).lowercaseName();
