@@ -53,6 +53,8 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
     private final Object2ObjectMap<DimensionType, IBlockExp> cloudFunctions = new Object2ObjectArrayMap<>();
     private final Object2BooleanArrayMap<DimensionType> cancelFogWeatherDarken = new Object2BooleanArrayMap<>();
     private final Object2BooleanArrayMap<DimensionType> cancelSkyWeatherDarken = new Object2BooleanArrayMap<>();
+    private final Object2BooleanArrayMap<DimensionType> cancelFogNightDarken = new Object2BooleanArrayMap<>();
+    private final Object2BooleanArrayMap<DimensionType> cancelSkyNightDarken = new Object2BooleanArrayMap<>();
     private final Object2BooleanArrayMap<DimensionType> translucentSunAndMoon = new Object2BooleanArrayMap<>();
 
     private boolean needsDynamicApplication = true;
@@ -92,6 +94,8 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
         sunsetColormaps.clear();
         cancelFogWeatherDarken.clear();
         cancelSkyWeatherDarken.clear();
+        cancelFogNightDarken.clear();
+        cancelSkyNightDarken.clear();
         translucentSunAndMoon.clear();
         cloudFunctions.clear();
         extraMods.clear();
@@ -188,6 +192,12 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
             if (modifier.noWeatherSkyDarken()) {
                 cancelSkyWeatherDarken.put(currentDim, true);
             }
+            if (modifier.noNightFogDarken()) {
+                cancelFogNightDarken.put(currentDim, true);
+            }
+            if (modifier.noNightSkyDarken()) {
+                cancelSkyNightDarken.put(currentDim, true);
+            }
             if (modifier.translucentSunAndMoon()) {
                 translucentSunAndMoon.put(currentDim, true);
             }
@@ -203,8 +213,9 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
     public Vec3 modifyFogColor(Vec3 center, ClientLevel level, float brightness) {
         IColorGetter colormap = isTerrainHack.get() ? this.terrainFogColormaps.get(level.dimensionType()) :
                 this.fogColormaps.get(level.dimensionType());
-        if (colormap == null) return null;
-        return cubicSample(center, level, brightness, colormap);
+        boolean keepNightColor = cancelFogNightDarken.getOrDefault(level.dimensionType(), false);
+        if (colormap == null && !keepNightColor) return null;
+        return cubicSample(center, level, keepNightColor ? 1 : brightness, colormap);
     }
 
     private static final ThreadLocal<Boolean> isTerrainHack = ThreadLocal.withInitial(() -> false);
@@ -224,16 +235,15 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
     }*/ //TODO add
 
 
-    private static @NotNull Vec3 cubicSample(Vec3 center, ClientLevel level, float brightness, IColorGetter colormap) {
+    private static @NotNull Vec3 cubicSample(Vec3 center, ClientLevel level, float brightness, @Nullable IColorGetter colormap) {
         BiomeManager biomeManager = level.getBiomeManager();
         return level.effects().getBrightnessDependentFogColor(
                 CubicSampler.gaussianSampleVec3(center, (qx, qy, qz) -> {
                     var biome = biomeManager.getNoiseBiomeAtQuart(qx, qy, qz).value();
-                    // will override all biome modifiers ones
-                    //int fogColor = biome.getFogColor();
-                    int fogColor1 = colormap.sampleColor(null,
-                            BlockPos.containing(qx * 4, qy * 4, qz * 4), biome, null); //quart coords to block coord
-                    return Vec3.fromRGB24(fogColor1);
+                    if (colormap == null) return Vec3.fromRGB24(biome.getFogColor());
+                    int fogColor = colormap.sampleColorOver(biome.getFogColor(), null,
+                            BlockPos.containing(qx * 4, qy * 4, qz * 4), biome); //quart coords to block coord
+                    return Vec3.fromRGB24(fogColor);
                 }), brightness);
     }
 
@@ -256,9 +266,9 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
         BiomeManager biomeManager = level.getBiomeManager();
         return CubicSampler.gaussianSampleVec3(center, (qx, qy, qz) -> {
             var biome = biomeManager.getNoiseBiomeAtQuart(qx, qy, qz).value();
-            //int skyColor = biome.getSkyColor();
-            int skyColor1 = colormap.sampleColor(null, BlockPos.containing(qx * 4, qy * 4, qz * 4), biome, null); //quart coords to block coord
-            return Vec3.fromRGB24(skyColor1);
+            int skyColor = colormap.sampleColorOver(biome.getSkyColor(), null,
+                    BlockPos.containing(qx * 4, qy * 4, qz * 4), biome); //quart coords to block coord
+            return Vec3.fromRGB24(skyColor);
         });
     }
 
@@ -277,6 +287,10 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
 
     public boolean shouldCancelFogWeatherDarken(Level level) {
         return this.cancelFogWeatherDarken.getOrDefault(level.dimensionType(), false);
+    }
+
+    public boolean shouldCancelSkyNightDarken(Level level) {
+        return this.cancelSkyNightDarken.getOrDefault(level.dimensionType(), false);
     }
 
     public boolean shouldCancelSkyWeatherDarken(Level level) {

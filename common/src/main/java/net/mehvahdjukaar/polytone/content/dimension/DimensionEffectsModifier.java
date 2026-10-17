@@ -28,6 +28,8 @@ public record DimensionEffectsModifier(Optional<Either<Float, IBlockExp>> cloudL
                                        Optional<IColorGetter> sunsetColor,
                                        boolean noWeatherFogDarken,
                                        boolean noWeatherSkyDarken,
+                                       boolean noNightFogDarken,
+                                       boolean noNightSkyDarken,
                                        boolean translucentSunAndMoon,
                                        Optional<Lightmap> lightmap, //TODO: finish adding
                                        DimensionTarget targets) {
@@ -48,6 +50,8 @@ public record DimensionEffectsModifier(Optional<Either<Float, IBlockExp>> cloudL
                     Colormap.CODEC.optionalFieldOf("sunset_colormap").forGetter(DimensionEffectsModifier::sunsetColor),
                     Codec.BOOL.optionalFieldOf("no_weather_fog_darken", false).forGetter(DimensionEffectsModifier::noWeatherFogDarken),
                     Codec.BOOL.optionalFieldOf("no_weather_sky_darken", false).forGetter(DimensionEffectsModifier::noWeatherSkyDarken),
+                    Codec.BOOL.optionalFieldOf("no_night_fog_darken", false).forGetter(DimensionEffectsModifier::noNightFogDarken),
+                    Codec.BOOL.optionalFieldOf("no_night_sky_darken", false).forGetter(DimensionEffectsModifier::noNightSkyDarken),
                     Codec.BOOL.optionalFieldOf("translucent_sun_and_moon", false).forGetter(DimensionEffectsModifier::translucentSunAndMoon),
                     Polytone.LIGHTMAPS.byNameCodec().optionalFieldOf("lightmap").forGetter(DimensionEffectsModifier::lightmap),
                     DimensionTarget.CODEC.optionalFieldOf("targets", DimensionTarget.EMPTY).forGetter(DimensionEffectsModifier::targets)
@@ -56,25 +60,25 @@ public record DimensionEffectsModifier(Optional<Either<Float, IBlockExp>> cloudL
     public static DimensionEffectsModifier ofFogColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.of(colormap), Optional.empty(), Optional.empty(), Optional.empty(),
-                false, false, false, Optional.empty(), DimensionTarget.EMPTY);
+                false, false, false, false, false, Optional.empty(), DimensionTarget.EMPTY);
     }
 
     public static DimensionEffectsModifier ofTerrainFogColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.of(colormap), Optional.empty(), Optional.empty(),
-                false, false, false, Optional.empty(), DimensionTarget.EMPTY);
+                false, false, false, false, false, Optional.empty(), DimensionTarget.EMPTY);
     }
 
     public static DimensionEffectsModifier ofSkyColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(colormap), Optional.empty(),
-                false, false, false, Optional.empty(), DimensionTarget.EMPTY);
+                false, false, false, false, false, Optional.empty(), DimensionTarget.EMPTY);
     }
 
     public static DimensionEffectsModifier ofSunsetColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),  Optional.empty(), Optional.empty(), Optional.of(colormap),
-                false, false, false, Optional.empty(), DimensionTarget.EMPTY);
+                false, false, false, false, false, Optional.empty(), DimensionTarget.EMPTY);
     }
 
 
@@ -91,6 +95,8 @@ public record DimensionEffectsModifier(Optional<Either<Float, IBlockExp>> cloudL
                 newMod.sunsetColor.isPresent() ? newMod.sunsetColor : this.sunsetColor,
                 newMod.noWeatherFogDarken | this.noWeatherFogDarken,
                 newMod.noWeatherSkyDarken | this.noWeatherSkyDarken,
+                newMod.noNightFogDarken | this.noNightFogDarken,
+                newMod.noNightSkyDarken | this.noNightSkyDarken,
                 newMod.translucentSunAndMoon | this.translucentSunAndMoon,
                 newMod.lightmap.isPresent() ? newMod.lightmap : this.lightmap,
                 newMod.targets //ignore, not used after merging
@@ -145,7 +151,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, IBlockExp>> cloudL
         }
         return new DimensionEffectsModifier(oldCloud, oldGround, oldSky, oldBright, oldAmbient,
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                false, false, false, Optional.empty(), DimensionTarget.EMPTY);
+                false, false, false, false, false, Optional.empty(), DimensionTarget.EMPTY);
     }
 
 }

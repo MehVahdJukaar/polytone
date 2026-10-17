@@ -63,6 +63,12 @@ public abstract class ClientLevelMixin extends Level {
 
 
     @ModifyExpressionValue(method = "getSkyColor", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/util/Mth;clamp(FFF)F"))
+    private float polytone$modifyNightSkyDarken(float original) {
+        return Polytone.DIMENSION_MODIFIERS.shouldCancelSkyNightDarken(this) ? 1 : original;
+    }
+
+    @ModifyExpressionValue(method = "getSkyColor", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F"))
     private float polytone$modifyRainSkyDarken(float original) {
          if (original != 0 && Polytone.DIMENSION_MODIFIERS.shouldCancelSkyWeatherDarken(this)) {
