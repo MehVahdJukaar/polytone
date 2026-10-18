@@ -7,7 +7,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
-import net.mehvahdjukaar.polytone.common.expressions.impl.IPackMetadataExp;
 import net.mehvahdjukaar.polytone.common.expressions.impl.PackMetadataExp;
 import net.mehvahdjukaar.polytone.common.struc.VersionRange;
 import net.minecraft.SharedConstants;
@@ -32,10 +31,16 @@ public class ConditionUtils {
             ConditionUtils::boolAnd);
 
     private static final Codec<Boolean> CONFIG_MATCH_CODEC = Identifier.CODEC.xmap(
-            Polytone.CONFIGS::getBooleanConfig, b -> Polytone.res("dummy"));
+            id -> Polytone.CONFIGS.readForLoad("require_config " + id,
+                    () -> Polytone.CONFIGS.getBooleanConfig(id)), b -> Polytone.res("dummy"));
 
     private static final Codec<Boolean> MC_VERSION_RANGE_CODEC = VersionRange.CODEC.xmap(
             v -> v.matches(SharedConstants.getCurrentVersion().id()), b -> VersionRange.any());
+
+    // the same text evaluates the same, so the config can re-check it once per text
+    private static String conditionSource(Object exp) {
+        return exp instanceof PackMetadataExp p ? p.source() : "constant";
+    }
 
     private static boolean boolAnd(List<Boolean> list) {
         for (Boolean b : list) {
@@ -53,7 +58,7 @@ public class ConditionUtils {
             !ignore && version && polyCond && modsOn));
 
     public static final Codec<Boolean> CODEC_EXPRESSION_SINGLE_JSON = PackMetadataExp.CODEC.xmap(
-            IPackMetadataExp::evaluate,
+            exp -> Polytone.CONFIGS.readForLoad(conditionSource(exp), exp::evaluate),
             triState -> PackMetadataExp.TRUE);
 
     // keyed first: the old form has only optional fields, so it matches any object and hid polytone_condition
@@ -80,7 +85,7 @@ public class ConditionUtils {
 
     private static final Codec<TriState> CODEC_EXPRESSION_OVERLAY = PackMetadataExp.CODEC.xmap(
             exp -> {
-                boolean b = exp.evaluate();
+                boolean b = Polytone.CONFIGS.readForLoad(conditionSource(exp), exp::evaluate);
                 return b ? TriState.TRUE : TriState.FALSE;
             },
             triState -> PackMetadataExp.TRUE);

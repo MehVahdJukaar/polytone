@@ -13,6 +13,10 @@ public abstract class PolyExp {
         this.source = source;
     }
 
+    public String source() {
+        return source;
+    }
+
     // inputs go in the order the type declared them
     protected double executeDouble(Object... inputs) {
         try {

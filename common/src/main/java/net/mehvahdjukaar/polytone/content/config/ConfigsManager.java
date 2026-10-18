@@ -39,7 +39,9 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
 
 public class ConfigsManager extends ContentManager<PolyConfig<?>> {
 
@@ -78,6 +80,18 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     private JsonObject configFileSnapshot;
 
     private final AtomicBoolean needsPackReload = new AtomicBoolean(false); //mega ugly
+
+    // options a polytone_condition reads pick overlays and files, so they only take effect with a reload
+    private final Set<Identifier> loadTimeKeys = ConcurrentHashMap.newKeySet();
+    // every condition by its text with the options it read and its last result, to tell if a change flips one
+    private final Map<String, LoadCondition> loadConditions = new ConcurrentHashMap<>();
+    // non null while a condition evaluates, collects what it reads
+    private final ThreadLocal<Set<Identifier>> loadReads = new ThreadLocal<>();
+    // what those options were when the loaded resources were picked, served until the next reload
+    private volatile Map<Identifier, Object> appliedValues = Map.of();
+
+    private record LoadCondition(BooleanSupplier eval, Set<Identifier> reads, boolean result) {
+    }
 
     public ConfigsManager() {
         super(Spec.of("Config entry", () -> SchemaCodec.wrap(PolyConfig.CODEC))
@@ -126,10 +140,11 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         bubbleManager.onConfigOpened(hasPackConfigs());
         List<OptionHolder<?>> shown = shownOptions();
         return new ConfigScreen(parent, shown, () -> {
-            if (!hasUnsavedChanges(shown)) return;
+            Set<Identifier> changed = changedKeys(shown);
+            if (changed.isEmpty()) return;
 
             saveConfigsToDisk(shown);
-            Minecraft.getInstance().reloadResourcePacks();
+            if (needsReload(changed)) Minecraft.getInstance().reloadResourcePacks();
         });
     }
 
@@ -142,9 +157,10 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         List<OptionHolder<?>> shown = shownOptions();
 
         return new ConfigScreen(parent, shown, () -> {
-            if (!hasUnsavedChanges(shown)) return;
+            Set<Identifier> changed = changedKeys(shown);
+            if (changed.isEmpty()) return;
 
-            needsPackReload.set(true);
+            if (needsReload(changed)) needsPackReload.set(true);
             saveConfigsToDisk(shown);
             //save values we just set so we can read them again right here
             packReload.run();
@@ -165,11 +181,56 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         return List.copyOf(configs.getValues());
     }
 
-    private static boolean hasUnsavedChanges(Collection<OptionHolder<?>> options) {
+    private static Set<Identifier> changedKeys(Collection<OptionHolder<?>> options) {
+        Set<Identifier> changed = new HashSet<>();
         for (var option : options) {
-            if (option.hasUnsavedChanges()) return true;
+            if (option.hasUnsavedChanges()) changed.add(option.fileId);
         }
+        return changed;
+    }
+
+    // a reload only when a condition that reads a changed option now gives another result
+    private boolean needsReload(Set<Identifier> changed) {
+        List<String> flipped = new ArrayList<>();
+        for (var e : loadConditions.entrySet()) {
+            LoadCondition c = e.getValue();
+            if (Collections.disjoint(c.reads(), changed)) continue;
+            if (evaluateForLoad(c.eval(), new HashSet<>()) != c.result()) flipped.add(e.getKey());
+        }
+        if (!flipped.isEmpty()) {
+            Polytone.LOGGER.info("Config changes switch pack conditions {}, they apply once the reload finishes", flipped);
+            return true;
+        }
+        Map<Identifier, Object> applied = new HashMap<>(appliedValues);
+        for (Identifier id : changed) {
+            OptionHolder<?> holder = configs.getValue(id);
+            if (holder != null) applied.put(id, holder.get());
+        }
+        appliedValues = applied;
+        Polytone.LOGGER.info("Applied config changes without a pack reload: {}", changed);
         return false;
+    }
+
+    // for polytone_condition: records what it reads and its result, and sees the saved values, not the applied ones
+    public boolean readForLoad(String source, BooleanSupplier read) {
+        Set<Identifier> reads = new HashSet<>();
+        boolean result = evaluateForLoad(read, reads);
+        if (!reads.isEmpty()) {
+            loadTimeKeys.addAll(reads);
+            loadConditions.put(source, new LoadCondition(read, Set.copyOf(reads), result));
+        }
+        return result;
+    }
+
+    private boolean evaluateForLoad(BooleanSupplier read, Set<Identifier> reads) {
+        Set<Identifier> outer = loadReads.get();
+        loadReads.set(reads);
+        try {
+            return read.getAsBoolean();
+        } finally {
+            loadReads.set(outer);
+            if (outer != null) outer.addAll(reads);
+        }
     }
 
     private void saveConfigsToDisk(Collection<OptionHolder<?>> edited) {
@@ -224,6 +285,13 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     }
 
     public Object getValue(Identifier configKey) {
+        Set<Identifier> reads = loadReads.get();
+        if (reads != null) {
+            reads.add(configKey);
+        } else if (loadTimeKeys.contains(configKey)) {
+            Object applied = appliedValues.get(configKey);
+            if (applied != null) return applied;
+        }
         var reg = getActiveRegistry();
         OptionHolder<?> value = reg.getValue(configKey);
         if (value != null) {
@@ -303,6 +371,9 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
             addConfig(entry.getKey(), entry.getValue(), configs, configFileSnapshot);
         }
         registerDevTestConfigs();
+        Map<Identifier, Object> applied = new HashMap<>();
+        for (var e : configs.getEntries()) applied.put(e.getKey(), e.getValue().get());
+        appliedValues = applied;
         Polytone.LOGGER.info("Loaded {} Polytone config entries", configs.size());
     }
 
