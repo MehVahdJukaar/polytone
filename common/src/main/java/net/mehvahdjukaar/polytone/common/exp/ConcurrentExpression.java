@@ -15,7 +15,7 @@ public class ConcurrentExpression implements IExpression {
 
     private final Token[] tokens;
 
-    private final ThreadLocal<Map<String, Double>> variables;
+    private final ThreadLocal<Map<String, double[]>> variables;
 
     private final Set<String> userFunctionNames;
     private final IVars vb;
@@ -25,7 +25,7 @@ public class ConcurrentExpression implements IExpression {
         try {
             this.tokens = (Token[]) TOKENS_FIELD.get(existing);
             var originalVars = (Map<String, Double>) VARIABLES_FIELD.get(existing);
-            this.variables = ThreadLocal.withInitial(() -> new HashMap<>(originalVars));
+            this.variables = ThreadLocal.withInitial(() -> TokenEvaluator.toHolders(originalVars));
             this.userFunctionNames = (Set<String>) USER_FUNCTION_NAMES_FIELD.get(existing);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
@@ -34,13 +34,14 @@ public class ConcurrentExpression implements IExpression {
         this.vb = new IVars() {
             @Override
             public IVars setVariable(String name, double value) {
-                variables.get().put(name, value);
+                TokenEvaluator.setVariable(variables.get(), name, value);
                 return this;
             }
 
             @Override
             public Double getVariable(String name) {
-                return variables.get().get(name);
+                double[] value = variables.get().get(name);
+                return value == null ? null : value[0];
             }
         };
     }
@@ -88,49 +89,6 @@ public class ConcurrentExpression implements IExpression {
 
     @Override
     public double evaluate(IVars vars) {
-        final ArrayStack output = new ArrayStack();
-        for (Token t : tokens) {
-            if (t.getType() == Token.TOKEN_NUMBER) {
-                output.push(((NumberToken) t).getValue());
-            } else if (t.getType() == Token.TOKEN_VARIABLE) {
-                final String name = ((VariableToken) t).getName();
-                final Double value = this.variables.get().get(name);
-                if (value == null) {
-                    throw new IllegalArgumentException("No value has been set for the setVariable '" + name + "'.");
-                }
-                output.push(value);
-            } else if (t.getType() == Token.TOKEN_OPERATOR) {
-                OperatorToken op = (OperatorToken) t;
-                if (output.size() < op.getOperator().getNumOperands()) {
-                    throw new IllegalArgumentException("Invalid number of operands available for '" + op.getOperator().getSymbol() + "' operator");
-                }
-                if (op.getOperator().getNumOperands() == 2) {
-                    /* pop the operands and push the result of the operation */
-                    double rightArg = output.pop();
-                    double leftArg = output.pop();
-                    output.push(op.getOperator().apply(leftArg, rightArg));
-                } else if (op.getOperator().getNumOperands() == 1) {
-                    /* pop the operand and push the result of the operation */
-                    double arg = output.pop();
-                    output.push(op.getOperator().apply(arg));
-                }
-            } else if (t.getType() == Token.TOKEN_FUNCTION) {
-                FunctionToken func = (FunctionToken) t;
-                final int numArguments = func.getFunction().getNumArguments();
-                if (output.size() < numArguments) {
-                    throw new IllegalArgumentException("Invalid number of arguments available for '" + func.getFunction().getName() + "' function");
-                }
-                /* collect the arguments from the stack */
-                double[] args = new double[numArguments];
-                for (int j = numArguments - 1; j >= 0; j--) {
-                    args[j] = output.pop();
-                }
-                output.push(func.getFunction().apply(args));
-            }
-        }
-        if (output.size() > 1) {
-            throw new IllegalArgumentException("Invalid number of items on the output queue. Might be caused by an invalid number of arguments for a function.");
-        }
-        return output.pop();
+        return TokenEvaluator.evaluate(tokens, this.variables.get());
     }
 }
