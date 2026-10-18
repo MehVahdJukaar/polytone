@@ -10,10 +10,10 @@ buildscript {
 }
 
 plugins {
-    id("com.possible-triangle.core")
-    id("com.possible-triangle.common") apply false
-    id("com.possible-triangle.fabric") apply false
-    id("com.possible-triangle.neoforge") apply false
+    id("com.possible-triangle.core") version "1.4.248"
+    id("com.possible-triangle.common") version "1.4.248" apply false
+    id("com.possible-triangle.fabric") version "1.4.248" apply false
+    id("com.possible-triangle.neoforge") version "1.4.248" apply false
     id("net.mehvahdjukaar.candlelight") version "1.2.4" apply false
 }
 
@@ -71,13 +71,6 @@ subprojects {
         forEach {
             changelog = rootProject.file("changelog.md").readText()
             versionName = "${mod.id.get()}-${mod.version.get()}-${project.name}"
-        }
-    }
-
-    tasks.processResources {
-        from(rootDir) {
-            include("MVEL_LICENSE.md")
-            into("") // root of jar (or change path below)
         }
     }
 
