@@ -44,10 +44,11 @@ public class ClientFrameTicker {
         Camera camera = mc.gameRenderer.mainCamera();
         var probe = camera.attributeProbe();
 
-        time = level.getGameTime() + partialTicks;
+        // double first, long + float is a float that loses whole ticks on old worlds
+        time = (double) level.getGameTime() + partialTicks;
         sunTime = probe.getValue(EnvironmentAttributes.SUN_ANGLE, partialTicks) / 360.0F;
         long clockTime = level.getDefaultClockTime();
-        dayTime = level.dimensionType().hasFixedTime() ? clockTime : clockTime + partialTicks;
+        dayTime = level.dimensionType().hasFixedTime() ? clockTime : (double) clockTime + partialTicks;
         //TODO: other param like moon pos
 
         cameraBiome = level.getBiome(getCameraBlockPos());

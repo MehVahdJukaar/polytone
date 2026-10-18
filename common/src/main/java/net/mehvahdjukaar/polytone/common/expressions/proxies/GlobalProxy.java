@@ -27,7 +27,8 @@ public class GlobalProxy {
         if (delegate == null) {
             return 0;
         }
-        return delegate.getGameTime() + Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaTicks();
+        // the partial tick, not the frame length, and double first: a float loses whole ticks after ~9 days of world age
+        return (double) delegate.getGameTime() + Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
     }
 
     public double dayTime() {
