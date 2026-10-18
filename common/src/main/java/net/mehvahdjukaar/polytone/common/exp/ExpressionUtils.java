@@ -24,14 +24,16 @@ public class ExpressionUtils {
 
     private static final RandomSource RANDOM_SOURCE = RandomSource.createThreadLocalInstance();
 
-    private static final ThreadLocal<Long> LAST_SEED = new ThreadLocal<>();
+    // Held in a long[] so seeding (once per colormap/particle evaluation) doesn't box a Long each time.
+    // Created on first seedRandom, so reading before any seed still fails like the old ThreadLocal<Long> did.
+    private static final ThreadLocal<long[]> LAST_SEED = new ThreadLocal<>();
 
     private static final Set<Function> NOISE_FUNCS = new HashSet<>();
 
     private static final Function RAND = new Function("rand", 0) {
         @Override
         public double apply(double... args) {
-            RANDOM_SOURCE.setSeed(LAST_SEED.get());
+            RANDOM_SOURCE.setSeed(LAST_SEED.get()[0]);
             return RANDOM_SOURCE.nextDouble();
         }
     };
@@ -39,7 +41,7 @@ public class ExpressionUtils {
     private static final Function RAND_INT = new Function("rand_int", 0) {
         @Override
         public double apply(double... args) {
-            RANDOM_SOURCE.setSeed(LAST_SEED.get());
+            RANDOM_SOURCE.setSeed(LAST_SEED.get()[0]);
             return RANDOM_SOURCE.nextInt();
         }
     };
@@ -47,7 +49,7 @@ public class ExpressionUtils {
     private static final Function RAND_LONG = new Function("rand_long", 0) {
         @Override
         public double apply(double... args) {
-            RANDOM_SOURCE.setSeed(LAST_SEED.get());
+            RANDOM_SOURCE.setSeed(LAST_SEED.get()[0]);
             return RANDOM_SOURCE.nextInt();
         }
     };
@@ -55,7 +57,7 @@ public class ExpressionUtils {
     private static final Function GAUSSIAN = new Function("gaussian", 0) {
         @Override
         public double apply(double... args) {
-            RANDOM_SOURCE.setSeed(LAST_SEED.get());
+            RANDOM_SOURCE.setSeed(LAST_SEED.get()[0]);
             return RANDOM_SOURCE.nextGaussian();
         }
     };
@@ -312,7 +314,9 @@ public class ExpressionUtils {
     }
 
     public static void seedRandom(long seed) {
-        LAST_SEED.set(seed);
+        long[] holder = LAST_SEED.get();
+        if (holder == null) LAST_SEED.set(holder = new long[1]);
+        holder[0] = seed;
     }
 
     public static void randomizeRandom() {
