@@ -14,12 +14,16 @@ import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.minecraft.client.renderer.BiomeColors;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -42,6 +46,24 @@ public class ColormapsManager extends ContentManager<IColorGetter> {
     public static final IColorGetter WATER_COLOR = new IColorGetter.ofColorResolver((s, l, p, i) ->
             l != null && p != null ? BiomeColors.getAverageWaterColor(l, p) : 0xFF000000,
             BiomeColors.WATER_COLOR_RESOLVER);
+
+    //tint the block had before polytone. dummy
+    public static final IColorGetter ORIGINAL_MARKER = new IColorGetter() {
+        @Override
+        public int getColor(BlockState state, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos, int tintIndex) {
+            return -1;
+        }
+
+        @Override
+        public int getColor(ItemStack stack, int tintIndex) {
+            return -1;
+        }
+
+        @Override
+        public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+            return -1;
+        }
+    };
 
     // custom defined colormaps
     private final MapRegistry<Supplier<IColorGetter>> colormaps = new MapRegistry<>("Polytone Colormaps");
@@ -132,6 +154,7 @@ public class ColormapsManager extends ContentManager<IColorGetter> {
         colormaps.register(ResourceLocation.parse("grass_color"), () -> GRASS_COLOR);
         colormaps.register(ResourceLocation.parse("foliage_color"), () -> FOLIAGE_COLOR);
         colormaps.register(ResourceLocation.parse("water_color"), () -> WATER_COLOR);
+        colormaps.register(ResourceLocation.parse("original"), () -> ORIGINAL_MARKER);
         //These create new incomplete ones every time
         colormaps.register(ResourceLocation.parse("biome_sample"), Colormap::createDefSquare);
         colormaps.register(ResourceLocation.parse("triangular_biome_sample"), Colormap::createDefTriangle);

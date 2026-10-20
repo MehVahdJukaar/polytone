@@ -158,8 +158,7 @@ public interface IColorGetter extends BlockColor, ItemColor {
         return sampleColor(state, pos, biome, null);
     }
 
-    default int sampleColorUncached(BlockAndTintGetter level, @Nullable BlockState state, BlockPos pos,
-                                    @Nullable Biome biome) {
+    default int sampleColorUncached(BlockAndTintGetter level, @Nullable BlockState state, BlockPos pos, @Nullable Biome biome) {
         return sampleColor(state, pos, biome, null);
     }
 }

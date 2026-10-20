@@ -241,6 +241,18 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
         // modifiers.clear();
     }
 
+    public @Nullable BlockColor getVanillaColor(Block block) {
+        BlockPropertyModifier old = vanillaProperties.get(block);
+        return old == null ? null : old.tintGetter().orElse(null);
+    }
+
+    //special case for color resolvers we replaced
+    public @Nullable ColorResolver getVanillaFoliageOrGrass(ColorResolver resolver) {
+        if (vanillaGrassColorResolver != null && resolver == BiomeColors.GRASS_COLOR_RESOLVER) return vanillaGrassColorResolver;
+        if (vanillaFoliageColorResolver != null && resolver == BiomeColors.FOLIAGE_COLOR_RESOLVER) return vanillaFoliageColorResolver;
+        return null;
+    }
+
     protected void maybeAssignToDefaultGrassAndFoliage(Block block, BlockColor color) {
         //TODO: this doesnt work with IndexCompoundColorGetter
         ColorResolver cc = null;
