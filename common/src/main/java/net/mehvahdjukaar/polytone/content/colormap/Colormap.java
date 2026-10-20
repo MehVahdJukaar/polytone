@@ -16,6 +16,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
@@ -139,7 +140,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     public void acceptTexture(@NotNull ArrayImage image) {
         this.image = image;
         if (defaultColor == null) {
-            this.defaultColor = sample(0.5f, 0.5f);
+            this.defaultColor = sample(0.5f, 0.5f) | 0xFF000000;
         }
     }
 
@@ -205,8 +206,14 @@ public final class Colormap implements IColorGetter, ColorResolver {
         float humidity = Mth.clamp(yGetter.evaluate(level, state, pos, biome, biomeMapper, item), 0, 1);
         int sampled = sample(humidity, temperature);
 
-        if (colorMult != null) {
-            sampled = colorMult.evaluate(sampled, level, state, pos, biome, biomeMapper, item);
+        boolean isHole = ARGB.alpha(sampled) == 0;
+        if (isHole && fallback != null) {
+            sampled = fallback.sampleColor(level, state, pos, biome, item);
+        } else {
+            sampled |= 0xFF000000;
+            if (colorMult != null) {
+                sampled = colorMult.evaluate(sampled, level, state, pos, biome, biomeMapper, item);
+            }
         }
         if (sink != null) {
             long pixel = pixelIndex(humidity, temperature);
