@@ -159,7 +159,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     }
 
     /**
-     * block tint, called by vanilla. with biome blend on it goes through the level tint cache, so the result is
+     * BlockTintSource method. called by vanilla. with biome blend on it goes through the level tint cache, so the result is
      * whatever is cached at that pos. use sampleColor instead when you need a fresh color, like particles or fog
      */
     @Override
@@ -206,23 +206,23 @@ public final class Colormap implements IColorGetter, ColorResolver {
     @Override
     public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos,
                            @Nullable Biome biome, @Nullable ItemStack item) {
-        return sampleColor(level, state, pos, biome, item, null, null);
+        return sampleColorInternal(level, state, pos, biome, item, null, null);
     }
 
     public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos,
                            @Nullable Biome biome, @Nullable ItemStack item, @Nullable SampleSink sink) {
-        return sampleColor(level, state, pos, biome, item, null, sink);
+        return sampleColorInternal(level, state, pos, biome, item, null, sink);
     }
 
     @Override
     public int sampleColorOver(int original, @Nullable BlockAndTintGetter level, @Nullable BlockState state,
                                @Nullable Vec3 pos, @Nullable Biome biome, @Nullable ItemStack item) {
-        return sampleColor(level, state, pos, biome, item, original, null);
+        return sampleColorInternal(level, state, pos, biome, item, original, null);
     }
 
-    private int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos,
-                            @Nullable Biome biome, @Nullable ItemStack item, @Nullable Integer original,
-                            @Nullable SampleSink sink) {
+    private int sampleColorInternal(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos,
+                                    @Nullable Biome biome, @Nullable ItemStack item, @Nullable Integer original,
+                                    @Nullable SampleSink sink) {
         float temperature = Mth.clamp(xGetter.evaluate(level, state, pos, biome, biomeMapper, item), 0, 1);
         float humidity = Mth.clamp(yGetter.evaluate(level, state, pos, biome, biomeMapper, item), 0, 1);
 
