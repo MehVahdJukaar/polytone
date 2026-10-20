@@ -16,6 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -148,7 +149,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     public void acceptTexture(@NotNull ArrayImage image) {
         this.image = image;
         if (defaultColor == null) {
-            this.defaultColor = sample(0.5f, 0.5f);
+            this.defaultColor = sample(0.5f, 0.5f) | 0xFF000000;
         }
     }
 
@@ -215,14 +216,29 @@ public final class Colormap implements IColorGetter, ColorResolver {
         float humidity = Mth.clamp(yGetter.evaluate(level, state, vPos, biome, biomeMapper, item), 0, 1);
         int sampled = sample(humidity, temperature);
 
-        if (colorMult != null) {
-            sampled = colorMult.getValue(sampled, state, pos, biome, biomeMapper, item);
+        boolean isHole = FastColor.ARGB32.alpha(sampled) == 0;
+        if (isHole && fallback != null) {
+            sampled = sampleFallback(state, pos, biome, item);
+        } else {
+            sampled |= 0xFF000000;
+            if (colorMult != null) {
+                sampled = colorMult.getValue(sampled, state, pos, biome, biomeMapper, item);
+            }
         }
         if (sink != null) {
             long pixel = pixelIndex(humidity, temperature);
             sink.report(temperature, humidity, (int) (pixel >>> 32), (int) (pixel & 0xFFFFFFFFL), sampled);
         }
         return sampled;
+    }
+
+    private int sampleFallback(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        BlockAndTintGetter level = levelHack.get();
+        //uncached so a colormap fallback gets our level for its script axes
+        if (item == null && level != null && pos != null) {
+            return fallback.sampleColorUncached(level, state, pos, biome);
+        }
+        return fallback.sampleColor(state, pos, biome, item);
     }
 
     public interface SampleSink {
