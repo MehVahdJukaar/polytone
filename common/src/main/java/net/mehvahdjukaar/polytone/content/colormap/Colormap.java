@@ -50,6 +50,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     private ArrayImage image = null;
     private @Nullable ResourceLocation explicitTargetTexture; //explicit targets
     private final @Nullable ColormapColorModulatorExpression colorMult;
+    private final @Nullable IColorGetter fallback;
 
     private final ThreadLocal<BlockState> stateHack = new ThreadLocal<>();
     private final ThreadLocal<Integer> yHack = new ThreadLocal<>();
@@ -65,7 +66,8 @@ public final class Colormap implements IColorGetter, ColorResolver {
             BiomeIdMapper.CODEC.optionalFieldOf("biome_id_mapper").forGetter(c -> Optional.of(c.biomeMapper)),
             ResourceLocation.CODEC.optionalFieldOf("texture_path").forGetter(c -> Optional.ofNullable(c.explicitTargetTexture)),
             ColormapColorModulatorExpression.CODEC.optionalFieldOf("color_modifier").forGetter(c -> Optional.ofNullable(c.colorMult)),
-            Codec.BOOL.optionalFieldOf("use_player_position", true).forGetter(c -> c.usePlayerPosition)
+            Codec.BOOL.optionalFieldOf("use_player_position", true).forGetter(c -> c.usePlayerPosition),
+            Codec.lazyInitialized(() -> Colormap.REFERENCE_OR_EXPRESSION).optionalFieldOf("fallback_colormap").forGetter(c -> Optional.ofNullable(c.fallback))
     ).apply(i, Colormap::new));
 
     public static final Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
@@ -98,7 +100,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     private Colormap(Optional<Integer> defaultColor, IColormapExp xGetter, IColormapExp yGetter,
                      boolean triangular, boolean rounds, Optional<Boolean> biomeBlend, Optional<BiomeIdMapper> biomeMapper,
                      Optional<ResourceLocation> explicitTargetTexture, Optional<ColormapColorModulatorExpression> colorMult,
-                     boolean usePlayerPosition) {
+                     boolean usePlayerPosition, Optional<IColorGetter> fallback) {
         this.defaultColor = defaultColor.orElse(null);
         this.usePlayerPosition = usePlayerPosition;
         this.xGetter = xGetter;
@@ -112,13 +114,14 @@ public final class Colormap implements IColorGetter, ColorResolver {
         this.hasBiomeBlend = biomeBlend.orElse(usesBiome);
         this.biomeMapper = biomeMapper.orElse(BiomeIdMapper.BY_INDEX);
         this.explicitTargetTexture = explicitTargetTexture.orElse(null);
+        this.fallback = fallback.orElse(null);
 
         if (this.hasBiomeBlend) PlatStuff.registerColorResolver(this);
     }
 
     private Colormap(IColormapExp xGetter, IColormapExp yGetter, boolean triangular) {
         this(Optional.empty(), xGetter, yGetter, triangular, true, Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), true);
+                Optional.empty(), true, Optional.empty());
     }
 
     public Colormap makeConcurrent() {
@@ -126,7 +129,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
                 this.yGetter.createConcurrent(), this.triangular,
                 this.rounds, Optional.of(this.hasBiomeBlend), Optional.of(this.biomeMapper),
                 Optional.ofNullable(this.explicitTargetTexture), Optional.ofNullable(this.colorMult == null ? null : this.colorMult.createConcurrent()),
-                this.usePlayerPosition);
+                this.usePlayerPosition, Optional.ofNullable(this.fallback == null ? null : this.fallback.makeConcurrent()));
         if (this.image != null) concurrentColormap.acceptTexture(this.image);
         return concurrentColormap;
     }
@@ -333,7 +336,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     public static Colormap createFixed() {
         return new Colormap(Optional.empty(), IColormapExp.ZERO,
                 IColormapExp.ZERO, false, true, Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), true);
+                Optional.empty(), Optional.empty(), Optional.empty(), true, Optional.empty());
     }
 
     //this is dumb. dont use
@@ -360,7 +363,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
                 IColormapExp.BIOME_ID,
                 IColormapExp.Y_LEVEL,
                 false, false, Optional.of(Boolean.TRUE), Optional.empty(), Optional.empty(),
-                Optional.empty(), true);
+                Optional.empty(), true, Optional.empty());
     }
 
     public static Colormap createDamage() {
