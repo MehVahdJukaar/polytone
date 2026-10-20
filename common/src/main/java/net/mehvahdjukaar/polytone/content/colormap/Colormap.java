@@ -140,7 +140,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     public void acceptTexture(@NotNull ArrayImage image) {
         this.image = image;
         if (defaultColor == null) {
-            this.defaultColor = sample(0.5f, 0.5f);
+            this.defaultColor = sample(0.5f, 0.5f) | 0xFF000000;
         }
     }
 
@@ -208,8 +208,14 @@ public final class Colormap implements IColorGetter, ColorResolver {
         float humidity = Mth.clamp(yGetter.evaluate(level, state, pos, biome, biomeMapper, item), 0, 1);
         int sampled = sample(humidity, temperature);
 
-        if (colorMult != null) {
-            sampled = colorMult.evaluate(sampled, level, state, pos, biome, biomeMapper, item);
+        boolean isHole = ARGB.alpha(sampled) == 0;
+        if (isHole && fallback != null) {
+            sampled = fallback.sampleColor(level, state, pos, biome, item);
+        } else {
+            sampled |= 0xFF000000;
+            if (colorMult != null) {
+                sampled = colorMult.evaluate(sampled, level, state, pos, biome, biomeMapper, item);
+            }
         }
         int color = ARGB.opaque(sampled);
 

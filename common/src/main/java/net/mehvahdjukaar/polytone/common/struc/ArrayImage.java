@@ -61,7 +61,7 @@ public record ArrayImage(int[][] pixels, int width, int height) {
                 for (int j = 0; j < width; ++j) {
                     int pixel = nativeImage.getPixel(j, i);
                     pixelMatrix[i][j] = ARGB.color(
-                            255,
+                            ARGB.alpha(pixel),
                             ARGB.red(pixel),
                             ARGB.green(pixel),
                             ARGB.blue(pixel)
