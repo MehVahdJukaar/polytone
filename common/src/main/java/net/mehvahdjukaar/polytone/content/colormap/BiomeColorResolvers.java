@@ -57,6 +57,15 @@ public enum BiomeColorResolvers {
         setter.accept(resolver);
     }
 
+    //special case for color resolvers we replaced
+    @Nullable
+    public static ColorResolver getVanillaFoliageOrGrass(ColorResolver resolver) {
+        for (var r : values()) {
+            if (r.vanilla != null && r.getter.get() == resolver) return r.vanilla;
+        }
+        return null;
+    }
+
     public static void resetAll() {
         for (var r : values()) {
             if (r.vanilla != null) r.setter.accept(r.vanilla);
