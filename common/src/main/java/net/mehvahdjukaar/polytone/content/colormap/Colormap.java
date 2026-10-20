@@ -168,13 +168,13 @@ public final class Colormap implements IColorGetter, ColorResolver {
         ColormapContext ctx = contextHack.get();
         ctx.startBlock(level, state, pos, originalOwner);
         try {
-            return getBlockColor(state, level, pos);
+            return getColorInternal(state, level, pos);
         } finally {
             ctx.endBlock();
         }
     }
 
-    private int getBlockColor(@Nullable BlockState state, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos) {
+    private int getColorInternal(@Nullable BlockState state, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos) {
         if (level == null) return defaultColor;
         if (pos == null && (usesPos || usesBiome)) {
             return defaultColor;
