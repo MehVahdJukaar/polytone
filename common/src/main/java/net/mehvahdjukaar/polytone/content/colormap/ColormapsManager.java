@@ -128,20 +128,6 @@ public class ColormapsManager extends ContentManager<IColorGetter> {
             decodeStrict(j.getValue(), j.getKey(), ops);
         }
 
-        //initialize recursive stuff
-        /*
-        for (var c : colormaps.getValues()) {
-            if (c.get() instanceof Colormap cm && cm.lazyFallback != null) {
-                try {
-                    cm.fallback = runCodec(ops, cm.lazyFallback);
-                } catch (Exception e) {
-                    Polytone.LOGGER.error("Failed to initialize colormap fallback", e);
-                }
-                cm.lazyFallback = null;
-            }
-        }*/
-
-
         // creates orphaned texture colormaps
         for (var orphan : contentTexture.orphans(textures, jsons.keySet())) {
             Colormap defaultColormap = Colormap.createDefTriangle();

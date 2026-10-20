@@ -50,6 +50,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     private ArrayImage image = null;
     private @Nullable Identifier explicitTargetTexture; //explicit targets
     private final @Nullable ColormapColorModulator colorMult;
+    private final @Nullable IColorGetter fallback;
 
     private final ThreadLocal<BlockState> stateHack = new ThreadLocal<>();
     private final ThreadLocal<Integer> yHack = new ThreadLocal<>();
@@ -67,7 +68,8 @@ public final class Colormap implements IColorGetter, ColorResolver {
             i.optional("biome_id_mapper", BiomeIdMapper.CODEC, c -> Optional.of(c.biomeMapper)),
             i.optional("texture_path", Identifier.CODEC, c -> Optional.ofNullable(c.explicitTargetTexture)),
             i.optional("color_modifier", ColormapColorModulator.CODEC, c -> Optional.ofNullable(c.colorMult)),
-            i.optional("use_player_position", Codec.BOOL, true, c -> c.usePlayerPosition)
+            i.optional("use_player_position", Codec.BOOL, true, c -> c.usePlayerPosition),
+            i.optional("fallback_colormap", Codec.lazyInitialized(() -> Colormap.REFERENCE_OR_EXPRESSION), c -> Optional.ofNullable(c.fallback))
     ).apply(i, Colormap::new));
 
     public static final SchemaCodec<IColorGetter> REFERENCE_OR_EXPRESSION = SchemaCodecs.withAlternative(
@@ -87,7 +89,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     private Colormap(Optional<Integer> defaultColor, IColormapExp xGetter, IColormapExp yGetter,
                      boolean triangular, boolean rounds, Optional<Boolean> biomeBlend, Optional<BiomeIdMapper> biomeMapper,
                      Optional<Identifier> explicitTargetTexture, Optional<ColormapColorModulator> colorMult,
-                     boolean usePlayerPosition) {
+                     boolean usePlayerPosition, Optional<IColorGetter> fallback) {
         this.defaultColor = defaultColor.orElse(null);
         this.usePlayerPosition = usePlayerPosition;
         this.xGetter = xGetter;
@@ -101,13 +103,14 @@ public final class Colormap implements IColorGetter, ColorResolver {
         this.hasBiomeBlend = biomeBlend.orElse(usesBiome);
         this.biomeMapper = biomeMapper.orElse(BiomeIdMapper.LEGACY);
         this.explicitTargetTexture = explicitTargetTexture.orElse(null);
+        this.fallback = fallback.orElse(null);
 
         if (this.hasBiomeBlend) PlatStuff.registerColorResolver(this);
     }
 
     private Colormap(IColormapExp xGetter, IColormapExp yGetter, boolean triangular) {
         this(Optional.empty(), xGetter, yGetter, triangular, true, Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), true);
+                Optional.empty(), true, Optional.empty());
     }
 
     // block tint, fluid tint need to have a concurrent expression.expression variable list needs to be thread safe
@@ -117,7 +120,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
                 this.yGetter.createConcurrent(), this.triangular,
                 this.rounds, Optional.of(this.hasBiomeBlend), Optional.of(this.biomeMapper),
                 Optional.ofNullable(this.explicitTargetTexture), Optional.ofNullable(this.colorMult == null ? null : this.colorMult.createConcurrent()),
-                this.usePlayerPosition);
+                this.usePlayerPosition, Optional.ofNullable(this.fallback == null ? null : this.fallback.makeConcurrent()));
         if (this.image != null) concurrentColormap.acceptTexture(this.image);
         return concurrentColormap;
     }
@@ -305,7 +308,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     public static Colormap createFixed() {
         return new Colormap(Optional.empty(), IColormapExp.ZERO,
                 IColormapExp.ZERO, false, true, Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), true);
+                Optional.empty(), Optional.empty(), Optional.empty(), true, Optional.empty());
     }
 
     //this is dumb. dont use
@@ -332,7 +335,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
                 IColormapExp.BIOME_ID,
                 IColormapExp.Y_LEVEL,
                 false, false, Optional.of(Boolean.TRUE), Optional.empty(), Optional.empty(),
-                Optional.empty(), true);
+                Optional.empty(), true, Optional.empty());
     }
 
     public static Colormap createDamage() {
