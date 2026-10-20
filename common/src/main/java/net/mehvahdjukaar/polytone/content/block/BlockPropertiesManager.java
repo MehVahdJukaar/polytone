@@ -17,6 +17,8 @@ import net.mehvahdjukaar.polytone.common.struc.PropertiesUtils;
 import net.mehvahdjukaar.polytone.content.colormap.BiomeColorResolvers;
 import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -222,6 +224,14 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
         }
         //clear as we dont need the anymore
         // modifiers.clear();
+    }
+
+    public @Nullable BlockTintSource getVanillaColor(BlockState state, BlockTintSource replacement) {
+        BlockPropertyModifier old = vanillaProperties.get(state.getBlock());
+        if (old == null || !(old.tintGetter().orElse(null) instanceof IColorGetter.OfLayers(var layers))) return null;
+        //same layer the replacement got registered in
+        int layer = Minecraft.getInstance().getBlockColors().getTintSources(state).indexOf(replacement);
+        return layer >= 0 && layer < layers.size() ? layers.get(layer) : null;
     }
 
     protected void maybeAssignToDefaultGrassAndFoliage(Block block, IColorGetter color) {
