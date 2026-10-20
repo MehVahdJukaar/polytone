@@ -86,7 +86,7 @@ public record ParticleColor(IColorGetter getter, CachePolicy policy) {
             blockKey = key;
             sectionVersion = ParticleLightCache.sectionVersion(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
             float[] unpack = ColorUtils.unpack(
-                    colormap.getter().sampleColorUncached(level, spawnState, pos, biome));
+                    colormap.getter().sampleColor(level, spawnState, pos, biome, null));
             p.rCol = unpack[0];
             p.gCol = unpack[1];
             p.bCol = unpack[2];

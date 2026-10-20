@@ -59,7 +59,7 @@ public record GpuParticleInitializer(IBlockExp size,
         v.alpha = (float) alpha.evaluate(level, pos, state);
         if (colormap.isPresent()) {
             BlockPos blockPos = BlockPos.containing(pos);
-            float[] tint = ColorUtils.unpack(colormap.get().sampleColorUncached(level, state, blockPos, level.getBiome(blockPos).value()));
+            float[] tint = ColorUtils.unpack(colormap.get().sampleColor(level, state, blockPos, level.getBiome(blockPos).value(), null));
             v.red *= tint[0];
             v.green *= tint[1];
             v.blue *= tint[2];

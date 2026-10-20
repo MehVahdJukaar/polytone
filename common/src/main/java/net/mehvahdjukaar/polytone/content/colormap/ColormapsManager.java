@@ -60,7 +60,8 @@ public class ColormapsManager extends ContentManager<IColorGetter> {
         }
 
         @Override
-        public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos,
+                               @Nullable Biome biome, @Nullable ItemStack item) {
             return -1;
         }
     };

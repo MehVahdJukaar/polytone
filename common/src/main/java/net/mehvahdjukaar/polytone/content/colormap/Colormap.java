@@ -15,14 +15,12 @@ import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Cursor3D;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.ColorResolver;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
@@ -169,6 +167,10 @@ public final class Colormap implements IColorGetter, ColorResolver {
         this.explicitTargetTexture = imageTarget.withPath(StrUtils.stripExtension(imageTarget.getPath()));
     }
 
+    /**
+     * block tint, called by vanilla. with biome blend on it goes through the level tint cache, so the result is
+     * whatever is cached at that pos. use sampleColor instead when you need a fresh color, like particles or fog
+     */
     @Override
     public int getColor(@Nullable BlockState state, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos, int i) {
         BlockColor original = fallback == ColormapsManager.ORIGINAL_MARKER && state != null ?
@@ -191,7 +193,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
         if (state == null && usesState) return defaultColor;
         if (hasBiomeBlend) {
             // ask the world to calculate color with blend using this.
-            // this will intern call calculateBlendedColor which will call getColor/sampleColor
+            // this will intern call getColor(biome, x, z) for each sample
             try {
                 return level.getBlockTint(pos, this);
             } catch (Exception e) {
@@ -209,16 +211,36 @@ public final class Colormap implements IColorGetter, ColorResolver {
             }
         }
 
-        return sampleColor(state, pos, biome, null);
+        return sampleColor(level, state, pos, biome, null);
     }
 
-    public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
-        return sampleColor(state, pos, biome, item, null);
+    @Override
+    public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos,
+                           @Nullable Biome biome, @Nullable ItemStack item) {
+        return sampleColor(level, state, pos, biome, item, null, null);
     }
 
-    public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome,
-                           @Nullable ItemStack item, @Nullable SampleSink sink) {
-        BlockAndTintGetter level = contextHack.get().level();
+    public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos,
+                           @Nullable Biome biome, @Nullable ItemStack item, @Nullable SampleSink sink) {
+        return sampleColor(level, state, pos, biome, item, null, sink);
+    }
+
+    @Override
+    public int sampleColorOver(int original, @Nullable BlockAndTintGetter level, @Nullable BlockState state,
+                               @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        return sampleColor(level, state, pos, biome, item, original, null);
+    }
+
+    @Deprecated(forRemoval = true)
+    public int sampleColorForPreview(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome,
+                                     @Nullable ItemStack item, @Nullable BlockAndTintGetter level,
+                                     @Nullable SampleSink sink) {
+        return sampleColor(level, state, pos, biome, item, sink);
+    }
+
+    private int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos,
+                            @Nullable Biome biome, @Nullable ItemStack item, @Nullable Integer original,
+                            @Nullable SampleSink sink) {
         Vec3 vPos = pos == null ? null : pos.getCenter();
         float temperature = Mth.clamp(xGetter.evaluate(level, state, vPos, biome, biomeMapper, item), 0, 1);
         float humidity = Mth.clamp(yGetter.evaluate(level, state, vPos, biome, biomeMapper, item), 0, 1);
@@ -226,25 +248,17 @@ public final class Colormap implements IColorGetter, ColorResolver {
         int sampled = sample(humidity, temperature);
 
         boolean isHole = FastColor.ARGB32.alpha(sampled) == 0;
-        boolean usesOriginal = fallback == ColormapsManager.ORIGINAL_MARKER;
-
 
         boolean didSampleFallback = false;
         if (isHole) {
-            if (usesOriginal) {
-                int original = contextHack.get().sampleOriginal();
-                if (original != 0) {
-                    sampled = original;
+            if (fallback == ColormapsManager.ORIGINAL_MARKER) {
+                int originalColor = sampleOriginal(original, biome, pos);
+                if (originalColor != 0) {
+                    sampled = originalColor;
                     didSampleFallback = true;
-                } else if (biome != null && pos != null) {
-                    ColorResolver replacement = Polytone.BLOCK_MODIFIERS.getVanillaFoliageOrGrass(this);
-                    if (replacement != null) {
-                        sampled = replacement.getColor(biome, pos.getX(), pos.getZ()) | 0xFF000000;
-                        didSampleFallback = true;
-                    }
                 }
             } else {
-                sampled = sampleFallback(state, pos, biome, item);
+                sampled = sampleFallback(level, state, pos, biome, item, original);
                 didSampleFallback = true;
             }
         }
@@ -262,67 +276,36 @@ public final class Colormap implements IColorGetter, ColorResolver {
         return sampled;
     }
 
-    private int sampleFallback(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
-        BlockAndTintGetter level = contextHack.get().level();
-        //uncached so a colormap fallback gets our level for its script axes
-        if (item == null && level != null && pos != null) {
-            return fallback.sampleColorUncached(level, state, pos, biome);
-        }
-        return fallback.sampleColor(state, pos, biome, item);
+    //0 when theres none
+    private int sampleOriginal(@Nullable Integer passedOriginal, @Nullable Biome biome, @Nullable BlockPos pos) {
+        if (passedOriginal != null) return passedOriginal | 0xFF000000;
+
+        int original = contextHack.get().sampleOriginal();
+        if (original != 0) return original;
+        if (biome == null || pos == null) return 0;
+
+        ColorResolver replacement = Polytone.BLOCK_MODIFIERS.getVanillaFoliageOrGrass(this);
+        if (replacement == null) return 0;
+        return replacement.getColor(biome, pos.getX(), pos.getZ()) | 0xFF000000;
+    }
+
+    private int sampleFallback(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos,
+                               @Nullable Biome biome, @Nullable ItemStack item, @Nullable Integer original) {
+        if (original != null) return fallback.sampleColorOver(original, level, state, pos, biome, item);
+        return fallback.sampleColor(level, state, pos, biome, item);
     }
 
     public interface SampleSink {
         void report(float x, float y, int col, int row, int argb);
     }
 
-    @Override
-    public int sampleColorUncached(BlockAndTintGetter level, @Nullable BlockState state, BlockPos pos,
-                                   @Nullable Biome biome) {
-        contextHack.get().setLevel(level);
-        return sampleColor(state, pos, biome, null);
-    }
-
-    public int sampleColorForPreview(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome,
-                                     @Nullable ItemStack item, @Nullable BlockAndTintGetter level,
-                                     @Nullable SampleSink sink) {
-        contextHack.get().setLevel(level);
-        return sampleColor(state, pos, biome, item, sink);
-    }
-
     // gets color for blend
     @Override
     public int getColor(Biome biome, double x, double z) {
-        //this actually gets called when sodium is on as we cant define our own blend method
+        //called per sample by the blend, vanilla's or sodium's
         ColormapContext ctx = contextHack.get();
-        return this.sampleColor(ctx.state(), BlockPos.containing(x, ctx.y(), z), biome, null);
-    }
-
-    //calculate color blend. could just use vanilla impl tbh since we got above hack for sodium anyway
-    public int calculateBlendedColor(Level level, BlockPos pos) {
-        //Same as vanilla impl. We could have just called it. Just here so we call sampleColor instead of getColor with pos instead of x z
-        ColormapContext ctx = contextHack.get();
-        ctx.setLevel(level);
-        int i = Minecraft.getInstance().options.biomeBlendRadius().get();
-        BlockState state = ctx.state();
-        if (i == 0) {
-            return this.sampleColor(state, pos, level.getBiome(pos).value(), null);
-        } else {
-            int j = (i * 2 + 1) * (i * 2 + 1);
-            int k = 0;
-            int l = 0;
-            int m = 0;
-            Cursor3D cursor3D = new Cursor3D(pos.getX() - i, pos.getY(), pos.getZ() - i, pos.getX() + i, pos.getY(), pos.getZ() + i);
-
-            int n;
-            for (BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos(); cursor3D.advance(); m += n & 255) {
-                mutableBlockPos.set(cursor3D.nextX(), cursor3D.nextY(), cursor3D.nextZ());
-                n = this.sampleColor(state, mutableBlockPos, level.getBiome(mutableBlockPos).value(), null);
-                k += (n & 16711680) >> 16;
-                l += (n & '\uff00') >> 8;
-            }
-
-            return (k / j & 255) << 16 | (l / j & 255) << 8 | m / j & 255;
-        }
+        BlockAndTintGetter level = ctx.level() != null ? ctx.level() : Minecraft.getInstance().level;
+        return sampleColor(level, ctx.state(), BlockPos.containing(x, ctx.y(), z), biome, null);
     }
 
 
@@ -366,8 +349,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
                 biome = level.getBiome(pos).value();
             }
         }
-        contextHack.get().setLevel(Minecraft.getInstance().level);
-        return sampleColor(null, pos, biome, itemStack);
+        return sampleColor(Minecraft.getInstance().level, null, pos, biome, itemStack);
     }
 
 

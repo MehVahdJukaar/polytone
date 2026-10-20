@@ -44,7 +44,8 @@ public interface IColorGetter extends BlockColor, ItemColor {
         }
 
         @Override
-        public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos,
+                               @Nullable Biome biome, @Nullable ItemStack item) {
             if (state != null && pos != null) {
                 return bc.getColor(state, null, pos, 0) | 0xff000000;
             }
@@ -77,7 +78,8 @@ public interface IColorGetter extends BlockColor, ItemColor {
         }
 
         @Override
-        public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos,
+                               @Nullable Biome biome, @Nullable ItemStack item) {
             if (biome != null) {
                 int x = pos == null ? 0 : pos.getX();
                 int z = pos == null ? 0 : pos.getZ();
@@ -99,7 +101,8 @@ public interface IColorGetter extends BlockColor, ItemColor {
         }
 
         @Override
-        public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos,
+                               @Nullable Biome biome, @Nullable ItemStack item) {
             return ic.getColor(item == null ? ItemStack.EMPTY : item, 0);
         }
     }
@@ -128,23 +131,20 @@ public interface IColorGetter extends BlockColor, ItemColor {
         }
 
         @Override
-        public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
-            return sampleColorOver(0, state, pos, biome);
+        public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos,
+                               @Nullable Biome biome, @Nullable ItemStack item) {
+            return sampleColorOver(0, level, state, pos, biome, item);
         }
 
         @Override
-        public int sampleColorOver(int vanillaColor, @Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome) {
-            Level level = Minecraft.getInstance().level;
-            if (level == null || pos == null) return -1;
+        public int sampleColorOver(int original, @Nullable BlockAndTintGetter level, @Nullable BlockState state,
+                                   @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+            LevelReader reader = level instanceof LevelReader lr ? lr : Minecraft.getInstance().level;
+            if (reader == null || pos == null) return -1;
             if (exp instanceof BlockExp blockExp) {
-                return (int) (long) blockExp.evaluate(level, pos.getCenter(), state, biome, vanillaColor);
+                return (int) (long) blockExp.evaluate(reader, pos.getCenter(), state, biome, original);
             }
-            return evaluateColor(level, pos.getCenter(), state);
-        }
-
-        @Override
-        public int sampleColorUncached(BlockAndTintGetter level, @Nullable BlockState state, BlockPos pos, @Nullable Biome biome) {
-            return getColor(state, level, pos, 0);
+            return evaluateColor(reader, pos.getCenter(), state);
         }
 
         private int evaluateColor(LevelReader level, Vec3 pos, @Nullable BlockState state) {
@@ -152,13 +152,12 @@ public interface IColorGetter extends BlockColor, ItemColor {
         }
     }
 
-    int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item);
+    //never blended or cached as it doesnt go through level tint cache
+    int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos,
+                    @Nullable Biome biome, @Nullable ItemStack item);
 
-    default int sampleColorOver(int vanillaColor, @Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome) {
-        return sampleColor(state, pos, biome, null);
-    }
-
-    default int sampleColorUncached(BlockAndTintGetter level, @Nullable BlockState state, BlockPos pos, @Nullable Biome biome) {
-        return sampleColor(state, pos, biome, null);
+    default int sampleColorOver(int original, @Nullable BlockAndTintGetter level, @Nullable BlockState state,
+                                @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        return sampleColor(level, state, pos, biome, item);
     }
 }

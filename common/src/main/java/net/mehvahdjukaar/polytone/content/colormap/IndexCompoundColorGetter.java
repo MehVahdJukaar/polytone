@@ -122,13 +122,16 @@ public class IndexCompoundColorGetter implements IColorGetter {
     }
 
     @Override
-    public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
-        IColorGetter getter = getters.get(-1);
-        if (getter == null) getter = getters.get(0);
-        if (getter != null) {
-            return getter.sampleColor(state, pos, biome, item);
+    public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos,
+                           @Nullable Biome biome, @Nullable ItemStack item) {
+        IColorGetter getter = forTintIndex(-1);
+        return getter != null ? getter.sampleColor(level, state, pos, biome, item) : -1;
+    }
 
-        }
-        return -1;
+    @Override
+    public int sampleColorOver(int original, @Nullable BlockAndTintGetter level, @Nullable BlockState state,
+                               @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        IColorGetter getter = forTintIndex(-1);
+        return getter != null ? getter.sampleColorOver(original, level, state, pos, biome, item) : -1;
     }
 }

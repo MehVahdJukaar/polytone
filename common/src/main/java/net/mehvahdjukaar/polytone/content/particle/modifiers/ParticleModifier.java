@@ -145,7 +145,7 @@ public class ParticleModifier {
             }
             //not getColor. that one goes through the block tint cache
             BlockPos pos = BlockPos.containing(particle.x, particle.y, particle.z);
-            float[] unpack = ColorUtils.unpack(colormap.sampleColorUncached(level, state, pos, level.getBiome(pos).value()));
+            float[] unpack = ColorUtils.unpack(colormap.sampleColor(level, state, pos, level.getBiome(pos).value(), null));
             particle.setColor(unpack[0], unpack[1], unpack[2]);
         }
         if (lifeGetter != null) {

@@ -241,8 +241,8 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
                 CubicSampler.gaussianSampleVec3(center, (qx, qy, qz) -> {
                     var biome = biomeManager.getNoiseBiomeAtQuart(qx, qy, qz).value();
                     if (colormap == null) return Vec3.fromRGB24(biome.getFogColor());
-                    int fogColor = colormap.sampleColorOver(biome.getFogColor(), null,
-                            BlockPos.containing(qx * 4, qy * 4, qz * 4), biome); //quart coords to block coord
+                    int fogColor = colormap.sampleColorOver(biome.getFogColor(), level, null,
+                            BlockPos.containing(qx * 4, qy * 4, qz * 4), biome, null); //quart coords to block coord
                     return Vec3.fromRGB24(fogColor);
                 }), brightness);
     }
@@ -266,8 +266,8 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
         BiomeManager biomeManager = level.getBiomeManager();
         return CubicSampler.gaussianSampleVec3(center, (qx, qy, qz) -> {
             var biome = biomeManager.getNoiseBiomeAtQuart(qx, qy, qz).value();
-            int skyColor = colormap.sampleColorOver(biome.getSkyColor(), null,
-                    BlockPos.containing(qx * 4, qy * 4, qz * 4), biome); //quart coords to block coord
+            int skyColor = colormap.sampleColorOver(biome.getSkyColor(), level, null,
+                    BlockPos.containing(qx * 4, qy * 4, qz * 4), biome, null); //quart coords to block coord
             return Vec3.fromRGB24(skyColor);
         });
     }
@@ -315,7 +315,7 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
         if (colormap == null) return null;
         var cameraBiome = ClientFrameTicker.getCameraBiome();
         if (cameraBiome == null) return null;
-        var color = colormap.sampleColor(null, ClientFrameTicker.getCameraPos(), cameraBiome.value(), null);
+        var color = colormap.sampleColor(level, null, ClientFrameTicker.getCameraPos(), cameraBiome.value(), null);
 
         float deltaTime = ClientFrameTicker.getDeltaTime();
         float interpolationFactor = deltaTime * 0.1f;

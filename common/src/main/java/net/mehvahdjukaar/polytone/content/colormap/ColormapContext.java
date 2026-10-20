@@ -29,13 +29,10 @@ public class ColormapContext {
     }
 
     public void endBlock() {
+        this.level = null;
         this.state = null;
         this.pos = null;
         this.original = null;
-    }
-
-    public void setLevel(@Nullable BlockAndTintGetter level) {
-        this.level = level;
     }
 
     public @Nullable BlockAndTintGetter level() {
