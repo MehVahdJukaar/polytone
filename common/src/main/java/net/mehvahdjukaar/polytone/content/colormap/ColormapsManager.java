@@ -24,6 +24,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.DryFoliageColor;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -61,6 +64,25 @@ public class ColormapsManager extends ContentManager<IColorGetter> {
             },
             BiomeColors.WATER_COLOR_RESOLVER);
 
+    //tint the block had before polytone. dummy
+    public static final IColorGetter ORIGINAL_MARKER = new IColorGetter() {
+        @Override
+        public int color(BlockState state) {
+            return -1;
+        }
+
+        @Override
+        public int getItemColor(ItemStack stack, int tintIndex) {
+            return -1;
+        }
+
+        @Override
+        public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos,
+                               @Nullable Biome biome, @Nullable ItemStack item) {
+            return -1;
+        }
+    };
+
     // custom defined colormaps
     private final MapRegistry<Supplier<IColorGetter>> colormaps = new MapRegistry<>("Polytone Colormaps");
     private final Map<IColorGetter, IColorGetter> concurrentColormaps = new HashMap<>();
@@ -97,6 +119,7 @@ public class ColormapsManager extends ContentManager<IColorGetter> {
         colormaps.register(Identifier.parse("foliage_color"), () -> FOLIAGE_COLOR);
         colormaps.register(Identifier.parse("dry_foliage_color"), () -> DRY_FOLIAGE_COLOR);
         colormaps.register(Identifier.parse("water_color"), () -> WATER_COLOR);
+        colormaps.register(Identifier.parse("original"), () -> ORIGINAL_MARKER);
         //These create new incomplete ones every time
         colormaps.register(Identifier.parse("biome_sample"), Colormap::createDefSquare);
         colormaps.register(Identifier.parse("triangular_biome_sample"), Colormap::createDefTriangle);
