@@ -30,8 +30,14 @@ public interface IColorGetter extends BlockTintSource, BarColor {
         return this;
     }
 
+    //never blended or cached as it doesnt go through level tint cache
     int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos,
                     @Nullable Biome biome, @Nullable ItemStack item);
+
+    default int sampleColorOver(int original, @Nullable BlockAndTintGetter level, @Nullable BlockState state,
+                                @Nullable Vec3 pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        return sampleColor(level, state, pos, biome, item);
+    }
 
     @Override
     default int color(BlockState state) {
@@ -164,11 +170,17 @@ public interface IColorGetter extends BlockTintSource, BarColor {
     record ExpressionColor(IBlockExp exp) implements IColorGetter {
         @Override
         public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome, @Nullable ItemStack item) {
+            return sampleColorOver(0, level, state, pos, biome, item);
+        }
+
+        @Override
+        public int sampleColorOver(int original, @Nullable BlockAndTintGetter level, @Nullable BlockState state,
+                                   @Nullable Vec3 pos, @Nullable Biome biome, @Nullable ItemStack item) {
             //item tints of leaves and grass come here with no pos
             if (pos == null) return evaluateWithoutPos(state == null ? Blocks.AIR.defaultBlockState() : state);
-            ClientLevel cl = Minecraft.getInstance().level;
+            ClientLevel cl = level instanceof ClientLevel c ? c : Minecraft.getInstance().level;
             if (cl == null) return -1;
-            return (int) (long) exp.evaluate(cl, pos, state, biome, 0);
+            return (int) (long) exp.evaluate(cl, pos, state, biome, original);
         }
 
         @Override
