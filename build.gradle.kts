@@ -1,4 +1,3 @@
-//triangle 1.4.252 pulls a loom snapshot that needs gradle 9.7
 buildscript {
     configurations.classpath {
         resolutionStrategy.eachDependency {
@@ -32,10 +31,9 @@ subprojects {
 
     apply(plugin = "com.possible-triangle.core")
     apply(plugin = "net.mehvahdjukaar.candlelight")
-    apply(plugin = "dev.mixinmcp.decompile")
 
     dependencies {
-        compileOnly("net.mehvahdjukaar:candlelight:1.2.1")
+        compileOnly("net.mehvahdjukaar:candlelight:1.2.4")
     }
 
     //sodium shenanigans
