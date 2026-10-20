@@ -85,10 +85,8 @@ public record ParticleColor(IColorGetter getter, CachePolicy policy) {
         private void sampleAndApply(ClientLevel level, @Nullable BlockState state, BlockPos pos) {
             blockKey = pos.asLong();
             sectionVersion = ParticleLightCache.sectionVersion(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
-            IColorGetter getter = colormap.getter();
-            int color = state != null ? getter.colorInWorld(state, level, pos)
-                    : getter.sampleColor(level, null, pos.getCenter(), null, null);
-            float[] unpack = ColorUtils.unpack(color);
+            float[] unpack = ColorUtils.unpack(
+                    colormap.getter().sampleColor(level, state, pos.getCenter(), level.getBiome(pos).value(), null));
             p.rCol = unpack[0];
             p.gCol = unpack[1];
             p.bCol = unpack[2];

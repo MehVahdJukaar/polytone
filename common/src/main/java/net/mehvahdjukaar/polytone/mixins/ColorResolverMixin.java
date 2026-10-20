@@ -39,17 +39,14 @@ public abstract class ColorResolverMixin extends Level {
     @Inject(method = "getBlockTint", at = @At("HEAD"))
     private void polytone$makeCachesForColormaps(BlockPos pos, ColorResolver resolver, CallbackInfoReturnable<Integer> info) {
         if (this.tintCaches.containsKey(resolver)) return;
-        BlockTintCache cache;
-        if (resolver instanceof Colormap c) {
-            cache = new BlockTintCache(p -> c.calculateBlendedColor((ClientLevel) (Object) this, p.getCenter()));
-        } else if (resolver == BiomeColors.GRASS_COLOR_RESOLVER
+        boolean needsCache = resolver instanceof Colormap
+                || resolver == BiomeColors.GRASS_COLOR_RESOLVER
                 || resolver == BiomeColors.FOLIAGE_COLOR_RESOLVER
                 || resolver == BiomeColors.DRY_FOLIAGE_COLOR_RESOLVER
-                || resolver == BiomeColors.WATER_COLOR_RESOLVER) {
-            cache = new BlockTintCache(p -> this.calculateBlockTint(p, resolver));
-        } else {
-            return;
-        }
+                || resolver == BiomeColors.WATER_COLOR_RESOLVER;
+        if (!needsCache) return;
+
+        var cache = new BlockTintCache(p -> this.calculateBlockTint(p, resolver));
         //make copy of the map and assigns it as it has limited capacity
         var newMap = new Object2ObjectArrayMap<>(this.tintCaches);
         newMap.put(resolver, cache);
