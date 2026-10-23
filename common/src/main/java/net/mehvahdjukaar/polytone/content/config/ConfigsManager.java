@@ -58,6 +58,7 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     public final OptionHolder<Float> voxelVolumeHeight = builtinConfig("voxel_volume_height", "shaders", 128, 64, 256, 16);
     public final OptionHolder<Float> farLightRange = builtinConfig("far_light_range", "shaders", 512, 0, 1024, 64);
     public final OptionHolder<Float> lightSpreadSteps = builtinConfig("light_spread_steps", "shaders", 3, 1, 15, 1);
+    public final OptionHolder<Boolean> textureLightColors = builtinConfig("texture_light_colors", "shaders", false);
     public final OptionHolder<SmoothEntityLighting> smoothEntityLighting = builtinConfig("smooth_entity_lighting", "shaders", SmoothEntityLighting.LOCAL_PLAYER);
 
     public final ConfigBubbleManager bubbleManager = new ConfigBubbleManager();
@@ -109,7 +110,7 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     }
 
     private void registerBuiltins(MapRegistry<OptionHolder<?>> reg) {
-        for (OptionHolder<?> b : List.of(lenientLoading, legacyParsing, particlesThrottle, autoParticleRateLimit, particlesOffThread, showConfigButton, postChainsAfterHand, attributeTimeSmoothing, coloredLightsBackend, voxelVolumeWidth, voxelVolumeHeight, farLightRange, lightSpreadSteps, smoothEntityLighting)) {
+        for (OptionHolder<?> b : List.of(lenientLoading, legacyParsing, particlesThrottle, autoParticleRateLimit, particlesOffThread, showConfigButton, postChainsAfterHand, attributeTimeSmoothing, coloredLightsBackend, voxelVolumeWidth, voxelVolumeHeight, farLightRange, lightSpreadSteps, textureLightColors, smoothEntityLighting)) {
             b.loadFromJson(configFileSnapshot);
             reg.unregister(b.fileId);
             reg.register(b.fileId, b);
