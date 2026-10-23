@@ -206,7 +206,7 @@ final class ConfigPresets {
             option.set(value);
         }
 
-        boolean matches() {
+     private    boolean matches() {
             return option.get().equals(value);
         }
     }
