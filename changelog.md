@@ -1,1 +1,1 @@
-- added fallback colormap system
+- added config that makes it so mod generates light colors from a block texture

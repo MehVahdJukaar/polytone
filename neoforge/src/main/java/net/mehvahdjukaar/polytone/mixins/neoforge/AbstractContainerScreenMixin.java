@@ -33,8 +33,10 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 
     @Shadow
     protected int inventoryLabelY;
-    @Shadow protected int leftPos;
-    @Shadow protected int topPos;
+    @Shadow
+    public int leftPos;
+    @Shadow
+    public int topPos;
     @Shadow protected int imageWidth;
     @Shadow protected int imageHeight;
     @Unique
@@ -54,14 +56,12 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
             target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderSlotHighlight(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/world/inventory/Slot;IIF)V",
             value = "INVOKE"
     ))
-    public boolean polytone$slotifyColor(AbstractContainerScreen screen, GuiGraphics poseStack, Slot slot, int x, int y, float partialTicks) {
+    public boolean polytone$slotifyColor(AbstractContainerScreen<?> screen, GuiGraphics poseStack, Slot slot, int x, int y, float partialTicks) {
         if (slot == null) return true;
         return Polytone.SLOTIFY.maybeChangeColor(screen, slot,
                 poseStack, x, y, 0);
     }
 
-    // Undo the previously applied size delta before vanilla init recomputes leftPos/labels from the
-    // (now pristine) image size, so everything re-bakes from a clean base on every rebuildWidgets.
     @Inject(method = "init", at = @At("HEAD"))
     public void polytone$undoSizeOffsets(CallbackInfo ci) {
         this.imageWidth -= polytone$appliedWOff;
