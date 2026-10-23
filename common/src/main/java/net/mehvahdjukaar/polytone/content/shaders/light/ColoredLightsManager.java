@@ -18,6 +18,7 @@ import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -74,11 +75,18 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
     private volatile BlockLightSource blockLights;
     @Nullable
     private volatile MovingLightSource<Particle> particleLights;
+    private volatile Map<Block, Integer> textureLightColors = Map.of();
 
     public ColoredLightsManager() {
         super(Spec.of("Colored Light", () -> ColoredLightEntry.CODEC)
                 .folders("colored_lights")
                 .wikiPage("Colored-Lights"));
+    }
+
+    @Override
+    protected AssetsFiles prepare(ResourceManager resourceManager) {
+        textureLightColors = Polytone.CONFIGS.textureLightColors.get() ? TextureLightColors.detect(resourceManager) : Map.of();
+        return super.prepare(resourceManager);
     }
 
     @Override
@@ -201,6 +209,7 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
 
     @Override
     protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
+        addTextureLights();
         flattenAliases();
         if (!hasAnyLights()) return;
         var backend = Polytone.CONFIGS.coloredLightsBackend.get();
@@ -216,6 +225,16 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
         if (hasEntityLights()) sources.add(MovingLightSource.entities(storage));
         if (!particles.isEmpty()) sources.add(particleLights = MovingLightSource.particles(storage));
         lightSources = sources;
+    }
+
+    //lowest priority, after packs and mod callbacks
+    private void addTextureLights() {
+        textureLightColors.forEach((block, color) -> {
+            boolean alreadyLit = blocks.containsKey(block) || blockStateAliases.containsKey(block.defaultBlockState());
+            if (alreadyLit) return;
+            addBlockLight(block, (state, pos, level) -> state.getLightEmission() > 0 ?
+                    new ResolvedPointLight(color, state.getLightEmission()) : null, AlwaysTrueTest.INSTANCE);
+        });
     }
 
     private void flattenAliases() {

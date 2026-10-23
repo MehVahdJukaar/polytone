@@ -24,12 +24,12 @@ class ConfigPresets {
     @Nullable
     private final String section;
 
-    ConfigPresets(String modId, @Nullable String section) {
+    protected ConfigPresets(String modId, @Nullable String section) {
         this.modId = modId;
         this.section = section;
     }
 
-    <T> void collect(OptionInstance<T> option, boolean sectionScoped) {
+   protected  <T> void collect(OptionInstance<T> option, boolean sectionScoped) {
         if (!(option.values() instanceof PolyConfig<T> c)) return;
         Map<String, T> declared = sectionScoped ? c.getSectionPresets() : c.getPresets();
         for (var e : declared.entrySet()) {
@@ -38,11 +38,11 @@ class ConfigPresets {
         }
     }
 
-    boolean isEmpty() {
+    protected boolean isEmpty() {
         return byName.isEmpty();
     }
 
-    OptionInstance<Integer> makeOption(Runnable onApplied) {
+    protected OptionInstance<Integer> makeOption(Runnable onApplied) {
         List<String> names = List.copyOf(byName.keySet());
         Component named = translate("");
         Component caption = named != null ? named : Component.translatable("polytone.preset");
@@ -126,11 +126,11 @@ class ConfigPresets {
     }
 
     private record Action<T>(OptionInstance<T> option, T value) {
-        void apply() {
+      private    void apply() {
             option.set(value);
         }
 
-        boolean matches() {
+     private    boolean matches() {
             return option.get().equals(value);
         }
     }
