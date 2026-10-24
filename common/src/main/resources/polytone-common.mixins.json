@@ -41,6 +41,7 @@
     "ItemStackMixin",
     "LeashMixin",
     "LevelRendererMixin",
+    "LightningBoltRendererMixin",
     "LightTextureMixin",
     "LocalPlayerMixin",
     "MinecraftMixin",

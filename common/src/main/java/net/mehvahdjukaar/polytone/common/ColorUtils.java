@@ -70,6 +70,12 @@ public class ColorUtils {
         return new float[]{n / 255.0F, o / 255.0F, p / 255.0F};
     }
 
+    public static float[] unpackWithAlpha(int value, float fallbackAlpha) {
+        int alpha = value >>> 24;
+        return new float[]{((value >> 16) & 255) / 255.0F, ((value >> 8) & 255) / 255.0F, (value & 255) / 255.0F,
+                alpha == 0 ? fallbackAlpha : alpha / 255.0F};
+    }
+
 
     public static Biome.ClimateSettings getClimateSettings(Level level, BlockPos pos){
         return getClimateSettings(level.getBiome(pos).value());

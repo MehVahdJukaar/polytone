@@ -1,9 +1,14 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.content.particle.custom.ParticleLightCache;
 import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTracker;
 import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticleHandler;
@@ -12,6 +17,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -33,6 +39,21 @@ public class LevelRendererMixin {
     private float polytone$modifyCloudHeight(float original) {
         Float f = Polytone.DIMENSION_MODIFIERS.modifyCloudHeight(this.level);
         return f != null ? f : original;
+    }
+
+    @WrapOperation(method = "renderHitOutline",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/renderer/LevelRenderer;renderShape(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;Lnet/minecraft/world/phys/shapes/VoxelShape;DDDFFFF)V"))
+    private void polytone$changeOutlineColor(PoseStack poseStack, VertexConsumer consumer, VoxelShape shape,
+                                             double x, double y, double z, float r, float g, float b, float a,
+                                             Operation<Void> original) {
+        Integer c = Polytone.COLORS.getBlockOutlineColor();
+        if (c == null) {
+            original.call(poseStack, consumer, shape, x, y, z, r, g, b, a);
+            return;
+        }
+        float[] col = ColorUtils.unpackWithAlpha(c, a);
+        original.call(poseStack, consumer, shape, x, y, z, col[0], col[1], col[2], col[3]);
     }
 
     @Inject(method = "renderSky", at = @At(value = "INVOKE", shift = At.Shift.AFTER,
