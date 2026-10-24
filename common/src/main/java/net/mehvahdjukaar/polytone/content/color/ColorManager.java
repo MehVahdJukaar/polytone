@@ -15,11 +15,13 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.mehvahdjukaar.polytone.common.expressions.impl.EntityExp;
+import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
 import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
 import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.struc.Vec3f;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
@@ -103,6 +105,10 @@ public class ColorManager extends SingleFileContentManager<Void> {
     private Float blindnessFogDistance = null;
     @Nullable
     private Float darknessFogDistance = null;
+    @Nullable
+    private ISimpleExp starSize = null;
+    @Nullable
+    private Integer starCount = null;
 
     public ColorManager() {
         //determines the priority. last applied will be the one with highest priority. Polytone is last applied one
@@ -135,6 +141,14 @@ public class ColorManager extends SingleFileContentManager<Void> {
 
     public float getDarknessFogDistance(float vanilla) {
         return darknessFogDistance != null ? darknessFogDistance : vanilla;
+    }
+
+    public float getStarSize(float vanilla) {
+        return starSize != null ? (float) starSize.evaluate() : vanilla;
+    }
+
+    public int getStarCount(int vanilla) {
+        return starCount != null ? starCount : vanilla;
     }
 
     public Integer getXpBar() {
@@ -184,6 +198,8 @@ public class ColorManager extends SingleFileContentManager<Void> {
                 case "powder_snow_fog" -> powderSnowFogColor = parseHex(v);
                 case "blindness_fog_distance" -> blindnessFogDistance = v.getAsFloat();
                 case "darkness_fog_distance" -> darknessFogDistance = v.getAsFloat();
+                case "star_size" -> starSize = decodeSimpleExp(v);
+                case "star_count" -> starCount = Math.max(0, (int) decodeSimpleExp(v).evaluate());
             }
         });
 
@@ -476,6 +492,10 @@ public class ColorManager extends SingleFileContentManager<Void> {
         return Collections.emptySet();
     }
 
+    private static ISimpleExp decodeSimpleExp(JsonElement v) {
+        return ISimpleExp.CODEC.decode(JsonOps.INSTANCE, v).getOrThrow().getFirst();
+    }
+
     private static int parseHex(JsonElement obj) {
         return ColorUtils.CODEC.decode(JsonOps.INSTANCE, obj)
                 .getOrThrow()
@@ -489,7 +509,8 @@ public class ColorManager extends SingleFileContentManager<Void> {
 
     @Override
     protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
-
+        //star mesh is baked once
+        Minecraft.getInstance().levelRenderer.createStars();
     }
 
     @Override
@@ -515,6 +536,8 @@ public class ColorManager extends SingleFileContentManager<Void> {
         powderSnowFogColor = null;
         blindnessFogDistance = null;
         darknessFogDistance = null;
+        starSize = null;
+        starCount = null;
         // map colors
         for (var e : vanillaMapColors.entrySet()) {
             MapColor color = e.getKey();

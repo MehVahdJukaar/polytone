@@ -22,6 +22,9 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Constant;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -104,6 +107,18 @@ public class LevelRendererMixin {
                                              org.joml.Matrix4f frustumMatrix, org.joml.Matrix4f projectionMatrix,
                                              CallbackInfo ci) {
         PolytoneAsyncParticleHandler.awaitTicks();
+    }
+
+    @ModifyConstant(method = "drawStars", constant = @Constant(intValue = 1500))
+    private int polytone$modifyStarCount(int original) {
+        return Polytone.COLORS.getStarCount(original);
+    }
+
+
+
+    @ModifyVariable(method = "drawStars", at = @At("STORE"), ordinal = 4)
+    private float polytone$modifyStarSize(float original) {
+        return Polytone.COLORS.getStarSize(original);
     }
 
     @Inject(method = "setSectionDirty(IIIZ)V", at = @At("HEAD"))
