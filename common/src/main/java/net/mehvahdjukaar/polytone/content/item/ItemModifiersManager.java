@@ -23,8 +23,6 @@ public class ItemModifiersManager extends ContentManager<ItemModifier> {
     private final Map<Item, ItemModifier> vanillaProperties = new HashMap<>();
 
 
-    // The item tint part (ItemModifier::getTint) from 1.21.1 isn't ported: that item-tint colormap
-    // feature doesn't exist on 1.21.11 yet, so only the bar-color texture is associated here.
     private static final TextureRole<ItemModifier> BAR =
             TextureRole.suffix("_bar", ItemModifier::getBarColor);
 
@@ -118,7 +116,7 @@ public class ItemModifiersManager extends ContentManager<ItemModifier> {
             }
 
             //if (!modifier.customModels().isEmpty()) {
-            //    Polytone.ITEM_MODELS.addModel(colormapToFill, modifier.customModels());
+            //    Polytone.ITEM_MODELS.addModel(target, modifier.customModels());
             //}
         }
         if (!vanillaProperties.isEmpty()) {

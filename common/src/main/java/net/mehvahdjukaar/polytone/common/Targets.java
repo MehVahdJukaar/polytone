@@ -86,7 +86,7 @@ public record Targets(List<Entry> entries) {
                 } catch (Exception e) {
                     boolean futureId = e instanceof MissingEntryException me && Polytone.isFutureId(me.id);
                     if (!futureId && !Polytone.CONFIGS.isLenientLoading()){
-                        throw new IllegalStateException("Failed to parse some colormapToFill(s) for polytone file " + fileId, e);
+                        throw new IllegalStateException("Failed to parse some target(s) for polytone file " + fileId, e);
                     }
                 }
             }

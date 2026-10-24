@@ -22,9 +22,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-// Preview installs the edited modifier as a ModifierOverride, so it stands in for the saved file with no
-// reload: attributes land at once, item contents on the next tab rebuild. Picking turns the creative
-// screen into an item picker.
+//for nautulus basically
 public final class CreativeTabPreview implements CreativeTabsModifiersManager.ModifierOverride {
 
     private static final CreativeTabPreview INSTANCE = new CreativeTabPreview();
@@ -33,14 +31,10 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
     @Nullable
     private static Consumer<ItemStack> pickListener;
 
-    // Latest value decoded from the editor form, plus the tabs it resolves to. Drives the overlay; only
-    // the copy handed to pushPreview is ever applied to the game.
     @Nullable
     private static CreativeTabModifier edited;
     private static Set<Identifier> editedTargets = Set.of();
 
-    // Items the author has picked but not yet written into the form, so a long picking session stays
-    // readable in game.
     private static final Set<Identifier> pending = new LinkedHashSet<>();
 
     @Nullable
@@ -62,13 +56,11 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
         restore.put(tab, previous);
     }
 
-    // null drops a previous preview; marshals to the render thread
     public static void pushPreview(@Nullable Identifier fileId, @Nullable CreativeTabModifier mod) {
         Minecraft.getInstance().execute(() -> INSTANCE.install(fileId, mod));
     }
 
     private void install(@Nullable Identifier fileId, @Nullable CreativeTabModifier mod) {
-        // Undo the attribute writes of the previous preview before installing the new one.
         for (var e : restore.entrySet()) {
             e.getValue().applyAttributes(e.getKey());
         }
@@ -77,8 +69,6 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
         previewed = mod;
         previewedTargets = mod == null ? Set.of() : resolveTargets(fileId, mod);
         Polytone.CREATIVE_TABS_MODIFIERS.setOverride(mod == null ? null : this);
-        // No per-tab listener registration needed: CreativeModeTabMixin hooks buildContents itself,
-        // so every tab (modified or not) already runs through us.
         CreativeModeTabs.CACHED_PARAMETERS = null; // makes the open screen rebuild its contents next tick
     }
 
@@ -164,8 +154,6 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
                 : null;
     }
 
-    // The tabs a modifier applies to. This runs on every keystroke in the editor, on files that are
-    // half written by definition, so it stays quiet: no implicit colormapToFill simply means no tabs yet.
     private static Set<ResourceKey<CreativeModeTab>> resolveTargets(@Nullable Identifier fileId,
                                                                     CreativeTabModifier mod) {
         Identifier id = fileId != null ? fileId : Polytone.res("editor_preview");
