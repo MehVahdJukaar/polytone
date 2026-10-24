@@ -1,1 +1,2 @@
-- added config that makes it so mod generates light colors from a block texture
+ more 1.21.1 ports
+ includes more custom colors.json features
