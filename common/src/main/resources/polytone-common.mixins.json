@@ -60,6 +60,7 @@
     "LeashMixin",
     "LevelExtractorMixin",
     "LevelRendererMixin",
+    "LightningBoltRendererMixin",
     "ShaderManagerMixin",
     "SignRendererMixin",
     "LocalPlayerMixin",
