@@ -10,9 +10,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
-// ItemToTabEvent implementation that operates directly on a creative tab's final item collections, instead of
-// being part of a loader event. It is invoked from CreativeModeTabMixin at the tail of
-// CreativeModeTab#buildContents, which is guaranteed to run after every other mod's NeoForge/Fabric tab event.
 public record TabContentsEvent(ResourceKey<CreativeModeTab> tab,
                                Collection<ItemStack> displayItems,
                                Collection<ItemStack> searchItems) implements ItemToTabEvent {
@@ -41,8 +38,6 @@ public record TabContentsEvent(ResourceKey<CreativeModeTab> tab,
         insertInto(searchItems, target, after, items, append);
     }
 
-    // The tab collections are insertion-ordered sets, so we rebuild them to place items at a
-    // specific position relative to a colormapToFill item.
     private static void insertInto(Collection<ItemStack> coll, @Nullable Predicate<ItemStack> target,
                                    boolean after, List<ItemStack> items, boolean append) {
         if (append || coll.isEmpty()) {
@@ -57,7 +52,7 @@ public record TabContentsEvent(ResourceKey<CreativeModeTab> tab,
                 if (!after) break; // first match when inserting "before"; last match when "after"
             }
         }
-        if (index < 0) return; // colormapToFill not present in this collection, leave it untouched
+        if (index < 0) return; // target not present in this collection, leave it untouched
         list.addAll(after ? index + 1 : index, items);
         coll.clear();
         coll.addAll(list);

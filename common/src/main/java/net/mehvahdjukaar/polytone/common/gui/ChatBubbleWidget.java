@@ -9,36 +9,24 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.CommonColors;
 
-// A rounded chat-bubble widget: white interior, black outline, fixed height, any width. The body sprite is a
-// horizontal nine-slice (left cap + stretchable center + right cap, see chat_bubble_body.png.mcmeta), so the
-// bubble grows horizontally as its text gets longer while keeping its rounded caps pixel-perfect.
 public class ChatBubbleWidget extends AbstractWidget {
 
     private static final Identifier BODY = Polytone.res("widget/chat_bubble_body");
     private static final Identifier TAIL = Polytone.res("widget/chat_bubble_tail");
 
-    // Fixed native height of the bubble sprite. Render at this height for the horizontal-only slice path.
     public static final int HEIGHT = 12;
     private static final int TAIL_WIDTH = 7;
     private static final int TAIL_HEIGHT = 4;
-    // Apex (downward point) column inside the tail sprite
-    private static final int TAIL_TIP = 3;
 
-    // Horizontal gap between the rounded caps and the text. Keeps text clear of the corner curve.
     private static final int PADDING = 6;
-    // Keep the tail this far in from each cap, so it stays over the bubble's flat (non-rounded) span.
     private static final int CAP_INSET = 3;
-    // Keep the whole assembly this far from the screen edges
     private static final int SCREEN_MARGIN = 3;
-    // Vertical gap between the tail's tip and the pointed-at colormapToFill
-    private static final int TIP_GAP = 1;
-
-    // Period of one full up-down bob, in milliseconds
     private static final long BOB_PERIOD_MS = 2200L;
 
     private final Font font;
-    private int textColor = 0xFF000000; // black, since the interior is white
+    private int textColor = CommonColors.BLACK;
     private boolean animated = false;
 
     public ChatBubbleWidget(int x, int y, Component message) {
@@ -50,68 +38,54 @@ public class ChatBubbleWidget extends AbstractWidget {
         return Minecraft.getInstance().font.width(message) + PADDING * 2;
     }
 
-    // Update the displayed text and grow/shrink the bubble to fit it
     public void setText(Component message) {
         this.setMessage(message);
         this.setWidth(measureWidth(message));
     }
 
-    public void setTextColor(int argb) {
-        this.textColor = argb;
-    }
-
-    // When enabled, the bubble slowly bobs up 1px and back
     public ChatBubbleWidget setAnimated(boolean animated) {
         this.animated = animated;
         return this;
     }
 
-    // Current vertical bob offset: 0 or -1 (up), oscillating slowly when animated
+    public ChatBubbleWidget setTextColor(int textColor) {
+        this.textColor = textColor;
+        return this;
+    }
+
     private int bobOffset() {
         if (!animated) return 0;
         double phase = (System.currentTimeMillis() % BOB_PERIOD_MS) / (double) BOB_PERIOD_MS;
-        return -(int) Math.round((1 - Math.cos(phase * 2 * Math.PI)) / 2); // smooth 0 -> -1 -> 0
+        return -(int) Math.round((1 - Math.cos(phase * 2 * Math.PI)) / 2);
     }
 
     @Override
     protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        // Drawn at native HEIGHT -> the nine-slice renderer uses its horizontal-only branch:
-        // [left cap][stretched center][right cap].
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BODY, this.getX(), this.getY(), this.getWidth(), this.getHeight());
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BODY, getX(), getY(), getWidth(), getHeight());
 
-        int textX = this.getX() + PADDING;
-        int textY = this.getY() + (this.getHeight() - this.font.lineHeight) / 2 + 1;
-        graphics.text(this.font, this.getMessage(), textX, textY, this.textColor, false);
+        int textX = getX() + PADDING;
+        int textY = getY() + (getHeight() - font.lineHeight) / 2 + 1;
+        graphics.text(font, getMessage(), textX, textY, textColor, false);
     }
 
-    // Place this bubble above colormapToFill, tail pointing down at its center, and draw it - like a tooltip, but it
-    // never clips off-screen. The bubble is clamped to stay on screen while the tail stays locked onto the
-    // colormapToFill (kept within the bubble's flat span) to preserve the illusion.
     public void renderPointingAt(GuiGraphicsExtractor graphics, AbstractWidget target, int screenWidth,
                                  int mouseX, int mouseY, float partialTick) {
         int bubbleW = this.getWidth();
-        int targetCenterX = target.getX() + target.getWidth() / 2;
+        int centerX = target.getX() + target.getWidth() / 2;
+        int tailY = target.getY() - TAIL_HEIGHT + bobOffset();
+        int bubbleY = tailY - HEIGHT + 1;
 
-        // vertical stack (top -> bottom): bubble, tail (overlapping its bottom outline), gap, colormapToFill
-        int bob = bobOffset(); // bubble + tail move together so the illusion holds
-        int tailY = target.getY() - TIP_GAP - TAIL_HEIGHT + 1 + bob; // tip just above the colormapToFill
-        int bubbleY = tailY - HEIGHT + 1;                            // bubble bottom overlaps tail top by 1px
-
-        // center the bubble over the colormapToFill, then clamp it to stay fully on screen (tooltip-style)
-        int bubbleX = targetCenterX - bubbleW / 2;
+        // clamp throws when min > max
         int maxX = screenWidth - bubbleW - SCREEN_MARGIN;
-        bubbleX = maxX < SCREEN_MARGIN ? SCREEN_MARGIN
-                : Math.max(SCREEN_MARGIN, Math.min(bubbleX, maxX));
+        int bubbleX = maxX < SCREEN_MARGIN ? SCREEN_MARGIN : Math.clamp(centerX - bubbleW / 2, SCREEN_MARGIN, maxX);
 
-        // point the tail's tip at the colormapToFill, but keep the tail within the bubble's flat span
-        int tailX = targetCenterX - TAIL_TIP;
         int tailMin = bubbleX + CAP_INSET;
         int tailMax = bubbleX + bubbleW - TAIL_WIDTH - CAP_INSET;
-        tailX = tailMax < tailMin ? tailMin : Math.max(tailMin, Math.min(tailX, tailMax));
+        int tailX = tailMax < tailMin ? tailMin : Math.clamp(centerX - 3, tailMin, tailMax);
 
         this.setX(bubbleX);
         this.setY(bubbleY);
-        this.extractRenderState(graphics, mouseX, mouseY, partialTick); // body + text
+        this.extractRenderState(graphics, mouseX, mouseY, partialTick);
 
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, TAIL, tailX, tailY, TAIL_WIDTH, TAIL_HEIGHT);
     }

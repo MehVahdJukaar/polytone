@@ -28,8 +28,8 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
     private final Map<Class<?>, Set<SlotModifier>> slotsByClass = new IdentityHashMap<>();
     private final Map<String, Set<SlotModifier>> slotsByTitle = new HashMap<>();
 
-    //screen modifiers. Lists (not merged at parse) so per-variant conditions survive; they are
-    //filtered by condition and merged together at lookup time in resolve(...)
+    //screen modifiers. Lists (not merged at parse) so per-variant conditions survive;
+    // they arefiltered by condition and merged together at lookup time in resolve(...)
     public final Map<MenuType<?>, List<ScreenModifier>> byMenuId = new IdentityHashMap<>();
     public final Map<Class<?>, List<ScreenModifier>> byClass = new IdentityHashMap<>();
     public final Map<String, List<ScreenModifier>> byTitle = new HashMap<>();
@@ -81,7 +81,7 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
                     }
 
                 } catch (ClassNotFoundException ignored) {
-                    Polytone.LOGGER.error("Could not find class colormapToFill with name {}", target);
+                    Polytone.LOGGER.error("Could not find class target with name {}", target);
                 }
 
             } else if (mod.targetsMenuId()) {
@@ -99,7 +99,7 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
                     }
                 }
             } else {
-                //title colormapToFill
+                //title target
                 String title = mod.target();
                 byTitle.computeIfAbsent(title, k -> new ArrayList<>()).add(ScreenModifier.fromGuiMod(mod));
 
