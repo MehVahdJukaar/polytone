@@ -8,12 +8,14 @@ import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.content.particle.PreviewRenderTarget;
+import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.content.particle.custom.ParticleLightCache;
 import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTracker;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.util.ARGB;
 import net.minecraft.client.renderer.LevelTargetBundle;
 import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
@@ -25,6 +27,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -42,6 +45,17 @@ public class LevelRendererMixin {
     @Shadow
     @Final
     public LevelRenderState levelRenderState;
+
+    @ModifyArg(method = "renderBlockOutline",
+            at = @At(value = "INVOKE", ordinal = 1,
+                    target = "Lnet/minecraft/client/renderer/LevelRenderer;renderHitOutline(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;DDDLnet/minecraft/client/renderer/state/level/BlockOutlineRenderState;IF)V"),
+            index = 6)
+    private int polytone$changeOutlineColor(int color) {
+        Integer c = Polytone.COLORS.getBlockOutlineColor();
+        if (c == null) return color;
+        float[] col = ColorUtils.unpackWithAlpha(c, ARGB.alphaFloat(color));
+        return ARGB.colorFromFloat(col[3], col[0], col[1], col[2]);
+    }
 
     @Inject(method = "getParticlesTarget", at = @At("HEAD"), cancellable = true)
     private void poly$redirectParticlesTargetForPreview(CallbackInfoReturnable<RenderTarget> cir) {

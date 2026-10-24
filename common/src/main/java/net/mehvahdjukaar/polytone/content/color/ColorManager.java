@@ -110,6 +110,10 @@ public class ColorManager extends SingleFileContentManager<Void> {
     private Integer fishingLineColor = null;
     @Nullable
     private Vec3f fishingLineOffset = null;
+    @Nullable
+    private Integer lightningBoltColor = null;
+    @Nullable
+    private Integer blockOutlineColor = null;
 
     @Nullable
     private PaintingRenderType paintingRenderType = null;
@@ -338,6 +342,14 @@ public class ColorManager extends SingleFileContentManager<Void> {
                 }
             }
 
+        });
+
+        doWith(obj, "lightning_bolt", (k, v) -> {
+            if (k.equals("color")) lightningBoltColor = parseColor(v);
+        });
+
+        doWith(obj, "block_outline", (k, v) -> {
+            if (k.equals("color")) blockOutlineColor = parseColor(v);
         });
 
         doWith(obj, "world_border", (k, v) -> {
@@ -626,6 +638,8 @@ public class ColorManager extends SingleFileContentManager<Void> {
         xpOrbColorB = null;
         fishingLineOffset = null;
         fishingLineColor = null;
+        lightningBoltColor = null;
+        blockOutlineColor = null;
         paintingRenderType = null;
         entityShadowsDisabled = false;
         skyFlashColor = null;
@@ -735,6 +749,16 @@ public class ColorManager extends SingleFileContentManager<Void> {
     @Nullable
     public Integer getFishingLineColor() {
         return fishingLineColor;
+    }
+
+    @Nullable
+    public Integer getLightningBoltColor() {
+        return lightningBoltColor;
+    }
+
+    @Nullable
+    public Integer getBlockOutlineColor() {
+        return blockOutlineColor;
     }
 
     @Nullable
