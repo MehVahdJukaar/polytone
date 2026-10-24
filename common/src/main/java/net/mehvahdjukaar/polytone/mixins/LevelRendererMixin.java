@@ -26,6 +26,9 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Constant;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -60,6 +63,18 @@ public class LevelRendererMixin {
     @Inject(method = "getParticlesTarget", at = @At("HEAD"), cancellable = true)
     private void poly$redirectParticlesTargetForPreview(CallbackInfoReturnable<RenderTarget> cir) {
         if (CompatHandler.NAUTILUS && PreviewRenderTarget.current() != null) cir.setReturnValue(null);
+    }
+
+    @ModifyConstant(method = "drawStars", constant = @Constant(intValue = 1500))
+    private int polytone$modifyStarCount(int original) {
+        return Polytone.COLORS.getStarCount(original);
+    }
+
+
+
+    @ModifyVariable(method = "drawStars", at = @At("STORE"), ordinal = 4)
+    private float polytone$modifyStarSize(float original) {
+        return Polytone.COLORS.getStarSize(original);
     }
 
     @Inject(method = "setSectionDirty(IIIZ)V", at = @At("HEAD"))

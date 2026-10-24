@@ -10,6 +10,11 @@ import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
+import net.mehvahdjukaar.polytone.common.expressions.impl.EntityExp;
+import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
+import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
+import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
@@ -27,6 +32,8 @@ import net.minecraft.client.renderer.entity.state.ExperienceOrbRenderState;
 import net.minecraft.client.resources.SplashManager;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ColorParticleOption;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -127,6 +134,10 @@ public class ColorManager extends SingleFileContentManager<Void> {
     private Integer swampLight = null;
     @Nullable
     private Integer darkForest = null;
+    @Nullable
+    private ISimpleExp starSize = null;
+    @Nullable
+    private Integer starCount = null;
 
     public ColorManager() {
         //determines the priority. last applied will be the one with highest priority. Polytone is last applied one
@@ -175,6 +186,14 @@ public class ColorManager extends SingleFileContentManager<Void> {
 
     public float getWaterVisionTimeScale() {
         return waterFogBrighteningTime / 600f;
+    }
+
+    public float getStarSize(float vanilla) {
+        return starSize != null ? (float) starSize.evaluate() : vanilla;
+    }
+
+    public int getStarCount(int vanilla) {
+        return starCount != null ? starCount : vanilla;
     }
 
     public Integer getXpBar() {
@@ -256,6 +275,8 @@ public class ColorManager extends SingleFileContentManager<Void> {
                     return;
                 case "boss_fog_distance":
                     bossFogDistance = parseFloat(e);
+                case "star_size" -> starSize = decodeSimpleExp(v);
+                case "star_count" -> starCount = Math.max(0, (int) decodeSimpleExp(v).evaluate());
             }
         });
 
@@ -573,6 +594,10 @@ public class ColorManager extends SingleFileContentManager<Void> {
         return Collections.emptySet();
     }
 
+    private static ISimpleExp decodeSimpleExp(JsonElement v) {
+        return ISimpleExp.CODEC.decode(JsonOps.INSTANCE, v).getOrThrow().getFirst();
+    }
+
     private static int parseInt(JsonElement element) {
         //get as int or parse string as int
         if (element instanceof JsonPrimitive jp) {
@@ -621,7 +646,8 @@ public class ColorManager extends SingleFileContentManager<Void> {
 
     @Override
     protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
-
+        //star mesh is baked once
+        Minecraft.getInstance().levelRenderer.createStars();
     }
 
     @Override
@@ -651,6 +677,8 @@ public class ColorManager extends SingleFileContentManager<Void> {
         blindnessFogDistance = null;
         darknessFogDistance = null;
         bossFogDistance = null;
+        starSize = null;
+        starCount = null;
         BiomeColorResolvers.resetAll();
         // map colors
         for (var e : vanillaMapColors.entrySet()) {
