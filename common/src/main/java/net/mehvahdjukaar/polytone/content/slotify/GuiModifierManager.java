@@ -33,8 +33,8 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
     private final Map<Class<?>, Set<SlotModifier>> slotsByClass = new IdentityHashMap<>();
     private final Map<String, Set<SlotModifier>> slotsByTitle = new HashMap<>();
 
-    //screen modifiers. Lists (not merged at parse) so per-variant conditions survive; they are
-    //filtered by condition and merged together at lookup time in resolve(...)
+    //screen modifiers. Lists (not merged at parse) so per-variant conditions survive;
+    // they arefiltered by condition and merged together at lookup time in resolve(...)
     public final Map<MenuType<?>, List<ScreenModifier>> byMenuId = new IdentityHashMap<>();
     public final Map<Class<?>, List<ScreenModifier>> byClass = new IdentityHashMap<>();
     public final Map<String, List<ScreenModifier>> byTitle = new HashMap<>();
@@ -239,7 +239,6 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
 
 
     // Preview override slot modifiers matching this slot, or null when no override is active.
-    @Nullable
     private static Collection<SlotModifier> previewSlotModifiers(Slot slot) {
         GuiModifier o = GuiModifierPreview.override();
         if (o == null) return Set.of();
