@@ -1,1 +1,4 @@
-- added new stuff in colors.json like lightning and stars
+- removed the shadowmap code as it was a messy and unmaintainable pile of rendering hacks
+- might be moved to a separate mod. maybe.
+- improved polytoneRenderingApi exposing a simple api that allows to access polytone core shader modification system
+- replaced all modifyconst mixins with more compatible types, imporving mod compat
