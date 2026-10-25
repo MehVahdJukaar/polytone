@@ -61,9 +61,11 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     public final OptionHolder<Boolean> textureLightColors = builtinConfig("texture_light_colors", "shaders", false);
     public final OptionHolder<SmoothEntityLighting> smoothEntityLighting = builtinConfig("smooth_entity_lighting", "shaders", SmoothEntityLighting.LOCAL_PLAYER);
 
+    private final List<OptionHolder<?>> builtins = new ArrayList<>(List.of(lenientLoading, legacyParsing, particlesThrottle, autoParticleRateLimit, particlesOffThread, showConfigButton, postChainsAfterHand, attributeTimeSmoothing, coloredLightsBackend, voxelVolumeWidth, voxelVolumeHeight, farLightRange, lightSpreadSteps, textureLightColors, smoothEntityLighting));
+
     public final ConfigBubbleManager bubbleManager = new ConfigBubbleManager();
 
-    private static @NonNull OptionHolder<Boolean> builtinConfig(String id, @Nullable String section, boolean def) {
+    public static @NonNull OptionHolder<Boolean> builtinConfig(String id, @Nullable String section, boolean def) {
         return OptionHolder.create(new BoolConfig(Optional.empty(), Map.of(), Map.of(), 1,
                 Optional.ofNullable(section), Optional.empty(), Optional.empty(), false, Map.of(), def), Polytone.res(id));
     }
@@ -77,8 +79,8 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         return builtinConfig(id, section, def, 0, max, step);
     }
 
-    private static @NonNull OptionHolder<Float> builtinConfig(String id, @Nullable String section, float def,
-                                                              float min, float max, float step) {
+    public static @NonNull OptionHolder<Float> builtinConfig(String id, @Nullable String section, float def,
+                                                             float min, float max, float step) {
         return OptionHolder.create(new NumberConfig(Optional.empty(), Map.of(), Map.of(), 1,
                 Optional.ofNullable(section), Optional.empty(), Optional.empty(), false, Map.of(), def, min, max, step), Polytone.res(id));
     }
@@ -109,8 +111,16 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         registerBuiltins(configs);
     }
 
+    public <T> OptionHolder<T> addBuiltin(OptionHolder<T> option) {
+        builtins.add(option);
+        option.loadFromJson(configFileSnapshot);
+        configs.unregister(option.fileId);
+        configs.register(option.fileId, option);
+        return option;
+    }
+
     private void registerBuiltins(MapRegistry<OptionHolder<?>> reg) {
-        for (OptionHolder<?> b : List.of(lenientLoading, legacyParsing, particlesThrottle, autoParticleRateLimit, particlesOffThread, showConfigButton, postChainsAfterHand, attributeTimeSmoothing, coloredLightsBackend, voxelVolumeWidth, voxelVolumeHeight, farLightRange, lightSpreadSteps, textureLightColors, smoothEntityLighting)) {
+        for (OptionHolder<?> b : builtins) {
             b.loadFromJson(configFileSnapshot);
             reg.unregister(b.fileId);
             reg.register(b.fileId, b);
