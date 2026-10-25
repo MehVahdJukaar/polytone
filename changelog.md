@@ -1,1 +1,1 @@
-- added config that makes it so mod generates light colors from a block texture
+- added new stuff in colors.json like lightning and stars
