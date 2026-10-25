@@ -31,3 +31,5 @@ run/
 /resourcepacks/builds/*
 !/resourcepacks/builds/polytone_sample_pack-*.zip
 /fabric/mods/
+
+/shadows/

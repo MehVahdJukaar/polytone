@@ -96,11 +96,8 @@
     "accessor.BiomeAccessor",
     "accessor.DimensionTypeAccessor",
     "accessor.DustParticleOptionAccessor",
-    "accessor.LevelRendererShadowAccessor",
     "accessor.ParticleAccessor",
-    "accessor.PostPassAccessor",
-    "compat.SodiumRenderSectionManagerAccessor",
-    "compat.SodiumWorldRendererShadowAccessor"
+    "accessor.PostPassAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

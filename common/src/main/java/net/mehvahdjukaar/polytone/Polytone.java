@@ -30,7 +30,9 @@ import net.mehvahdjukaar.polytone.content.lightmap.GuiLightmap;
 import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticlesManager;
 import net.mehvahdjukaar.polytone.content.particle.modifiers.ParticleModifiersManager;
-import net.mehvahdjukaar.polytone.content.shaders.IShaderModifier;
+import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
+import net.mehvahdjukaar.polytone.api.IShaderSourcePatcher;
+import net.mehvahdjukaar.polytone.api.LevelRenderListener;
 import net.mehvahdjukaar.polytone.content.shaders.PolyGlobalUniforms;
 import net.mehvahdjukaar.polytone.content.shaders.post.PostChainsManager;
 import net.mehvahdjukaar.polytone.content.shaders.ShaderUniformsManager;
@@ -66,6 +68,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -108,7 +111,11 @@ public class Polytone {
     public static final ConfigsManager CONFIGS = new ConfigsManager();
 
     public static final PolyGlobalUniforms GLOBAL_UNIFORMS = new PolyGlobalUniforms();
-    public static final List<IShaderModifier> SHADER_MODIFIERS = List.of(GLOBAL_UNIFORMS, /*VOXEL_VOLUME, COLORED_LIGHTS,*/ SHADER_UNIFORMS, POST_CHAINS);
+    public static final List<IShaderInputPatch> SHADER_INPUT_PATCHES = new ArrayList<>(List.of(GLOBAL_UNIFORMS, /*VOXEL_VOLUME, COLORED_LIGHTS,*/ SHADER_UNIFORMS, POST_CHAINS));
+    //todo: vulkan
+    //public static final List<IShaderSourcePatcher> SHADER_PATCHERS = new ArrayList<>(List.of(COLORED_LIGHTS));
+    public static final List<LevelRenderListener> LEVEL_RENDER_LISTENERS = new ArrayList<>(/*List.of(VOXEL_VOLUME)*/);
+    private static final List<ContentManager<?>> ADDON_CONTENT_MANAGERS = new ArrayList<>();
 
     //colored lights before the modifiers, their colored_light fields add to it
     public static final List<ContentManager<?>> MANAGERS = List.of(
@@ -131,12 +138,19 @@ public class Polytone {
     public static MinecraftServer currentServer;
 
 
+    //addons can init before or after us
+    public static void registerContentManager(ContentManager<?> manager) {
+        if (COMPOUND_RELOADER != null) COMPOUND_RELOADER.add(manager);
+        else ADDON_CONTENT_MANAGERS.add(manager);
+    }
+
     public static void init(boolean devEnv, boolean forge) {
         Identifier.tryParse("#invalid:Identifier");
 
         // CONFIGS goes first (see MANAGERS ordering): config values feed require_config conditions and
         // config() expressions used by everything else, so they must be up to date before any other reloader parses.
         COMPOUND_RELOADER = new PolytoneReloadManager(MANAGERS.toArray(ContentManager[]::new));
+        ADDON_CONTENT_MANAGERS.forEach(COMPOUND_RELOADER::add);
         PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
                 res("polytone_stuff"));
         isDevEnv = devEnv;

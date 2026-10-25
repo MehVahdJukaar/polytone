@@ -7,7 +7,6 @@ import com.mojang.blaze3d.pipeline.BindGroupLayout;
 import net.mehvahdjukaar.polytone.content.shaders.IProgramWithModifiers;
 import net.mehvahdjukaar.polytone.content.shaders.IProgramWithModifiers.EnabledModifiers;
 import net.mehvahdjukaar.polytone.content.shaders.PolytoneBuiltInUniformsSet;
-import net.mehvahdjukaar.polytone.content.shaders.shadow.ShadowMapManager;
 import net.mehvahdjukaar.polytone.content.shaders.voxel.VoxelVolumeManager;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL20C;
@@ -26,9 +25,6 @@ import java.util.Set;
 public class GlProgramMixin implements IProgramWithModifiers {
 
     @Unique
-    private static final List<String> polytone$DYNAMIC_SAMPLERS = List.of(ShadowMapManager.SAMPLER);
-
-    @Unique
     @Nullable
     private EnabledModifiers polytone$modifiers = null;
 
@@ -42,7 +38,7 @@ public class GlProgramMixin implements IProgramWithModifiers {
         GlProgram self = (GlProgram) (Object) this;
         Map<String, Uniform> byName = self.getUniforms();
         VoxelVolumeManager.assignTextureUnits(self.getProgramId());
-        for (String name : polytone$DYNAMIC_SAMPLERS) {
+        for (String name : PolytoneBuiltInUniformsSet.dynamicSamplers()) {
             if (byName.containsKey(name)) continue;
             int location = GL20C.glGetUniformLocation(self.getProgramId(), name);
             if (location == -1) continue;

@@ -7,6 +7,7 @@ import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.polytone.api.IShaderInputs;
 import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
 import org.lwjgl.system.MemoryStack;
 
@@ -71,7 +72,7 @@ public final class ExpressionUniformBuffers {
         }
     }
 
-    public void bind(IShader shader) {
+    public void bind(IShaderInputs shader) {
         if (buffers == null) return;
         for (var e : buffers.entrySet()) {
             shader.setUniform(e.getKey(), e.getValue().slice());

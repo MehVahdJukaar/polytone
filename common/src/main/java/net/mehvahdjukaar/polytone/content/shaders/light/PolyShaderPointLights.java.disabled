@@ -8,7 +8,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.mehvahdjukaar.polytone.api.ResolvedPointLight;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
-import net.mehvahdjukaar.polytone.content.shaders.IShader;
+import net.mehvahdjukaar.polytone.api.IShaderInputs;
 import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -96,7 +96,7 @@ public class PolyShaderPointLights implements PointLightStorage, AutoCloseable {
         }
     }
 
-    public void bindTo(IShader shader) {
+    public void bindTo(IShaderInputs shader) {
         //GUI items and the hand aren't in wotld space, and a portal view into another level isnt ours
         boolean inOurLevel = (LevelRenderPassTracker.isInLevelPass() || Polytone.POST_CHAINS.isProcessing())
                 && LevelRenderPassTracker.currentLevel() == Minecraft.getInstance().level;

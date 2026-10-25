@@ -5,7 +5,6 @@ import com.mojang.blaze3d.pipeline.BindGroupLayout;
 import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.vulkan.glsl.GlslCompiler;
 import net.mehvahdjukaar.polytone.content.shaders.PolytoneBuiltInUniformsSet;
-import net.mehvahdjukaar.polytone.content.shaders.shadow.ShadowMapManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -29,7 +28,7 @@ public class GlslCompilerMixin {
             target = "Lcom/mojang/blaze3d/pipeline/BindGroupLayout;flattenSamplers(Ljava/util/List;)Ljava/util/List;"))
     private static List<String> poly$addDynamicSamplers(List<String> original) {
         List<String> withOurs = new ArrayList<>(original);
-        withOurs.add(ShadowMapManager.SAMPLER);
+        withOurs.addAll(PolytoneBuiltInUniformsSet.dynamicSamplers());
         return withOurs;
     }
 }

@@ -30,7 +30,11 @@ public class PolytoneReloadManager implements PreparableReloadListener {
     private final List<AssetsFiles> childrenResourcesCache = new ArrayList<>();
 
     public PolytoneReloadManager(ContentManager<?>... reloaders) {
-        children = List.of(reloaders);
+        children = new ArrayList<>(List.of(reloaders));
+    }
+
+    public void add(ContentManager<?> manager) {
+        children.add(manager);
     }
 
     @Override

@@ -67,9 +67,19 @@ public class LevelRendererMixin {
 
     //the frame graph already ran here, no pass is open
     @Inject(method = "render", at = @At("RETURN"))
-    public void poly$popLevelRenderPass(CallbackInfo ci) {
+    public void poly$popLevelRenderPass(GraphicsResourceAllocator resourceAllocator,
+                                        boolean renderOutline,
+                                        CameraRenderState cameraState,
+                                        GpuBufferSlice terrainFog,
+                                        Vector4f fogColor,
+                                        boolean shouldRenderSky,
+                                        boolean consistentDepthRequired,
+                                        CallbackInfo ci) {
         if (!LevelRenderPassTracker.popAndWasMain()) return;
-        //Polytone.VOXEL_VOLUME.updateAfterRenderLevel(Minecraft.getInstance().gameRenderer.mainCamera());
+        Camera camera = Minecraft.getInstance().gameRenderer.mainCamera();
+        for (var listener : Polytone.LEVEL_RENDER_LISTENERS) {
+            listener.afterLevelRender(camera, cameraState.viewRotationMatrix, cameraState.projectionMatrix);
+        }
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", shift = At.Shift.AFTER,

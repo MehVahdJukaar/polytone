@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.shaders;
+package net.mehvahdjukaar.polytone.api;
 
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.renderpearl.api.commands.RenderPass;
@@ -8,7 +8,7 @@ import com.mojang.renderpearl.api.textures.GpuTextureView;
 
 import java.util.Set;
 
-public interface IShader {
+public interface IShaderInputs {
 
     //true for samplers too
     boolean hasUniform(String name);
@@ -25,8 +25,8 @@ public interface IShader {
 
     RenderPipeline pipeline();
 
-    static IShader ofRenderPass(RenderPass pass, Set<String> uniformNames, RenderPipeline pipeline) {
-        return new IShader() {
+    static IShaderInputs ofRenderPass(RenderPass pass, Set<String> uniformNames, RenderPipeline pipeline) {
+        return new IShaderInputs() {
             @Override
             public boolean hasUniform(String name) {
                 return uniformNames.contains(name);
