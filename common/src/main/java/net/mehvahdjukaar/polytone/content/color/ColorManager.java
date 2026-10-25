@@ -450,7 +450,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
                 RedStoneWireBlock.COLORS[code] = ARGB.colorFromFloat(1.0f, rgb[0], rgb[1], rgb[2]);
                 if (code == 15) {
                     int maxPower = ARGB.colorFromFloat(1.0f, rgb[0], rgb[1], rgb[2]);
-                    net.minecraft.core.particles.DustParticleOptions.REDSTONE_PARTICLE_COLOR = maxPower;
+                    DustParticleOptions.REDSTONE_PARTICLE_COLOR = maxPower;
                     ((DustParticleOptionAccessor) DustParticleOptions.REDSTONE).setColor(maxPower);
                 }
             } else Polytone.LOGGER.warn("Redstone color index must be between 0 and 15");

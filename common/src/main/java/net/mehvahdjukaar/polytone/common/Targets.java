@@ -205,7 +205,7 @@ public record Targets(List<Entry> entries) {
     }
 
     private record TagLocation(Identifier id) implements Entry {
-        public static final Codec<TagLocation> TAG_CODEC = com.mojang.serialization.Codec.STRING.flatXmap(s -> {
+        public static final Codec<TagLocation> TAG_CODEC = Codec.STRING.flatXmap(s -> {
                     if (s.startsWith("#")) {
                         return Identifier.read(s.substring(1)).map(TagLocation::new);
                     } else return DataResult.error(() -> "Tag location must start with #");

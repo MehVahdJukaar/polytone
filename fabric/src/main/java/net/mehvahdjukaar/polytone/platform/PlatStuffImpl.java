@@ -55,6 +55,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Contract;
 import org.joml.Vector3f;
 
 import java.lang.reflect.Field;
@@ -71,7 +72,7 @@ import java.util.function.Supplier;
 
 public class PlatStuffImpl {
 
-    @org.jetbrains.annotations.Contract
+    @Contract
     public static boolean isModStateValid() {
         return true;
     }
@@ -89,7 +90,7 @@ public class PlatStuffImpl {
         return FabricLoader.getInstance().getMappingResolver().mapClassName("official", s);
     }
 
-    @org.jetbrains.annotations.Contract
+    @Contract
     public static boolean isModLoaded(String namespace) {
         return FabricLoader.getInstance().isModLoaded(namespace);
     }

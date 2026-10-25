@@ -42,7 +42,7 @@ public interface ItemToTabEvent {
     }
 
     default void addAfter(Predicate<ItemStack> target, ItemStack... items) {
-        addItems(target, true, java.util.List.of(items));
+        addItems(target, true, List.of(items));
     }
 
     default void addBefore(Predicate<ItemStack> target, ItemLike... items) {
@@ -56,7 +56,7 @@ public interface ItemToTabEvent {
     }
 
     default void addBefore(Predicate<ItemStack> target, ItemStack... items) {
-        addItems(target, false, java.util.List.of(items));
+        addItems(target, false, List.of(items));
     }
 
 
