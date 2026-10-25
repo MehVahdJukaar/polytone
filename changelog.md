@@ -1,2 +1,1 @@
- more 1.21.1 ports
- includes more custom colors.json features
+- added new stuff in colors.json like lightning and stars
