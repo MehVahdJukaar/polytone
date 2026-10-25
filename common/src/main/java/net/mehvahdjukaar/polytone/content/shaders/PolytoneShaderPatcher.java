@@ -48,7 +48,7 @@ public class PolytoneShaderPatcher {
         patched = ENTITY_LIGHTMAP_READ.matcher(patched).replaceAll(m -> Matcher.quoteReplacement(
                 wrapWithColoredLight(m.group(), "vec2(UV2 / 16)", "0.5", cameraRelativePos, normal)));
 
-        return insertInclude(patched, versionLine.end());
+        return insertInclude(patched, versionLine.end(), INCLUDE_IMPORT_LINE);
     }
 
     //texel shift matchs how the vanilla read samples: terrain between texels, entities at their centers
@@ -57,9 +57,9 @@ public class PolytoneShaderPatcher {
     }
 
     //its safer not to use moj_import as some mods resource provider might not see ours
-    private static String insertInclude(String shaderText, int afterVersion) {
+    public static String insertInclude(String shaderText, int afterVersion, String importLine) {
         PostProgramImports imports = new PostProgramImports();
-        String include = String.join("", imports.process(INCLUDE_IMPORT_LINE));
+        String include = String.join("", imports.process(importLine));
         //vanilla cant tell light.glsl is already pasted in so it would paste it twice
         String rest = INCLUDE_IMPORT.matcher(shaderText.substring(afterVersion)).replaceAll(m -> {
             boolean alreadyPasted = imports.importedPaths().contains(FileUtil.normalizeResourcePath("shaders/include/" + m.group(1)));
@@ -82,6 +82,6 @@ public class PolytoneShaderPatcher {
         String patched = SODIUM_LIGHTMAP_READ.matcher(vertexShaderText).replaceAll(m -> Matcher.quoteReplacement(
                 "_polyColoredLightmapForFace(" + m.group() + ", u_LightTex, _vert_tex_light_coord * 16.0, 0.0, position, " + face + ")"));
 
-        return insertInclude(patched, versionLine.end());
+        return insertInclude(patched, versionLine.end(), INCLUDE_IMPORT_LINE);
     }
 }
