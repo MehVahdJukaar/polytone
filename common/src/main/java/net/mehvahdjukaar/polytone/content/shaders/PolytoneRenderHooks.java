@@ -4,7 +4,7 @@ import com.mojang.renderpearl.api.pipeline.ShaderType;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
 import net.mehvahdjukaar.polytone.api.IShaderInputs;
-import net.mehvahdjukaar.polytone.api.IShaderSourcePatcher;
+import net.mehvahdjukaar.polytone.api.IShaderSourcePatch;
 import net.mehvahdjukaar.polytone.api.LevelRenderListener;
 import net.minecraft.client.Camera;
 import net.minecraft.resources.Identifier;
@@ -19,17 +19,19 @@ import java.util.Map;
 public class PolytoneRenderHooks {
 
     //todo: vulkan
-    //private static final List<IShaderSourcePatcher> SOURCE_PATCHERS = new ArrayList<>(List.of(Polytone.COLORED_LIGHTS));
+    //private static final List<IShaderSourcePatch> SOURCE_PATCHERS = new ArrayList<>(List.of(Polytone.COLORED_LIGHTS));
     private static final List<IShaderInputPatch> INPUT_PATCHES = new ArrayList<>(List.of(
             Polytone.GLOBAL_UNIFORMS, /*Polytone.VOXEL_VOLUME, Polytone.COLORED_LIGHTS,*/ Polytone.SHADER_UNIFORMS, Polytone.POST_CHAINS));
     private static final List<LevelRenderListener> LEVEL_RENDER_LISTENERS = new ArrayList<>(/*List.of(Polytone.VOXEL_VOLUME)*/);
+    private static int inputPatchesGeneration = 0;
 
-    //public static void addSourcePatcher(IShaderSourcePatcher patcher) {
+    //public static void addSourcePatcher(IShaderSourcePatch patcher) {
         //SOURCE_PATCHERS.add(patcher);
     //}
 
     public static void addInputPatch(IShaderInputPatch patch) {
         INPUT_PATCHES.add(patch);
+        invalidateInputPatches();
     }
 
     public static void addLevelRenderListener(LevelRenderListener listener) {
@@ -50,6 +52,15 @@ public class PolytoneRenderHooks {
         //}
         //return source;
     //}
+
+    //programs cache their patch list. bump this when an appliesToShader answer can change after linking
+    public static void invalidateInputPatches() {
+        inputPatchesGeneration++;
+    }
+
+    public static int inputPatchesGeneration() {
+        return inputPatchesGeneration;
+    }
 
     public static List<IShaderInputPatch> inputPatchesFor(IShaderInputs shader) {
         List<IShaderInputPatch> applying = new ArrayList<>();

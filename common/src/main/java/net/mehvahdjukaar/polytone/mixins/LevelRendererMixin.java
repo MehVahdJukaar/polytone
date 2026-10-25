@@ -8,6 +8,7 @@ import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTracker;
+import net.mehvahdjukaar.polytone.content.shaders.PolytoneRenderHooks;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -76,10 +77,7 @@ public class LevelRendererMixin {
                                         boolean consistentDepthRequired,
                                         CallbackInfo ci) {
         if (!LevelRenderPassTracker.popAndWasMain()) return;
-        Camera camera = Minecraft.getInstance().gameRenderer.mainCamera();
-        for (var listener : Polytone.LEVEL_RENDER_LISTENERS) {
-            listener.afterLevelRender(camera, cameraState.viewRotationMatrix, cameraState.projectionMatrix);
-        }
+        PolytoneRenderHooks.afterLevelRender(Minecraft.getInstance().gameRenderer.mainCamera(), cameraState.viewRotationMatrix, cameraState.projectionMatrix);
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", shift = At.Shift.AFTER,

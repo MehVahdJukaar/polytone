@@ -9,7 +9,7 @@ import com.mojang.renderpearl.frontend.FrontendRenderPipeline;
 import net.mehvahdjukaar.polytone.content.shaders.CompiledPipelineSources;
 import net.mehvahdjukaar.polytone.content.shaders.IProgramWithModifiers.EnabledModifiers;
 import net.mehvahdjukaar.polytone.api.IShaderInputs;
-import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
+import net.mehvahdjukaar.polytone.content.shaders.PolytoneRenderHooks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -30,13 +30,13 @@ public class RenderPassMixin {
         RenderPipeline renderPipeline = CompiledPipelineSources.get(compiled);
         if (renderPipeline == null) return;
         EnabledModifiers enabled = poly$enabledByPipeline.get(compiled);
-        int generation = IShaderInputPatch.enabledListsGeneration();
+        int generation = PolytoneRenderHooks.inputPatchesGeneration();
         boolean isStale = enabled == null || enabled.generation() != generation;
         if (!isStale && enabled.modifiers().isEmpty()) return;
 
         IShaderInputs shader = IShaderInputs.ofRenderPass((RenderPass) (Object) this, frontend.uniformIndices().keySet(), renderPipeline);
         if (isStale) {
-            enabled = new EnabledModifiers(IShaderInputPatch.allApplyingTo(shader), generation);
+            enabled = new EnabledModifiers(PolytoneRenderHooks.inputPatchesFor(shader), generation);
             poly$enabledByPipeline.put(compiled, enabled);
         }
         for (var modifier : enabled.modifiers()) {
