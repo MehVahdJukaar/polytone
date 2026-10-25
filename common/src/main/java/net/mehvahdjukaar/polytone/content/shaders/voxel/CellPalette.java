@@ -358,10 +358,9 @@ public class CellPalette implements AutoCloseable {
             for (ColoredLightsManager.BlockRule rule : rules) {
                 if (!rule.matches(lightState, RandomSource.create(42))) continue;
                 try {
-                    // same defaults as the Veil lights. no position here, one entry per state for the whole volume
+                    //no position here, one entry per state for the whole volume. range stays the blockstate's own, radius is for veil
                     ResolvedPointLight props = rule.resolve(state, lightState, Vec3.ZERO, Minecraft.getInstance().level);
                     if (props == null) continue;
-                    emission = Mth.clamp(Math.round(props.radius()), 0, 15);
                     lightColor = scaleColor(props.color(), props.brightness());
                 } catch (Exception e) {
                     Polytone.LOGGER.error("Failed to evaluate colored light for {}", state, e);

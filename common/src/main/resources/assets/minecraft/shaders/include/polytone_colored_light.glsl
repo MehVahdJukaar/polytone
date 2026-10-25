@@ -46,8 +46,17 @@ vec3 _polyWithFarLight(vec3 nearLight, vec3 pos, float vanillaLevel) {
     return nearLight + farAtVanillaLevel * (1.0 - nearWeight);
 }
 
+//block light range is the blockstates own so vanilla uv2 already has the level (flat or smooth), the volume only picks the hue
+vec3 _polyColorAtVanillaBrightness(vec3 lightColor, float vanillaLightLevel) {
+    float level = max(lightColor.r, max(lightColor.g, lightColor.b));
+    if (level <= 0.0) return lightColor;
+    return lightColor * (vanillaLightLevel / max(level, 1.0));
+}
+
 vec4 _polyColoredLightmap(vec4 vanilla, sampler2D lightMap, vec2 levels, float texelShift, vec3 pos, vec3 normal) {
-    vec3 coloredLight = _polyWithFarLight(polyColoredLight(pos, normal), pos, levels.x);
+    float fade = polyVoxelVolumeFade(pos);
+    vec3 blockLight = fade > 0.0 ? _polyColorAtVanillaBrightness(polyBlockLight(pos, normal), levels.x) * fade : vec3(0.0);
+    vec3 coloredLight = _polyWithFarLight(max(blockLight, polyPointLight(pos)), pos, levels.x);
     return _polyTintLightmap(vanilla, lightMap, levels, texelShift, coloredLight);
 }
 
@@ -60,8 +69,9 @@ vec4 _polyColoredLightmapBrightestSide(vec4 vanilla, sampler2D lightMap, vec2 le
     vec3 coloredLight = vec3(0.0);
     float fade = polyVoxelVolumeFade(pos);
     for (int i = 0; i < 6 && fade > 0.0; i++) {
-        coloredLight = max(coloredLight, polyBlockLight(pos, _POLY_DIRECTION_NORMALS[i]) * fade);
+        coloredLight = max(coloredLight, polyBlockLight(pos, _POLY_DIRECTION_NORMALS[i]));
     }
+    coloredLight = _polyColorAtVanillaBrightness(coloredLight, levels.x) * fade;
     coloredLight = max(coloredLight, polyPointLight(pos));
     coloredLight = _polyWithFarLight(coloredLight, pos, levels.x);
     return _polyTintLightmap(vanilla, lightMap, levels, texelShift, coloredLight);
