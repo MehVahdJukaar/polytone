@@ -63,6 +63,8 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     public final OptionHolder<Boolean> textureLightColors = builtinConfig("texture_light_colors", false, "shaders");
     public final OptionHolder<SmoothEntityLighting> smoothEntityLighting = builtinConfig("smooth_entity_lighting", SmoothEntityLighting.LOCAL_PLAYER, "shaders");
 
+    private final List<OptionHolder<?>> builtins = new ArrayList<>(List.of(lenientLoading, legacyParsing, particlesThrottle, autoParticleRateLimit, particlesOffThread, showConfigButton, postShadersOccludeHeldItems, coloredLightsBackend, voxelVolumeWidth, voxelVolumeHeight, farLightRange, lightSpreadSteps, textureLightColors, smoothEntityLighting));
+
     public final ConfigBubbleManager bubbleManager = new ConfigBubbleManager();
 
     private final MapRegistry<OptionHolder<?>> configs = new MapRegistry<>("Configs");
@@ -82,7 +84,7 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         registerBuiltins(configs);
     }
 
-    private static OptionHolder<Boolean> builtinConfig(String id, boolean def, String section) {
+    public static OptionHolder<Boolean> builtinConfig(String id, boolean def, String section) {
         return OptionHolder.create(new BoolConfig(Optional.empty(), def, Optional.ofNullable(section)), Polytone.res(id));
     }
 
@@ -90,7 +92,7 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         return builtinConfig(id, def, 0, 1, 0.01f, section);
     }
 
-    private static OptionHolder<Float> builtinConfig(String id, float def, float min, float max, float step, String section) {
+    public static OptionHolder<Float> builtinConfig(String id, float def, float min, float max, float step, String section) {
         return OptionHolder.create(new NumberConfig(Optional.empty(), def, min, max, step, Optional.ofNullable(section)), Polytone.res(id));
     }
 
@@ -98,8 +100,16 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         return OptionHolder.create(new EnumConfig<>(def, Optional.ofNullable(section)), Polytone.res(id));
     }
 
+    public <T> OptionHolder<T> addBuiltin(OptionHolder<T> option) {
+        builtins.add(option);
+        option.loadFromJson(configFileSnapshot);
+        configs.unregister(option.fileId);
+        configs.register(option.fileId, option);
+        return option;
+    }
+
     private void registerBuiltins(MapRegistry<OptionHolder<?>> reg) {
-        for (OptionHolder<?> b : List.of(lenientLoading, legacyParsing, particlesThrottle, autoParticleRateLimit, particlesOffThread, showConfigButton, postShadersOccludeHeldItems, coloredLightsBackend, voxelVolumeWidth, voxelVolumeHeight, farLightRange, lightSpreadSteps, textureLightColors, smoothEntityLighting)) {
+        for (OptionHolder<?> b : builtins) {
             b.loadFromJson(configFileSnapshot);
             reg.unregister(b.fileId);
             reg.register(b.fileId, b);
