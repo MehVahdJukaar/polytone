@@ -1,4 +1,1 @@
-- removed the shadowmap code as it was a messy and unmaintainable pile of rendering hacks
-- might be moved to a separate mod. maybe.
-- improved polytoneRenderingApi exposing a simple api that allows to access polytone core shader modification system
-- replaced all modifyconst mixins with more compatible types, imporving mod compat
+- one can no longer define a higher brightness level for a block than its actual light level using colored lights. brightness depends on the vanilla logic.
