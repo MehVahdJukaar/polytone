@@ -51,6 +51,7 @@ import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleGroupsEvent;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
+import org.jetbrains.annotations.Contract;
 import org.joml.Vector3f;
 
 import java.lang.reflect.Field;
@@ -113,7 +114,7 @@ public class PlatStuffImpl {
         return s;
     }
 
-    @org.jetbrains.annotations.Contract
+    @Contract
     public static boolean isModLoaded(String namespace) {
         return ModList.get().isLoaded(namespace);
     }

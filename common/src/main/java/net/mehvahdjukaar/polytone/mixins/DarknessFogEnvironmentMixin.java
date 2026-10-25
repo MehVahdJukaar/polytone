@@ -1,15 +1,15 @@
 package net.mehvahdjukaar.polytone.mixins;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.renderer.fog.environment.DarknessFogEnvironment;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.Constant;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(DarknessFogEnvironment.class)
 public class DarknessFogEnvironmentMixin {
 
-    @ModifyConstant(method = "setupFog", constant = @Constant(floatValue = 15.0F))
+    @ModifyExpressionValue(method = "setupFog", at = @At(value = "CONSTANT", args = "floatValue=15.0F"))
     private float polytone$fogDistance(float original) {
         return Polytone.COLORS.getDarknessFogDistance(original);
     }
