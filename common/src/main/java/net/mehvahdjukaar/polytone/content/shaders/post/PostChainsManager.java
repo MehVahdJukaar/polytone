@@ -15,8 +15,8 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
-import net.mehvahdjukaar.polytone.content.shaders.IShader;
-import net.mehvahdjukaar.polytone.content.shaders.IShaderModifier;
+import net.mehvahdjukaar.polytone.api.IShaderInputs;
+import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
 import net.mehvahdjukaar.polytone.content.shaders.ShaderUniformsManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelTargetBundle;
@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
-public class PostChainsManager extends ContentManager<PostChainActivator> implements IShaderModifier {
+public class PostChainsManager extends ContentManager<PostChainActivator> implements IShaderInputPatch {
 
     private final List<PostChainActivator> activators = new ArrayList<>();
     private final Map<Identifier, List<Map<String, Identifier>>> samplersByPassPipeline = new HashMap<>();
@@ -71,13 +71,13 @@ public class PostChainsManager extends ContentManager<PostChainActivator> implem
             activators.clear();
         }
         samplersByPassPipeline.clear();
-        IShaderModifier.invalidateEnabledLists();
+        IShaderInputPatch.invalidateEnabledLists();
     }
 
     public void registerSamplers(Identifier pipelineLocation, Map<String, Identifier> samplers) {
         if (samplers.isEmpty()) return;
         samplersByPassPipeline.computeIfAbsent(pipelineLocation, k -> new ArrayList<>()).add(samplers);
-        IShaderModifier.invalidateEnabledLists();
+        IShaderInputPatch.invalidateEnabledLists();
     }
 
     public void unregisterSamplers(Identifier pipelineLocation, Map<String, Identifier> samplers) {
@@ -86,7 +86,7 @@ public class PostChainsManager extends ContentManager<PostChainActivator> implem
             list.remove(samplers);
             if (list.isEmpty()) samplersByPassPipeline.remove(pipelineLocation);
         }
-        IShaderModifier.invalidateEnabledLists();
+        IShaderInputPatch.invalidateEnabledLists();
     }
 
     @Override
@@ -95,12 +95,12 @@ public class PostChainsManager extends ContentManager<PostChainActivator> implem
     }
 
     @Override
-    public boolean isUsedBy(IShader shader) {
+    public boolean appliesToShader(IShaderInputs shader) {
         return samplersByPassPipeline.containsKey(shader.pipeline().getLocation());
     }
 
     @Override
-    public void bindTo(IShader shader) {
+    public void bindToShader(IShaderInputs shader) {
         List<Map<String, Identifier>> list = samplersByPassPipeline.get(shader.pipeline().getLocation());
         if (list == null) return;
         var texManager = Minecraft.getInstance().getTextureManager();

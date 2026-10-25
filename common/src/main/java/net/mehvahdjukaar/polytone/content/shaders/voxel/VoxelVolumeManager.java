@@ -14,9 +14,10 @@ import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.content.shaders.GLHelper;
-import net.mehvahdjukaar.polytone.content.shaders.IShaderModifier;
+import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
+import net.mehvahdjukaar.polytone.api.LevelRenderListener;
 import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTracker;
-import net.mehvahdjukaar.polytone.content.shaders.IShader;
+import net.mehvahdjukaar.polytone.api.IShaderInputs;
 import com.google.gson.JsonElement;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -31,6 +32,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4fc;
 import org.joml.Vector3i;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -45,7 +47,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 //TODO: this only works for main render pass. add support (via configs) for secondary (far away) passes
-public class VoxelVolumeManager extends ContentManager<Void> implements IShaderModifier {
+public class VoxelVolumeManager extends ContentManager<Void> implements IShaderInputPatch, LevelRenderListener {
 
     public static final String BLOCK_NAME = "PolyVoxelVolume"; //matches polytone_voxel_volume.glsl
     public static final String SAMPLER = "InVoxelLight";
@@ -185,7 +187,7 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
 
     //raw samplers arent in the program uniforms, ask gl
     @Override
-    public boolean isUsedBy(IShader shader) {
+    public boolean appliesToShader(IShaderInputs shader) {
         int programId = shader.programId();
         return declaresVolumeUniforms(shader)
                 || GLHelper.usesUniform(programId, SAMPLER)
@@ -194,12 +196,12 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
                 || GLHelper.usesUniform(programId, PALETTE_SAMPLER);
     }
 
-    private boolean declaresVolumeUniforms(IShader shader) {
-        return IShaderModifier.super.isUsedBy(shader);
+    private boolean declaresVolumeUniforms(IShaderInputs shader) {
+        return IShaderInputPatch.super.appliesToShader(shader);
     }
 
     @Override
-    public void bindTo(IShader shader) {
+    public void bindToShader(IShaderInputs shader) {
         boolean irisOn = CompatHandler.irisShaderPackActive();
         boolean requestsVolume = Polytone.COLORED_LIGHTS.hasBlockLights() || declaresVolumeUniforms(shader);
         if (!irisOn && requestsVolume) requestedThisFrame = true;
@@ -269,8 +271,8 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
         return v;
     }
 
-    //main pass only, LevelRendererMixin filters the rest
-    public void updateAfterRenderLevel(Camera camera) {
+    @Override
+    public void afterLevelRender(Camera camera, Matrix4fc modelViewMatrix, Matrix4fc projectionMatrix) {
         //PostPass binds after this runs so post chains get it a frame late
         boolean wanted = requestedThisFrame;
         requestedThisFrame = false;

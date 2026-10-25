@@ -7,8 +7,8 @@ import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderPassBackend;
 import net.mehvahdjukaar.polytone.content.shaders.IProgramWithModifiers;
 import net.mehvahdjukaar.polytone.content.shaders.IProgramWithModifiers.EnabledModifiers;
-import net.mehvahdjukaar.polytone.content.shaders.IShader;
-import net.mehvahdjukaar.polytone.content.shaders.IShaderModifier;
+import net.mehvahdjukaar.polytone.api.IShaderInputs;
+import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
 import net.mehvahdjukaar.polytone.mixins.accessor.GlRenderPassAccessor;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,17 +32,17 @@ public class RenderPassMixin {
         GlProgram program = glPipeline.program();
         IProgramWithModifiers holder = (IProgramWithModifiers) program;
         EnabledModifiers enabled = holder.polytone$getModifiers();
-        int generation = IShaderModifier.enabledListsGeneration();
+        int generation = IShaderInputPatch.enabledListsGeneration();
         boolean isStale = enabled == null || enabled.generation() != generation;
         if (!isStale && enabled.modifiers().isEmpty()) return;
 
-        IShader shader = IShader.ofRenderPass((RenderPass) (Object) this, program, renderPipeline);
+        IShaderInputs shader = IShaderInputs.ofRenderPass((RenderPass) (Object) this, program, renderPipeline);
         if (isStale) {
-            enabled = new EnabledModifiers(IShaderModifier.usedBy(shader), generation);
+            enabled = new EnabledModifiers(IShaderInputPatch.allApplyingTo(shader), generation);
             holder.polytone$setModifiers(enabled);
         }
         for (var modifier : enabled.modifiers()) {
-            modifier.bindTo(shader);
+            modifier.bindToShader(shader);
         }
     }
 }

@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.shaders;
+package net.mehvahdjukaar.polytone.api;
 
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.opengl.GlProgram;
@@ -7,7 +7,7 @@ import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 
-public interface IShader {
+public interface IShaderInputs {
 
     //true for samplers too
     boolean hasUniform(String name);
@@ -20,8 +20,8 @@ public interface IShader {
 
     RenderPipeline pipeline();
 
-    static IShader ofRenderPass(RenderPass pass, GlProgram program, RenderPipeline pipeline) {
-        return new IShader() {
+    static IShaderInputs ofRenderPass(RenderPass pass, GlProgram program, RenderPipeline pipeline) {
+        return new IShaderInputs() {
             @Override
             public boolean hasUniform(String name) {
                 return program.getUniforms().containsKey(name);

@@ -5,8 +5,12 @@ import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.content.shaders.IShader;
-import net.mehvahdjukaar.polytone.content.shaders.IShaderModifier;
+import net.mehvahdjukaar.polytone.api.IShaderInputs;
+import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
+import net.mehvahdjukaar.polytone.api.IShaderSourcePatcher;
+import net.mehvahdjukaar.polytone.content.shaders.PolytoneShaderPatcher;
+import com.mojang.blaze3d.shaders.ShaderType;
+import net.minecraft.server.packs.resources.Resource;
 import net.mehvahdjukaar.polytone.content.config.ConfigsManager.ColoredLightsBackend;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
@@ -39,7 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-public class ColoredLightsManager extends ContentManager<ColoredLightEntry> implements IShaderModifier {
+public class ColoredLightsManager extends ContentManager<ColoredLightEntry> implements IShaderInputPatch, IShaderSourcePatcher {
 
     public record BlockRule(PointLightProvider.ForBlock light, RuleTest predicate) {
         public boolean matches(BlockState state, RandomSource random) {
@@ -318,13 +322,32 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
         return lights != null ? lights.openScan() : null;
     }
 
+    //face bit tracking needs to see every vertex shader, patched or not
+    @Override
+    public String patchShaderSource(Identifier shaderId, ShaderType type, String source, Map<Identifier, Resource> files) {
+        if (type != ShaderType.VERTEX) return source;
+        boolean canPatch = tintsVanillaBlockLight() && files.containsKey(PolytoneShaderPatcher.INCLUDE_LOCATION);
+        return PolytoneShaderPatcher.onLoadVertexShader(shaderId, source, canPatch);
+    }
+
+    @Override
+    public String patchSodiumChunkShaderSource(String source) {
+        boolean canPatch = tintsVanillaBlockLight() && PolytoneShaderPatcher.isIncludeAvailable();
+        return canPatch ? PolytoneShaderPatcher.patchSodiumChunkShader(source) : source;
+    }
+
+    //shaders can compile before our reload so this must not read pack data
+    private static boolean tintsVanillaBlockLight() {
+        return Polytone.CONFIGS.coloredLightsBackend.get().tintsVanillaBlockLight();
+    }
+
     @Override
     public List<String> getEnablingUniforms() {
         return List.of(PolyShaderPointLights.BLOCK_NAME);
     }
 
     @Override
-    public void bindTo(IShader shader) {
+    public void bindToShader(IShaderInputs shader) {
         shaderPointLights.bindTo(shader);
     }
 }

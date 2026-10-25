@@ -8,8 +8,8 @@ import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import net.mehvahdjukaar.polytone.content.shaders.GLHelper;
 import net.mehvahdjukaar.polytone.content.shaders.IProgramWithModifiers.EnabledModifiers;
-import net.mehvahdjukaar.polytone.content.shaders.IShader;
-import net.mehvahdjukaar.polytone.content.shaders.IShaderModifier;
+import net.mehvahdjukaar.polytone.api.IShaderInputs;
+import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
 import net.mehvahdjukaar.polytone.content.shaders.light.PolyShaderPointLights;
 import net.mehvahdjukaar.polytone.content.shaders.voxel.VoxelVolumeManager;
 import net.mehvahdjukaar.polytone.mixins.accessor.GlBufferAccessor;
@@ -20,7 +20,7 @@ import org.lwjgl.opengl.GL32C;
 import java.util.List;
 
 //sodium binds its chunk program itself. its source comes from the jar so our light include is all that can end up in there
-public class SodiumChunkProgram implements IShader {
+public class SodiumChunkProgram implements IShaderInputs {
 
     //our includes read CameraBlockPos from vanilla Globals, sodium never binds that one
     private static final List<String> BLOCKS = List.of("Globals", VoxelVolumeManager.BLOCK_NAME, PolyShaderPointLights.BLOCK_NAME);
@@ -46,12 +46,12 @@ public class SodiumChunkProgram implements IShader {
         GpuBuffer globals = RenderSystem.getGlobalSettingsUniform();
         if (globals != null) setUniform("Globals", globals.slice());
 
-        int generation = IShaderModifier.enabledListsGeneration();
+        int generation = IShaderInputPatch.enabledListsGeneration();
         if (enabled == null || enabled.generation() != generation) {
-            enabled = new EnabledModifiers(IShaderModifier.usedBy(this), generation);
+            enabled = new EnabledModifiers(IShaderInputPatch.allApplyingTo(this), generation);
         }
         for (var modifier : enabled.modifiers()) {
-            modifier.bindTo(this);
+            modifier.bindToShader(this);
         }
     }
 

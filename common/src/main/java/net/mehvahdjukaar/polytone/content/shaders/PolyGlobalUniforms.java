@@ -5,6 +5,8 @@ import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
+import net.mehvahdjukaar.polytone.api.IShaderInputs;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -18,7 +20,7 @@ import org.lwjgl.system.MemoryStack;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-public class PolyGlobalUniforms implements IShaderModifier, AutoCloseable {
+public class PolyGlobalUniforms implements IShaderInputPatch, AutoCloseable {
 
     public static final String BLOCK_NAME = "PolyGlobals";
 
@@ -94,7 +96,7 @@ public class PolyGlobalUniforms implements IShaderModifier, AutoCloseable {
     }
 
     @Override
-    public void bindTo(IShader shader) {
+    public void bindToShader(IShaderInputs shader) {
         boundThisFrame = true;
         shader.setUniform(BLOCK_NAME, buffer().slice());
     }

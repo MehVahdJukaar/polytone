@@ -56,7 +56,6 @@ public abstract class GameRendererMixin {
     private void polytone$closeShaderStuff(CallbackInfo ci) {
         Polytone.POST_CHAINS.onClose();
         Polytone.SHADER_UNIFORMS.onClose();
-        Polytone.SHADOW_MAP.close();
         Polytone.GLOBAL_UNIFORMS.close();
         Polytone.VOXEL_VOLUME.close();
         Polytone.COLORED_LIGHTS.close();

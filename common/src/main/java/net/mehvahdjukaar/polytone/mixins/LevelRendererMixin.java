@@ -83,15 +83,26 @@ public class LevelRendererMixin {
         if (!LevelRenderPassTracker.pushAndIsMain()) return;
         Camera camera = minecraft.gameRenderer.getMainCamera();
         Polytone.GLOBAL_UNIFORMS.capture(cameraState.projectionMatrix, modelViewMatrix, deltaTracker.getGameTimeDeltaTicks());
-        Polytone.SHADOW_MAP.updateBeforeRenderLevel(terrainFog, camera, modelViewMatrix, cameraState.projectionMatrix);
         Polytone.COLORED_LIGHTS.beforeRenderLevel(camera.position());
     }
 
     //the frame graph already ran here, no pass is open
     @Inject(method = "renderLevel", at = @At("RETURN"))
-    public void poly$popLevelRenderPass(CallbackInfo ci) {
+    public void poly$popLevelRenderPass(GraphicsResourceAllocator resourceAllocator,
+                                        DeltaTracker deltaTracker,
+                                        boolean renderOutline,
+                                        CameraRenderState cameraState,
+                                        Matrix4fc modelViewMatrix,
+                                        GpuBufferSlice terrainFog,
+                                        Vector4f fogColor,
+                                        boolean shouldRenderSky,
+                                        ChunkSectionsToRender chunkSectionsToRender,
+                                        CallbackInfo ci) {
         if (!LevelRenderPassTracker.popAndWasMain()) return;
-        Polytone.VOXEL_VOLUME.updateAfterRenderLevel(minecraft.gameRenderer.getMainCamera());
+        Camera camera = minecraft.gameRenderer.getMainCamera();
+        for (var listener : Polytone.LEVEL_RENDER_LISTENERS) {
+            listener.afterLevelRender(camera, modelViewMatrix, cameraState.projectionMatrix);
+        }
     }
 
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addMainPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lnet/minecraft/client/renderer/culling/Frustum;Lorg/joml/Matrix4fc;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;ZLnet/minecraft/client/renderer/state/level/LevelRenderState;Lnet/minecraft/client/DeltaTracker;Lnet/minecraft/util/profiling/ProfilerFiller;Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;)V",

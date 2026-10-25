@@ -9,7 +9,6 @@ import net.caffeinemc.mods.sodium.client.render.chunk.shader.ChunkShaderInterfac
 import net.caffeinemc.mods.sodium.client.render.chunk.terrain.TerrainRenderPass;
 import net.caffeinemc.mods.sodium.client.util.FogParameters;
 import net.mehvahdjukaar.polytone.content.shaders.light.sodium.SodiumChunkProgram;
-import net.mehvahdjukaar.polytone.content.shaders.shadow.sodium.SodiumShadowRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.Shadow;
@@ -36,8 +35,6 @@ public abstract class SodiumChunkRendererMixin {
     private void polytone$bindExtraUniforms(TerrainRenderPass pass, FogParameters parameters,
                                             GpuSampler terrainSampler, GpuBufferSlice dynamicTransforms,
                                             GlTexelBuffer texelBuffer, CallbackInfo ci) {
-        SodiumShadowRenderer.captureTerrainSampler(terrainSampler);
-        SodiumShadowRenderer.rebindShadowFramebufferIfActive();
         polytone$shaderByProgram.computeIfAbsent(activeProgram, p -> new SodiumChunkProgram(p.handle(), pass.getPipeline()))
                 .bindModifiers();
     }

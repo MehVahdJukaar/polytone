@@ -7,9 +7,19 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PolytoneBuiltInUniformsSet extends HashSet<String> {
 
     private static final Set<String> DYNAMIC = ConcurrentHashMap.newKeySet();
+    private static final Set<String> DYNAMIC_SAMPLERS = ConcurrentHashMap.newKeySet();
 
     public static void register(String name) {
         DYNAMIC.add(name);
+    }
+
+    //samplers no pipeline declares. programs linked before this call wont see it
+    public static void registerSampler(String name) {
+        DYNAMIC_SAMPLERS.add(name);
+    }
+
+    public static Set<String> dynamicSamplers() {
+        return DYNAMIC_SAMPLERS;
     }
 
     public PolytoneBuiltInUniformsSet(HashSet<String> initial) {

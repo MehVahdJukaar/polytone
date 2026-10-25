@@ -1,18 +1,18 @@
-package net.mehvahdjukaar.polytone.content.shaders;
+package net.mehvahdjukaar.polytone.api;
 
 import net.mehvahdjukaar.polytone.Polytone;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public interface IShaderModifier {
+public interface IShaderInputPatch {
 
-    //a shader that declares any of these gets this modifier
+    //a shader that declares any of these gets this patch
     List<String> getEnablingUniforms();
 
-    void bindTo(IShader inputs);
+    void bindToShader(IShaderInputs inputs);
 
-    default boolean isUsedBy(IShader shader) {
+    default boolean appliesToShader(IShaderInputs shader) {
         for (String name : getEnablingUniforms()) {
             if (shader.hasUniform(name)) return true;
         }
@@ -28,10 +28,10 @@ public interface IShaderModifier {
         return Generation.value;
     }
 
-    static List<IShaderModifier> usedBy(IShader shader) {
-        List<IShaderModifier> enabled = new ArrayList<>();
-        for (var modifier : Polytone.SHADER_MODIFIERS) {
-            if (modifier.isUsedBy(shader)) enabled.add(modifier);
+    static List<IShaderInputPatch> allApplyingTo(IShaderInputs shader) {
+        List<IShaderInputPatch> enabled = new ArrayList<>();
+        for (var modifier : Polytone.SHADER_INPUT_PATCHES) {
+            if (modifier.appliesToShader(shader)) enabled.add(modifier);
         }
         return enabled;
     }

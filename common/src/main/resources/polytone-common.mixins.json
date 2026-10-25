@@ -102,12 +102,9 @@
     "accessor.DimensionTypeAccessor",
     "accessor.DustParticleOptionAccessor",
     "accessor.GlBufferAccessor",
-    "accessor.LevelRendererShadowAccessor",
     "accessor.ParticleAccessor",
     "accessor.PostPassAccessor",
-    "accessor.GlRenderPassAccessor",
-    "compat.SodiumRenderSectionManagerAccessor",
-    "compat.SodiumWorldRendererShadowAccessor"
+    "accessor.GlRenderPassAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

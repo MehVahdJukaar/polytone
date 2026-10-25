@@ -29,13 +29,14 @@ import net.mehvahdjukaar.polytone.content.lightmap.GuiLightmap;
 import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticlesManager;
 import net.mehvahdjukaar.polytone.content.particle.modifiers.ParticleModifiersManager;
-import net.mehvahdjukaar.polytone.content.shaders.IShaderModifier;
+import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
+import net.mehvahdjukaar.polytone.api.IShaderSourcePatcher;
+import net.mehvahdjukaar.polytone.api.LevelRenderListener;
 import net.mehvahdjukaar.polytone.content.shaders.PolyGlobalUniforms;
 import net.mehvahdjukaar.polytone.content.shaders.post.PostChainsManager;
 import net.mehvahdjukaar.polytone.content.shaders.ShaderUniformsManager;
 import net.mehvahdjukaar.polytone.content.shaders.light.ColoredLightsManager;
 import net.mehvahdjukaar.polytone.content.shaders.post.PostTargetsManager;
-import net.mehvahdjukaar.polytone.content.shaders.shadow.ShadowMapManager;
 import net.mehvahdjukaar.polytone.content.shaders.voxel.VoxelVolumeManager;
 import net.mehvahdjukaar.polytone.content.slotify.GuiModifierManager;
 import net.mehvahdjukaar.polytone.content.slotify.GuiOverlayManager;
@@ -66,6 +67,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -101,7 +103,6 @@ public class Polytone {
     public static final GuiOverlayManager OVERLAY_MODIFIERS = new GuiOverlayManager();
     public static final PostTargetsManager POST_TARGETS = new PostTargetsManager();
     public static final PostChainsManager POST_CHAINS = new PostChainsManager();
-    public static final ShadowMapManager SHADOW_MAP = new ShadowMapManager();
     public static final VoxelVolumeManager VOXEL_VOLUME = new VoxelVolumeManager();
     public static final ShaderUniformsManager SHADER_UNIFORMS = new ShaderUniformsManager();
     public static final BlockSetManager BLOCK_SET = new BlockSetManager();
@@ -109,7 +110,10 @@ public class Polytone {
     public static final ConfigsManager CONFIGS = new ConfigsManager();
 
     public static final PolyGlobalUniforms GLOBAL_UNIFORMS = new PolyGlobalUniforms();
-    public static final List<IShaderModifier> SHADER_MODIFIERS = List.of(GLOBAL_UNIFORMS, VOXEL_VOLUME, COLORED_LIGHTS, SHADOW_MAP, SHADER_UNIFORMS, POST_CHAINS);
+    public static final List<IShaderInputPatch> SHADER_INPUT_PATCHES = new ArrayList<>(List.of(GLOBAL_UNIFORMS, VOXEL_VOLUME, COLORED_LIGHTS, SHADER_UNIFORMS, POST_CHAINS));
+    public static final List<IShaderSourcePatcher> SHADER_PATCHERS = new ArrayList<>(List.of(COLORED_LIGHTS));
+    public static final List<LevelRenderListener> LEVEL_RENDER_LISTENERS = new ArrayList<>(List.of(VOXEL_VOLUME));
+    private static final List<ContentManager<?>> ADDON_CONTENT_MANAGERS = new ArrayList<>();
 
     //colored lights before the modifiers, their colored_light fields add to it
     public static final List<ContentManager<?>> MANAGERS = List.of(
@@ -117,7 +121,7 @@ public class Polytone {
             NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS, COLORED_LIGHTS,
             BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, CUSTOM_MODELS, ITEM_MODIFIERS, ITEM_MODELS,
             BIOME_MODIFIERS,
-            DIMENSION_MODIFIERS, POST_TARGETS, POST_CHAINS, SHADOW_MAP, VOXEL_VOLUME, SHADER_UNIFORMS,
+            DIMENSION_MODIFIERS, POST_TARGETS, POST_CHAINS, VOXEL_VOLUME, SHADER_UNIFORMS,
             PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,
             CREATIVE_TABS_MODIFIERS);
 
@@ -132,6 +136,12 @@ public class Polytone {
     public static MinecraftServer currentServer;
 
 
+    //addons can init before or after us
+    public static void registerContentManager(ContentManager<?> manager) {
+        if (COMPOUND_RELOADER != null) COMPOUND_RELOADER.add(manager);
+        else ADDON_CONTENT_MANAGERS.add(manager);
+    }
+
     public static void init(boolean devEnv, boolean forge) {
         //crashes right away if some mod turned off id validation
         Identifier.tryParse("#invalid:Identifier");
@@ -139,6 +149,7 @@ public class Polytone {
         // CONFIGS goes first (see MANAGERS ordering): config values feed require_config conditions and
         // config() expressions used by everything else, so they must be up to date before any other reloader parses.
         COMPOUND_RELOADER = new PolytoneReloadManager(MANAGERS.toArray(ContentManager[]::new));
+        ADDON_CONTENT_MANAGERS.forEach(COMPOUND_RELOADER::add);
         PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
                 res("polytone_stuff"));
         isDevEnv = devEnv;

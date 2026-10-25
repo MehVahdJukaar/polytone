@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.mehvahdjukaar.polytone.content.shaders.light.IFaceInLightBuilder;
-import net.mehvahdjukaar.polytone.content.shaders.light.LightShaderPatcher;
+import net.mehvahdjukaar.polytone.content.shaders.PolytoneShaderPatcher;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,7 +21,7 @@ public class BufferBuilderMixin implements IFaceInLightBuilder {
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void polytone$checkFaceInLight(ByteBufferBuilder buffer, VertexFormat.Mode mode, VertexFormat format, CallbackInfo ci) {
-        polytone$storesFaceInLight = format == DefaultVertexFormat.BLOCK && LightShaderPatcher.canStoreFaceInLight();
+        polytone$storesFaceInLight = format == DefaultVertexFormat.BLOCK && PolytoneShaderPatcher.canStoreFaceInLight();
     }
 
     @Override

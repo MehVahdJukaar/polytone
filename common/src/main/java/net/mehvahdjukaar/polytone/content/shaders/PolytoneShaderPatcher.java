@@ -1,7 +1,6 @@
-package net.mehvahdjukaar.polytone.content.shaders.light;
+package net.mehvahdjukaar.polytone.content.shaders;
 
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
-import net.mehvahdjukaar.polytone.content.shaders.GlslImports;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
@@ -11,7 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 //nonsense regex magic that will inject our ight sampling inside all shaders that we deem need it. could have false positives
-public class LightShaderPatcher {
+public class PolytoneShaderPatcher {
 
     private static final Pattern LIGHTMAP_READ = Pattern.compile("\\bsample_lightmap\\s*\\(\\s*Sampler2\\s*,\\s*UV2\\s*\\)");
     //every vanilla vsh hands its camera relative position to the fog, pos in terrain and block, Position elsewhere

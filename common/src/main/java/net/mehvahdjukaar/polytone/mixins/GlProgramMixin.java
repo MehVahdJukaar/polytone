@@ -9,7 +9,6 @@ import net.mehvahdjukaar.polytone.content.shaders.IProgramWithModifiers.EnabledM
 import net.mehvahdjukaar.polytone.content.shaders.PolyGlobalUniforms;
 import net.mehvahdjukaar.polytone.content.shaders.PolytoneBuiltInUniformsSet;
 import net.mehvahdjukaar.polytone.content.shaders.light.PolyShaderPointLights;
-import net.mehvahdjukaar.polytone.content.shaders.shadow.ShadowMapManager;
 import net.mehvahdjukaar.polytone.content.shaders.voxel.VoxelVolumeManager;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL20C;
@@ -27,9 +26,6 @@ import java.util.Map;
 public class GlProgramMixin implements IProgramWithModifiers {
 
     @Unique
-    private static final List<String> polytone$DYNAMIC_SAMPLERS = List.of(ShadowMapManager.SAMPLER);
-
-    @Unique
     @Nullable
     private EnabledModifiers polytone$modifiers = null;
 
@@ -37,7 +33,6 @@ public class GlProgramMixin implements IProgramWithModifiers {
     private static HashSet<String> poly$addBuiltInBlocks(HashSet<String> original) {
         PolytoneBuiltInUniformsSet s = new PolytoneBuiltInUniformsSet(original);
         s.add(PolyGlobalUniforms.BLOCK_NAME);
-        s.add(ShadowMapManager.BLOCK_NAME);
         s.add(VoxelVolumeManager.BLOCK_NAME);
         s.add(PolyShaderPointLights.BLOCK_NAME);
         return s;
@@ -49,7 +44,7 @@ public class GlProgramMixin implements IProgramWithModifiers {
         GlProgram self = (GlProgram) (Object) this;
         Map<String, Uniform> byName = self.getUniforms();
         VoxelVolumeManager.assignTextureUnits(self.getProgramId());
-        for (String name : polytone$DYNAMIC_SAMPLERS) {
+        for (String name : PolytoneBuiltInUniformsSet.dynamicSamplers()) {
             if (byName.containsKey(name)) continue;
             int location = GL20C.glGetUniformLocation(self.getProgramId(), name);
             if (location == -1) continue;
