@@ -11,6 +11,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public sealed interface ColoredLightEntry {
@@ -68,7 +69,7 @@ public sealed interface ColoredLightEntry {
     }
 
     private static <T extends ColoredLightEntry> MapCodec<T> ofEntity(
-            ResourceKey<? extends Registry<?>> registry, java.util.function.BiFunction<Targets, ColoredLight.EntityLight, T> factory,
+            ResourceKey<? extends Registry<?>> registry, BiFunction<Targets, ColoredLight.EntityLight, T> factory,
             Function<T, Targets> targets, Function<T, ColoredLight.EntityLight> light) {
         return RecordCodecBuilder.mapCodec(i -> i.group(
                 Targets.codec(registry).fieldOf("targets").forGetter(targets),

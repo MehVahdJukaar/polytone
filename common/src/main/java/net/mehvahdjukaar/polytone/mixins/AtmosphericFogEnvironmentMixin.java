@@ -6,8 +6,6 @@ import net.minecraft.client.renderer.fog.environment.AtmosphericFogEnvironment;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Constant;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 @Mixin(AtmosphericFogEnvironment.class)
 public class AtmosphericFogEnvironmentMixin {
@@ -25,12 +23,12 @@ public class AtmosphericFogEnvironmentMixin {
         return Polytone.DIMENSION_MODIFIERS.noWeatherFogDarken() ? 0 : original;
     }
 
-    @ModifyConstant(method = "setupFog", constant = @Constant(floatValue = 96.0F, ordinal = 1))
+    @ModifyExpressionValue(method = "setupFog", at = @At(value = "CONSTANT", args = "floatValue=96.0F", ordinal = 1))
     private float polytone$bossFogEnd(float original) {
         return Polytone.COLORS.getBossFogDistance(original);
     }
 
-    @ModifyConstant(method = "setupFog", constant = @Constant(floatValue = 10.0F))
+    @ModifyExpressionValue(method = "setupFog", at = @At(value = "CONSTANT", args = "floatValue=10.0F"))
     private float polytone$bossFogStart(float original) {
         return Polytone.COLORS.getBossFogDistance(96) * original / 96;
     }
