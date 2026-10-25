@@ -76,8 +76,7 @@
     "compat.SodiumChunkRendererMixin",
     "compat.SodiumMeshBufferBuilderMixin",
     "compat.SodiumShaderParserMixin",
-    "compat.SodiumVeilSectionLightScanMixin",
-    "compat.SodiumWorldRendererShadowAccessor"
+    "compat.SodiumVeilSectionLightScanMixin"
   ],
   "injectors": {
     "defaultRequire": 1

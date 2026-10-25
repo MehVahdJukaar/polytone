@@ -1,5 +1,8 @@
 package net.mehvahdjukaar.polytone;
 
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.api.IShaderSourcePatcher;
+import net.mehvahdjukaar.polytone.api.LevelRenderListener;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.compat.nautilus.PolytoneNautilus;
 import net.mehvahdjukaar.polytone.content.biome.BiomeEffectsManager;
@@ -9,12 +12,11 @@ import net.mehvahdjukaar.polytone.content.block.BlockSetManager;
 import net.mehvahdjukaar.polytone.content.color.ColorManager;
 import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.content.config.ConfigsManager;
-import net.mehvahdjukaar.polytone.content.shaders.IShaderModifier;
+import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
 import net.mehvahdjukaar.polytone.content.shaders.PolyGlobalUniforms;
 import net.mehvahdjukaar.polytone.content.shaders.post.PostChainsManager;
 import net.mehvahdjukaar.polytone.content.shaders.post.PostTargetsManager;
 import net.mehvahdjukaar.polytone.content.shaders.ShaderUniformsManager;
-import net.mehvahdjukaar.polytone.content.shaders.shadow.ShadowMapManager;
 import net.mehvahdjukaar.polytone.content.shaders.voxel.VoxelVolumeManager;
 import net.mehvahdjukaar.polytone.content.dimension.DimensionEffectsManager;
 import net.mehvahdjukaar.polytone.content.entity.EntityModifiersManager;
@@ -57,6 +59,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -95,13 +98,15 @@ public class Polytone {
     public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
     public static final PostTargetsManager POST_TARGETS = new PostTargetsManager();
     public static final PostChainsManager POST_CHAINS = new PostChainsManager();
-    public static final ShadowMapManager SHADOW_MAP = new ShadowMapManager();
     public static final VoxelVolumeManager VOXEL_VOLUME = new VoxelVolumeManager();
     public static final ShaderUniformsManager SHADER_UNIFORMS = new ShaderUniformsManager();
     public static final ConfigsManager CONFIGS = new ConfigsManager();
 
     public static final PolyGlobalUniforms GLOBAL_UNIFORMS = new PolyGlobalUniforms();
-    public static final List<IShaderModifier> SHADER_MODIFIERS = List.of(GLOBAL_UNIFORMS, VOXEL_VOLUME, COLORED_LIGHTS, SHADOW_MAP, SHADER_UNIFORMS);
+    public static final List<IShaderInputPatch> SHADER_INPUT_PATCHES = new ArrayList<>(List.of(GLOBAL_UNIFORMS, VOXEL_VOLUME, COLORED_LIGHTS, SHADER_UNIFORMS));
+    public static final List<IShaderSourcePatcher> SHADER_PATCHERS = new ArrayList<>(List.of(COLORED_LIGHTS));
+    public static final List<LevelRenderListener> LEVEL_RENDER_LISTENERS = new ArrayList<>(List.of(VOXEL_VOLUME));
+    private static final List<ContentManager<?>> ADDON_CONTENT_MANAGERS = new ArrayList<>();
 
     private static final Set<ModelResourceLocation> EXTRA_MODELS = new HashSet<>();
 
@@ -111,6 +116,12 @@ public class Polytone {
 
     public static boolean isDevEnv = false;
     public static boolean isForge = false;
+
+    //addons can init before or after us
+    public static void registerContentManager(ContentManager<?> manager) {
+        if (COMPOUND_RELOADER != null) COMPOUND_RELOADER.add(manager);
+        else ADDON_CONTENT_MANAGERS.add(manager);
+    }
 
     //todo: cutout not working. splash color not working, 1.20 color accessor crash
     public static void init(boolean devEnv, boolean forge) {
@@ -125,7 +136,8 @@ public class Polytone {
                 BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, CUSTOM_MODELS, ITEM_MODIFIERS, ITEM_MODELS,
                 BIOME_MODIFIERS, VARIANT_TEXTURES, LIGHTMAPS, DIMENSION_MODIFIERS,
                 PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,
-                CREATIVE_TABS_MODIFIERS, POST_TARGETS, POST_CHAINS, SHADOW_MAP, VOXEL_VOLUME, SHADER_UNIFORMS);
+                CREATIVE_TABS_MODIFIERS, POST_TARGETS, POST_CHAINS, VOXEL_VOLUME, SHADER_UNIFORMS);
+        ADDON_CONTENT_MANAGERS.forEach(COMPOUND_RELOADER::add);
         PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
                 res("polytone_stuff"));
 

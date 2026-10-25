@@ -7,8 +7,10 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.compat.VeilCompat;
 import net.mehvahdjukaar.polytone.content.shaders.GLHelper;
-import net.mehvahdjukaar.polytone.content.shaders.IShader;
-import net.mehvahdjukaar.polytone.content.shaders.IShaderModifier;
+import net.mehvahdjukaar.polytone.api.IShaderInputs;
+import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
+import net.mehvahdjukaar.polytone.api.IShaderSourcePatcher;
+import net.mehvahdjukaar.polytone.content.shaders.PolytoneShaderPatcher;
 import net.mehvahdjukaar.polytone.content.config.ConfigsManager.ColoredLightsBackend;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
@@ -41,7 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-public class ColoredLightsManager extends ContentManager<ColoredLightEntry> implements IShaderModifier {
+public class ColoredLightsManager extends ContentManager<ColoredLightEntry> implements IShaderInputPatch, IShaderSourcePatcher {
 
     public record BlockRule(PointLightProvider.ForBlock light, RuleTest predicate) {
         public boolean matches(BlockState state, RandomSource random) {
@@ -316,18 +318,33 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
     }
 
     @Override
+    public String patchShaderSource(String source) {
+        return canPatchShaders() ? PolytoneShaderPatcher.patch(source) : source;
+    }
+
+    @Override
+    public String patchSodiumChunkShaderSource(String source) {
+        return canPatchShaders() ? PolytoneShaderPatcher.patchSodiumChunkShader(source) : source;
+    }
+
+    //shaders can compile before our reload so this must not read pack data
+    private static boolean canPatchShaders() {
+        return Polytone.CONFIGS.coloredLightsBackend.get().tintsVanillaBlockLight() && PolytoneShaderPatcher.isIncludeAvailable();
+    }
+
+    @Override
     public List<String> getEnablingUniforms() {
         return List.of(PolyShaderPointLights.COUNT);
     }
 
     //the lightmap patched vanilla shaders get these from the include, not their json
     @Override
-    public boolean isUsedBy(IShader shader) {
+    public boolean appliesToShader(IShaderInputs shader) {
         return GLHelper.usesUniform(shader.programId(), PolyShaderPointLights.COUNT);
     }
 
     @Override
-    public void bindTo(IShader shader) {
+    public void bindToShader(IShaderInputs shader) {
         shaderPointLights.bindTo(shader);
     }
 }

@@ -1,5 +1,7 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
+import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
+import net.mehvahdjukaar.polytone.api.IShaderInputs;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -10,7 +12,7 @@ import org.joml.Matrix4f;
 
 import java.util.List;
 
-public class PolyGlobalUniforms implements IShaderModifier {
+public class PolyGlobalUniforms implements IShaderInputPatch {
 
     public static final String PROJ_MAT = "PolyProjMat";
     public static final String MODEL_VIEW_MAT = "PolyModelViewMat";
@@ -57,7 +59,7 @@ public class PolyGlobalUniforms implements IShaderModifier {
     }
 
     @Override
-    public void bindTo(IShader inputs) {
+    public void bindToShader(IShaderInputs inputs) {
         inputs.getUniform(PROJ_MAT).set(projMat);
         inputs.getUniform(MODEL_VIEW_MAT).set(modelViewMat);
         inputs.getUniform(SUN_ANGLE).set(sunAngle);

@@ -1,5 +1,7 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
+import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
+import net.mehvahdjukaar.polytone.api.IShaderInputs;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
@@ -11,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ShaderUniformsManager extends ContentManager<ExpressionUniforms> implements IShaderModifier {
+public class ShaderUniformsManager extends ContentManager<ExpressionUniforms> implements IShaderInputPatch {
 
     private Map<ResourceLocation, ExpressionUniforms> parsed = Map.of();
     //render thread only reads this, so it gets swapped as a whole
@@ -55,12 +57,12 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniforms> im
 
     //applied to all
     @Override
-    public boolean isUsedBy(IShader shader) {
+    public boolean appliesToShader(IShaderInputs shader) {
         return true;
     }
 
     @Override
-    public void bindTo(IShader shader) {
+    public void bindToShader(IShaderInputs shader) {
         var byShader = uniformsByShader;
         if (byShader.isEmpty()) return;
         for (ResourceLocation id : shader.getIds()) {

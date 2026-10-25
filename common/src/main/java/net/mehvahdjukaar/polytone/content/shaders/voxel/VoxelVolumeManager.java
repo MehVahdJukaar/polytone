@@ -7,9 +7,10 @@ import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.content.shaders.GLHelper;
-import net.mehvahdjukaar.polytone.content.shaders.IShaderModifier;
+import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
 import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTracker;
-import net.mehvahdjukaar.polytone.content.shaders.IShader;
+import net.mehvahdjukaar.polytone.api.IShaderInputs;
+import net.mehvahdjukaar.polytone.api.LevelRenderListener;
 import com.google.gson.JsonElement;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -25,6 +26,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
 import org.joml.Vector3i;
 
 import java.util.ArrayList;
@@ -36,7 +38,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 //TODO: this only works for main render pass. add support (via configs) for secondary (far away) passes
-public class VoxelVolumeManager extends ContentManager<Void> implements IShaderModifier {
+public class VoxelVolumeManager extends ContentManager<Void> implements IShaderInputPatch, LevelRenderListener {
 
     public static final String SAMPLER = "InVoxelLight";
     public static final String ORIGIN = "PolyVoxelVolumeOrigin";
@@ -153,15 +155,15 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
 
     //a 3d sampler left on unit 0 next to a 2d one fails the whole draw, so any shader that samples these gets bound
     @Override
-    public boolean isUsedBy(IShader shader) {
+    public boolean appliesToShader(IShaderInputs shader) {
         int programId = shader.programId();
-        return IShaderModifier.super.isUsedBy(shader)
+        return IShaderInputPatch.super.appliesToShader(shader)
                 || GLHelper.usesUniform(programId, SAMPLER)
                 || GLHelper.usesUniform(programId, CELLS_SAMPLER)
                 || GLHelper.usesUniform(programId, FAR_SAMPLER);
     }
 
-    private boolean declaresVolumeUniforms(IShader shader) {
+    private boolean declaresVolumeUniforms(IShaderInputs shader) {
         for (String name : UNIFORM_NAMES) {
             if (shader.declaresUniform(name)) return true;
         }
@@ -169,7 +171,7 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
     }
 
     @Override
-    public void bindTo(IShader shader) {
+    public void bindToShader(IShaderInputs shader) {
         boolean irisOn = CompatHandler.irisShaderPackActive();
         boolean requestsVolume = Polytone.COLORED_LIGHTS.hasBlockLights() || declaresVolumeUniforms(shader);
         if (!irisOn && requestsVolume) requestedThisFrame = true;
@@ -208,7 +210,7 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
         }
     }
 
-    private static void bindPlacement(IShader shader, float originX, float originY, float originZ,
+    private static void bindPlacement(IShaderInputs shader, float originX, float originY, float originZ,
                                       int texelX, int texelY, int texelZ, int width, int height) {
         shader.getUniform(ORIGIN).set(originX, originY, originZ);
         shader.getUniform(ORIGIN_TEXEL).set(texelX, texelY, texelZ);
@@ -222,7 +224,7 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
         GLHelper.setProgramUniform(program, HEIGHT, height);
     }
 
-    private static void bindFarLight(IShader shader, @Nullable FarLightGrid far, Vec3 cameraPos) {
+    private static void bindFarLight(IShaderInputs shader, @Nullable FarLightGrid far, Vec3 cameraPos) {
         int program = shader.programId();
         if (far == null) {
             shader.getUniform(FAR_SIZE).set(0, 0, 0);
@@ -251,8 +253,8 @@ public class VoxelVolumeManager extends ContentManager<Void> implements IShaderM
         return v;
     }
 
-    //main pass only, LevelRendererMixin filters the rest
-    public void updateAfterRenderLevel(Camera camera) {
+    @Override
+    public void afterLevelRender(Camera camera, Matrix4f frustumMatrix, Matrix4f projectionMatrix) {
         //PostPass binds after this runs so post chains get it a frame late
         boolean wanted = requestedThisFrame;
         requestedThisFrame = false;

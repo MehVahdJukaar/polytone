@@ -4,9 +4,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
-import net.mehvahdjukaar.polytone.content.shaders.IShader;
+import net.mehvahdjukaar.polytone.api.IShaderInputs;
 import net.mehvahdjukaar.polytone.content.shaders.ExpressionUniforms;
-import net.mehvahdjukaar.polytone.content.shaders.IShaderModifier;
+import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 
@@ -72,10 +72,10 @@ public final class PostChainEffect {
         return activationCondition.evaluate() > 0;
     }
 
-    public void bindTo(IShader inputs, int depthTextureId) {
-        for (IShaderModifier modifier : Polytone.SHADER_MODIFIERS) {
-            if (modifier.isUsedBy(inputs)){
-                modifier.bindTo(inputs);
+    public void bindTo(IShaderInputs inputs, int depthTextureId) {
+        for (IShaderInputPatch binder : Polytone.SHADER_INPUT_PATCHES) {
+            if (binder.appliesToShader(inputs)){
+                binder.bindToShader(inputs);
             }
         }
         expressionUniforms.evaluate();

@@ -95,8 +95,9 @@ public class LevelRendererMixin {
         if (!LevelRenderPassTracker.popAndWasMain()) return;
 
         Polytone.POST_CHAINS.captureLevelDepthSnapshot();
-        Polytone.SHADOW_MAP.updateAfterRenderLevel(camera, frustumMatrix, projectionMatrix);
-        Polytone.VOXEL_VOLUME.updateAfterRenderLevel(camera);
+        for (var listener : Polytone.LEVEL_RENDER_LISTENERS) {
+            listener.afterLevelRender(camera, frustumMatrix, projectionMatrix);
+        }
     }
 
     // Join the async particle tick batch

@@ -6,7 +6,7 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
-import net.mehvahdjukaar.polytone.content.shaders.IShader;
+import net.mehvahdjukaar.polytone.api.IShaderInputs;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.EffectInstance;
 import net.minecraft.client.renderer.PostChain;
@@ -183,7 +183,7 @@ public class PostChainsManager extends ContentManager<PostChainEffect> {
     //vanilla post chains go through PostPass too, those we leave alone
     public void bindProcessingEffectTo(EffectInstance program) {
         if (processingEffect == null) return;
-        processingEffect.bindTo(IShader.ofEffectInstance(program), depthSnapshot.textureId());
+        processingEffect.bindTo(IShaderInputs.ofEffectInstance(program), depthSnapshot.textureId());
     }
 
     private boolean anyActiveChainUsesDepth() {

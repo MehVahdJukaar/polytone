@@ -4,8 +4,8 @@ import net.caffeinemc.mods.sodium.client.gl.shader.GlProgram;
 import net.caffeinemc.mods.sodium.client.render.chunk.ShaderChunkRenderer;
 import net.caffeinemc.mods.sodium.client.render.chunk.shader.ChunkShaderInterface;
 import net.caffeinemc.mods.sodium.client.render.chunk.terrain.TerrainRenderPass;
-import net.mehvahdjukaar.polytone.content.shaders.IShader;
-import net.mehvahdjukaar.polytone.content.shaders.IShaderModifier;
+import net.mehvahdjukaar.polytone.api.IShaderInputs;
+import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.Shadow;
@@ -26,14 +26,14 @@ public abstract class SodiumChunkRendererMixin {
     protected GlProgram<ChunkShaderInterface> activeProgram;
 
     @Unique
-    private final Map<GlProgram<?>, List<IShaderModifier>> polytone$modifiersByProgram = new IdentityHashMap<>();
+    private final Map<GlProgram<?>, List<IShaderInputPatch>> polytone$bindersByProgram = new IdentityHashMap<>();
 
     @Inject(method = "begin", remap = false, at = @At("TAIL"))
     private void polytone$bindExtraUniforms(TerrainRenderPass pass, CallbackInfo ci) {
-        IShader shader = IShader.ofGenericProgram(activeProgram.handle());
-        List<IShaderModifier> modifiers = polytone$modifiersByProgram.computeIfAbsent(activeProgram, p -> IShaderModifier.usedBy(shader));
-        for (var modifier : modifiers) {
-            modifier.bindTo(shader);
+        IShaderInputs shader = IShaderInputs.ofGenericProgram(activeProgram.handle());
+        List<IShaderInputPatch> binders = polytone$bindersByProgram.computeIfAbsent(activeProgram, p -> IShaderInputPatch.allApplyingTo(shader));
+        for (var binder : binders) {
+            binder.bindToShader(shader);
         }
     }
 }

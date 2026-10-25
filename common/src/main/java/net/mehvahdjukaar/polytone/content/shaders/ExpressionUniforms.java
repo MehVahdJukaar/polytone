@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
+import net.mehvahdjukaar.polytone.api.IShaderInputs;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
@@ -31,7 +32,7 @@ public class ExpressionUniforms {
     }
 
     //just copies what evaluate got last
-    public void bindTo(IShader shader) {
+    public void bindTo(IShaderInputs shader) {
         for (var e : values.object2FloatEntrySet()) {
             shader.getUniform(e.getKey()).set(e.getFloatValue());
         }

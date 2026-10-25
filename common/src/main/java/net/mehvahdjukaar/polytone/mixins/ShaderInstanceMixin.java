@@ -1,8 +1,8 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import com.mojang.blaze3d.shaders.Uniform;
-import net.mehvahdjukaar.polytone.content.shaders.IShaderModifier;
-import net.mehvahdjukaar.polytone.content.shaders.IShader;
+import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
+import net.mehvahdjukaar.polytone.api.IShaderInputs;
 import net.minecraft.client.renderer.ShaderInstance;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,19 +22,19 @@ public abstract class ShaderInstanceMixin {
     private List<Uniform> uniforms;
 
     @Unique
-    private List<IShaderModifier> polytone$declaredModifiers = null;
+    private List<IShaderInputPatch> polytone$declaredBinders = null;
     @Unique
-    private IShader polytone$instance = null;
+    private IShaderInputs polytone$instance = null;
 
     @Inject(method = "apply", at = @At("HEAD"))
     private void polytone$bindExtraUniforms(CallbackInfo ci) {
         ShaderInstance shader = (ShaderInstance) (Object) this;
-        if (polytone$declaredModifiers == null) {
-            polytone$instance = IShader.ofShaderInstance(shader, uniforms);
-            polytone$declaredModifiers = IShaderModifier.usedBy(polytone$instance);
+        if (polytone$declaredBinders == null) {
+            polytone$instance = IShaderInputs.ofShaderInstance(shader, uniforms);
+            polytone$declaredBinders = IShaderInputPatch.allApplyingTo(polytone$instance);
         }
-        for (var modifier : polytone$declaredModifiers) {
-            modifier.bindTo(polytone$instance);
+        for (var binder : polytone$declaredBinders) {
+            binder.bindToShader(polytone$instance);
         }
     }
 }

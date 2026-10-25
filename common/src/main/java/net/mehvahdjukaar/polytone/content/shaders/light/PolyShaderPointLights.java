@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.content.shaders.GLHelper;
-import net.mehvahdjukaar.polytone.content.shaders.IShader;
+import net.mehvahdjukaar.polytone.api.IShaderInputs;
 import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.FastColor;
@@ -45,7 +45,7 @@ public class PolyShaderPointLights implements PointLightStorage {
         lightsVersion++;
     }
 
-    public void bindTo(IShader shader) {
+    public void bindTo(IShaderInputs shader) {
         int program = shader.programId();
         //GUI items and the hand aren't in wotld space, and a portal view into another level isnt ours
         boolean inOurLevel = (LevelRenderPassTracker.isInLevelPass() || Polytone.POST_CHAINS.isProcessing())
@@ -68,7 +68,7 @@ public class PolyShaderPointLights implements PointLightStorage {
     }
 
     //specifically for veil sinc it keeps its own Uniform for every array element and uploads those after us
-    private void setUniformObjects(IShader shader) {
+    private void setUniformObjects(IShaderInputs shader) {
         shader.getUniform(COUNT).set(count);
         for (int i = 0; i < count; i++) {
             int o = i * 4;

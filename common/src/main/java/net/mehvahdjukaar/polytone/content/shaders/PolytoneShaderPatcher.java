@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.shaders.light;
+package net.mehvahdjukaar.polytone.content.shaders;
 
 import net.mehvahdjukaar.polytone.content.shaders.post.PostProgramImports;
 import net.minecraft.FileUtil;
@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 //nonsense regex magic that will inject our ight sampling inside all shaders that we deem need it. could have false positives
-public class LightShaderPatcher {
+public class PolytoneShaderPatcher {
 
     private static final Pattern TERRAIN_LIGHTMAP_READ = Pattern.compile("minecraft_sample_lightmap\\s*\\(\\s*Sampler2\\s*,\\s*UV2\\s*\\)");
     private static final Pattern ENTITY_LIGHTMAP_READ = Pattern.compile("texelFetch\\s*\\(\\s*Sampler2\\s*,\\s*UV2\\s*/\\s*16\\s*,\\s*0\\s*\\)");

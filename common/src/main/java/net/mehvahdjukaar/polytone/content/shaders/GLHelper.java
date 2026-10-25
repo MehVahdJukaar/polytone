@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
-import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.mehvahdjukaar.polytone.Polytone;
 import org.jetbrains.annotations.Nullable;
@@ -107,15 +106,6 @@ public class GLHelper {
                          int format, int type, ByteBuffer pixels) {
         setupUnpackState();
         GL45.glTextureSubImage3D(id, 0, x, y, z, width, height, depth, format, type, pixels);
-    }
-
-    //for depth only targets
-    public static void disableColorAttachment(RenderTarget target) {
-        int previous = GlStateManager.getBoundFramebuffer();
-        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, target.frameBufferId);
-        GL11.glDrawBuffer(GL11.GL_NONE);
-        GL11.glReadBuffer(GL11.GL_NONE);
-        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, previous);
     }
 
     //one call does create, compile, link and drops the shader object. compile errors end up in the program log

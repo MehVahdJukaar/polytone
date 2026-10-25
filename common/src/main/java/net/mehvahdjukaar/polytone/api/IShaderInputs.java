@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.shaders;
+package net.mehvahdjukaar.polytone.api;
 
 import com.mojang.blaze3d.shaders.AbstractUniform;
 import com.mojang.blaze3d.shaders.Uniform;
@@ -9,8 +9,8 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.ArrayList;
 import java.util.List;
 
-//both an effect instance or shaderInstance
-public interface IShader {
+//both an effect instance or shaderInstance. exposes its input capabilities
+public interface IShaderInputs {
 
     AbstractUniform getUniform(String name);
 
@@ -26,12 +26,12 @@ public interface IShader {
     //what shader_modifiers files are matched against. post effects have none
     List<ResourceLocation> getIds();
 
-    static IShader ofShaderInstance(ShaderInstance shader, List<Uniform> jsonUniforms) {
+    static IShaderInputs ofShaderInstance(ShaderInstance shader, List<Uniform> jsonUniforms) {
         List<ResourceLocation> ids = new ArrayList<>(3);
         addCoreId(ids, shader.getName());
         addCoreId(ids, shader.getVertexProgram().getName());
         addCoreId(ids, shader.getFragmentProgram().getName());
-        return new IShader() {
+        return new IShaderInputs() {
             @Override
             public AbstractUniform getUniform(String name) {
                 return shader.safeGetUniform(name);
@@ -67,8 +67,8 @@ public interface IShader {
         };
     }
 
-    static IShader ofEffectInstance(EffectInstance effect) {
-        return new IShader() {
+    static IShaderInputs ofEffectInstance(EffectInstance effect) {
+        return new IShaderInputs() {
             @Override
             public AbstractUniform getUniform(String name) {
                 return effect.safeGetUniform(name);
@@ -101,9 +101,9 @@ public interface IShader {
         };
     }
 
-    static IShader ofGenericProgram(int program) {
+    static IShaderInputs ofGenericProgram(int program) {
         AbstractUniform noUniform = new AbstractUniform();
-        return new IShader() {
+        return new IShaderInputs() {
             @Override
             public AbstractUniform getUniform(String name) {
                 return noUniform;

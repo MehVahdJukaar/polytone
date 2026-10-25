@@ -6,7 +6,7 @@ import net.caffeinemc.mods.sodium.client.render.chunk.vertex.format.ChunkVertexE
 import net.caffeinemc.mods.sodium.client.render.chunk.vertex.format.ChunkVertexType;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
-import net.mehvahdjukaar.polytone.content.shaders.light.LightShaderPatcher;
+import net.mehvahdjukaar.polytone.content.shaders.PolytoneShaderPatcher;
 import net.minecraft.core.Direction;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
@@ -38,7 +38,7 @@ public abstract class SodiumMeshBufferBuilderMixin {
         Direction face = polytone$faceOf(quad);
         if (face == null) return materialBits;
         //sorry if somebody else was using these
-        return materialBits | (face.ordinal() + 1) << LightShaderPatcher.SODIUM_MATERIAL_DIRECTION_BITS_SHIFT;
+        return materialBits | (face.ordinal() + 1) << PolytoneShaderPatcher.SODIUM_MATERIAL_DIRECTION_BITS_SHIFT;
     }
 
     @Unique
