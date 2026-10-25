@@ -7,7 +7,7 @@ import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.api.IShaderInputs;
 import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
-import net.mehvahdjukaar.polytone.api.IShaderSourcePatcher;
+import net.mehvahdjukaar.polytone.api.IShaderSourcePatch;
 import net.mehvahdjukaar.polytone.content.shaders.PolytoneShaderPatcher;
 import com.mojang.blaze3d.shaders.ShaderType;
 import net.minecraft.server.packs.resources.Resource;
@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-public class ColoredLightsManager extends ContentManager<ColoredLightEntry> implements IShaderInputPatch, IShaderSourcePatcher {
+public class ColoredLightsManager extends ContentManager<ColoredLightEntry> implements IShaderInputPatch, IShaderSourcePatch {
 
     public record BlockRule(PointLightProvider.ForBlock light, RuleTest predicate) {
         public boolean matches(BlockState state, RandomSource random) {

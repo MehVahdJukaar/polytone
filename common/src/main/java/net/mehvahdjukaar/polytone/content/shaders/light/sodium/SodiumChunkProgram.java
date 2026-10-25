@@ -9,7 +9,7 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import net.mehvahdjukaar.polytone.content.shaders.GLHelper;
 import net.mehvahdjukaar.polytone.content.shaders.IProgramWithModifiers.EnabledModifiers;
 import net.mehvahdjukaar.polytone.api.IShaderInputs;
-import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
+import net.mehvahdjukaar.polytone.content.shaders.PolytoneRenderHooks;
 import net.mehvahdjukaar.polytone.content.shaders.light.PolyShaderPointLights;
 import net.mehvahdjukaar.polytone.content.shaders.voxel.VoxelVolumeManager;
 import net.mehvahdjukaar.polytone.mixins.accessor.GlBufferAccessor;
@@ -46,9 +46,9 @@ public class SodiumChunkProgram implements IShaderInputs {
         GpuBuffer globals = RenderSystem.getGlobalSettingsUniform();
         if (globals != null) setUniform("Globals", globals.slice());
 
-        int generation = IShaderInputPatch.enabledListsGeneration();
+        int generation = PolytoneRenderHooks.inputPatchesGeneration();
         if (enabled == null || enabled.generation() != generation) {
-            enabled = new EnabledModifiers(IShaderInputPatch.allApplyingTo(this), generation);
+            enabled = new EnabledModifiers(PolytoneRenderHooks.inputPatchesFor(this), generation);
         }
         for (var modifier : enabled.modifiers()) {
             modifier.bindToShader(this);

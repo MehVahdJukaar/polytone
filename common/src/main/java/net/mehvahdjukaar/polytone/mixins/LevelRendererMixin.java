@@ -11,6 +11,7 @@ import net.mehvahdjukaar.polytone.content.particle.PreviewRenderTarget;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.content.particle.custom.ParticleLightCache;
 import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTracker;
+import net.mehvahdjukaar.polytone.content.shaders.PolytoneRenderHooks;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -99,10 +100,7 @@ public class LevelRendererMixin {
                                         ChunkSectionsToRender chunkSectionsToRender,
                                         CallbackInfo ci) {
         if (!LevelRenderPassTracker.popAndWasMain()) return;
-        Camera camera = minecraft.gameRenderer.getMainCamera();
-        for (var listener : Polytone.LEVEL_RENDER_LISTENERS) {
-            listener.afterLevelRender(camera, modelViewMatrix, cameraState.projectionMatrix);
-        }
+        PolytoneRenderHooks.afterLevelRender(minecraft.gameRenderer.getMainCamera(), modelViewMatrix, cameraState.projectionMatrix);
     }
 
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addMainPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lnet/minecraft/client/renderer/culling/Frustum;Lorg/joml/Matrix4fc;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;ZLnet/minecraft/client/renderer/state/level/LevelRenderState;Lnet/minecraft/client/DeltaTracker;Lnet/minecraft/util/profiling/ProfilerFiller;Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;)V",

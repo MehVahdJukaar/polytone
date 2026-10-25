@@ -8,7 +8,7 @@ import com.mojang.blaze3d.systems.RenderPassBackend;
 import net.mehvahdjukaar.polytone.content.shaders.IProgramWithModifiers;
 import net.mehvahdjukaar.polytone.content.shaders.IProgramWithModifiers.EnabledModifiers;
 import net.mehvahdjukaar.polytone.api.IShaderInputs;
-import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
+import net.mehvahdjukaar.polytone.content.shaders.PolytoneRenderHooks;
 import net.mehvahdjukaar.polytone.mixins.accessor.GlRenderPassAccessor;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,13 +32,13 @@ public class RenderPassMixin {
         GlProgram program = glPipeline.program();
         IProgramWithModifiers holder = (IProgramWithModifiers) program;
         EnabledModifiers enabled = holder.polytone$getModifiers();
-        int generation = IShaderInputPatch.enabledListsGeneration();
+        int generation = PolytoneRenderHooks.inputPatchesGeneration();
         boolean isStale = enabled == null || enabled.generation() != generation;
         if (!isStale && enabled.modifiers().isEmpty()) return;
 
         IShaderInputs shader = IShaderInputs.ofRenderPass((RenderPass) (Object) this, program, renderPipeline);
         if (isStale) {
-            enabled = new EnabledModifiers(IShaderInputPatch.allApplyingTo(shader), generation);
+            enabled = new EnabledModifiers(PolytoneRenderHooks.inputPatchesFor(shader), generation);
             holder.polytone$setModifiers(enabled);
         }
         for (var modifier : enabled.modifiers()) {

@@ -83,7 +83,7 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
             byShader.clear();
             byPostPassPipeline.clear();
         }
-        IShaderInputPatch.invalidateEnabledLists();
+        PolytoneRenderHooks.invalidateInputPatches();
     }
 
     public void onClose() {
@@ -95,7 +95,7 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
     // External callers (e.g. PostChainActivator) bind their buffers under a shader id.
     public void registerExternal(Identifier shaderId, ExpressionUniformBuffers buffers) {
         byShader.computeIfAbsent(shaderId, k -> new ArrayList<>()).add(buffers);
-        IShaderInputPatch.invalidateEnabledLists();
+        PolytoneRenderHooks.invalidateInputPatches();
     }
 
     public void unregisterExternal(Identifier shaderId, ExpressionUniformBuffers buffers) {
@@ -104,7 +104,7 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
 
     public void registerOnPostPass(Identifier pipelineLocation, ExpressionUniformBuffers buffers) {
         byPostPassPipeline.computeIfAbsent(pipelineLocation, k -> new ArrayList<>()).add(buffers);
-        IShaderInputPatch.invalidateEnabledLists();
+        PolytoneRenderHooks.invalidateInputPatches();
     }
 
     public void unregisterFromPostPass(Identifier pipelineLocation, ExpressionUniformBuffers buffers) {
@@ -118,7 +118,7 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
             list.remove(buffers);
             if (list.isEmpty()) map.remove(key);
         }
-        IShaderInputPatch.invalidateEnabledLists();
+        PolytoneRenderHooks.invalidateInputPatches();
     }
 
     //MUST be called once per frame from a point where no render pass is open

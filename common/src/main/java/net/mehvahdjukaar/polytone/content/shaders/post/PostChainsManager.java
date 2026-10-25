@@ -17,6 +17,7 @@ import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.api.IShaderInputs;
 import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
+import net.mehvahdjukaar.polytone.content.shaders.PolytoneRenderHooks;
 import net.mehvahdjukaar.polytone.content.shaders.ShaderUniformsManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelTargetBundle;
@@ -71,13 +72,13 @@ public class PostChainsManager extends ContentManager<PostChainActivator> implem
             activators.clear();
         }
         samplersByPassPipeline.clear();
-        IShaderInputPatch.invalidateEnabledLists();
+        PolytoneRenderHooks.invalidateInputPatches();
     }
 
     public void registerSamplers(Identifier pipelineLocation, Map<String, Identifier> samplers) {
         if (samplers.isEmpty()) return;
         samplersByPassPipeline.computeIfAbsent(pipelineLocation, k -> new ArrayList<>()).add(samplers);
-        IShaderInputPatch.invalidateEnabledLists();
+        PolytoneRenderHooks.invalidateInputPatches();
     }
 
     public void unregisterSamplers(Identifier pipelineLocation, Map<String, Identifier> samplers) {
@@ -86,7 +87,7 @@ public class PostChainsManager extends ContentManager<PostChainActivator> implem
             list.remove(samplers);
             if (list.isEmpty()) samplersByPassPipeline.remove(pipelineLocation);
         }
-        IShaderInputPatch.invalidateEnabledLists();
+        PolytoneRenderHooks.invalidateInputPatches();
     }
 
     @Override

@@ -29,9 +29,6 @@ import net.mehvahdjukaar.polytone.content.lightmap.GuiLightmap;
 import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticlesManager;
 import net.mehvahdjukaar.polytone.content.particle.modifiers.ParticleModifiersManager;
-import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
-import net.mehvahdjukaar.polytone.api.IShaderSourcePatcher;
-import net.mehvahdjukaar.polytone.api.LevelRenderListener;
 import net.mehvahdjukaar.polytone.content.shaders.PolyGlobalUniforms;
 import net.mehvahdjukaar.polytone.content.shaders.post.PostChainsManager;
 import net.mehvahdjukaar.polytone.content.shaders.ShaderUniformsManager;
@@ -110,9 +107,6 @@ public class Polytone {
     public static final ConfigsManager CONFIGS = new ConfigsManager();
 
     public static final PolyGlobalUniforms GLOBAL_UNIFORMS = new PolyGlobalUniforms();
-    public static final List<IShaderInputPatch> SHADER_INPUT_PATCHES = new ArrayList<>(List.of(GLOBAL_UNIFORMS, VOXEL_VOLUME, COLORED_LIGHTS, SHADER_UNIFORMS, POST_CHAINS));
-    public static final List<IShaderSourcePatcher> SHADER_PATCHERS = new ArrayList<>(List.of(COLORED_LIGHTS));
-    public static final List<LevelRenderListener> LEVEL_RENDER_LISTENERS = new ArrayList<>(List.of(VOXEL_VOLUME));
     private static final List<ContentManager<?>> ADDON_CONTENT_MANAGERS = new ArrayList<>();
 
     //colored lights before the modifiers, their colored_light fields add to it
