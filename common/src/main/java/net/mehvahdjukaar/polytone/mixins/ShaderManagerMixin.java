@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.shaders.ShaderType;
-import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.content.shaders.PolytoneRenderHooks;
 import net.minecraft.client.renderer.ShaderManager;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
@@ -22,11 +22,9 @@ public abstract class ShaderManagerMixin {
                                                      @Local(argsOnly = true) Map<Identifier, Resource> files) {
         Identifier shaderId = type.idConverter().fileToId(location);
         //sodium terrain pipelines load their glsl through here too
-        boolean isSodiumChunkVertex = type == ShaderType.VERTEX && shaderId.getNamespace().equals("sodium");
-        for (var patcher : Polytone.SHADER_PATCHERS) {
-            source = isSodiumChunkVertex ? patcher.patchSodiumChunkShaderSource(source)
-                    : patcher.patchShaderSource(shaderId, type, source, files);
+        if (type == ShaderType.VERTEX && shaderId.getNamespace().equals("sodium")) {
+            return PolytoneRenderHooks.patchSodiumChunkShader(source);
         }
-        return source;
+        return PolytoneRenderHooks.patchShader(shaderId, type, source, files);
     }
 }

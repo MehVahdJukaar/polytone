@@ -10,6 +10,7 @@ import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.content.particle.PreviewRenderTarget;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTracker;
+import net.mehvahdjukaar.polytone.content.shaders.PolytoneRenderHooks;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -86,10 +87,7 @@ public class LevelRendererMixin {
                                         boolean shouldRenderSky,
                                         CallbackInfo ci) {
         if (!LevelRenderPassTracker.popAndWasMain()) return;
-        Camera camera = Minecraft.getInstance().gameRenderer.mainCamera();
-        for (var listener : Polytone.LEVEL_RENDER_LISTENERS) {
-            listener.afterLevelRender(camera, modelViewMatrix, cameraState.projectionMatrix);
-        }
+        PolytoneRenderHooks.afterLevelRender(Minecraft.getInstance().gameRenderer.mainCamera(), modelViewMatrix, cameraState.projectionMatrix);
     }
 
     // after weather, the last world pass that depth tests
