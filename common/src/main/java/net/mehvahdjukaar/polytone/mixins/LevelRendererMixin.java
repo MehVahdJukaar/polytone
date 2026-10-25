@@ -71,15 +71,25 @@ public class LevelRendererMixin {
         if (!LevelRenderPassTracker.pushAndIsMain()) return;
         Camera camera = Minecraft.getInstance().gameRenderer.mainCamera();
         Polytone.GLOBAL_UNIFORMS.capture(cameraState.projectionMatrix, modelViewMatrix, deltaTracker.getGameTimeDeltaTicks());
-        Polytone.SHADOW_MAP.updateBeforeRenderLevel(terrainFog, camera, modelViewMatrix, cameraState.projectionMatrix);
         Polytone.COLORED_LIGHTS.beforeRenderLevel(camera.position());
     }
 
     //the frame graph already ran here, no pass is open
     @Inject(method = "render", at = @At("RETURN"))
-    public void poly$popLevelRenderPass(CallbackInfo ci) {
+    public void poly$popLevelRenderPass(GraphicsResourceAllocator resourceAllocator,
+                                        DeltaTracker deltaTracker,
+                                        boolean renderOutline,
+                                        CameraRenderState cameraState,
+                                        Matrix4fc modelViewMatrix,
+                                        GpuBufferSlice terrainFog,
+                                        Vector4f fogColor,
+                                        boolean shouldRenderSky,
+                                        CallbackInfo ci) {
         if (!LevelRenderPassTracker.popAndWasMain()) return;
-        Polytone.VOXEL_VOLUME.updateAfterRenderLevel(Minecraft.getInstance().gameRenderer.mainCamera());
+        Camera camera = Minecraft.getInstance().gameRenderer.mainCamera();
+        for (var listener : Polytone.LEVEL_RENDER_LISTENERS) {
+            listener.afterLevelRender(camera, modelViewMatrix, cameraState.projectionMatrix);
+        }
     }
 
     // after weather, the last world pass that depth tests

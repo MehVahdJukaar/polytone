@@ -86,7 +86,6 @@
     "SkyRendererMixin",
     "SmithingScreenMixin",
     "compat.SodiumBlockRendererMixin",
-    "compat.SodiumChunkRendererMixin",
     "compat.SodiumMeshBufferBuilderMixin",
     "SodiumDefaultChunkRendererMixin",
     "SoundEventRegistrationSerializerMixin",
@@ -104,13 +103,10 @@
     "accessor.DimensionTypeAccessor",
     "accessor.DustParticleOptionAccessor",
     "accessor.GlBufferAccessor",
-    "accessor.LevelRendererShadowAccessor",
     "accessor.ParticleAccessor",
     "accessor.PostPassAccessor",
     "accessor.GlRenderPassAccessor",
-    "accessor.VulkanRenderPassAccessor",
-    "compat.SodiumRenderSectionManagerAccessor",
-    "compat.SodiumWorldRendererShadowAccessor"
+    "accessor.VulkanRenderPassAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

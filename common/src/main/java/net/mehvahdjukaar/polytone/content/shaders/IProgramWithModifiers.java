@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
+import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -17,6 +18,6 @@ public interface IProgramWithModifiers {
     //-1 when the program isnt a GL one
     int polytone$getProgramId();
 
-    record EnabledModifiers(List<IShaderModifier> modifiers, int generation) {
+    record EnabledModifiers(List<IShaderInputPatch> modifiers, int generation) {
     }
 }
