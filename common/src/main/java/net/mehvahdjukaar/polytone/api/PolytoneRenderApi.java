@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTracker;
+import net.mehvahdjukaar.polytone.content.shaders.PolytoneRenderHooks;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.ShaderInstance;
@@ -18,17 +19,17 @@ import java.util.function.Consumer;
 public class PolytoneRenderApi {
 
     //patchers run in registration order. polytones own colored lights go first
-    public static void registerShaderPatcher(IShaderSourcePatcher patcher) {
-        Polytone.SHADER_PATCHERS.add(patcher);
+    public static void registerShaderPatcher(IShaderSourcePatch patcher) {
+        PolytoneRenderHooks.addSourcePatcher(patcher);
     }
 
     //binds uniforms and samplers on any shader declaring one of its enabling uniforms, core and post alike
     public static void registerShaderInputPatch(IShaderInputPatch patch) {
-        Polytone.SHADER_INPUT_PATCHES.add(patch);
+        PolytoneRenderHooks.addInputPatch(patch);
     }
 
     public static void registerLevelRenderListener(LevelRenderListener listener) {
-        Polytone.LEVEL_RENDER_LISTENERS.add(listener);
+        PolytoneRenderHooks.addLevelRenderListener(listener);
     }
 
     public static void registerContentManager(ContentManager<?> manager) {

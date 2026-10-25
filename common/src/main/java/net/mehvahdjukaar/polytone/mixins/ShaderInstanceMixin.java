@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.mixins;
 import com.mojang.blaze3d.shaders.Uniform;
 import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
 import net.mehvahdjukaar.polytone.api.IShaderInputs;
+import net.mehvahdjukaar.polytone.content.shaders.PolytoneRenderHooks;
 import net.minecraft.client.renderer.ShaderInstance;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -31,7 +32,7 @@ public abstract class ShaderInstanceMixin {
         ShaderInstance shader = (ShaderInstance) (Object) this;
         if (polytone$declaredBinders == null) {
             polytone$instance = IShaderInputs.ofShaderInstance(shader, uniforms);
-            polytone$declaredBinders = IShaderInputPatch.allApplyingTo(polytone$instance);
+            polytone$declaredBinders = PolytoneRenderHooks.inputPatchesFor(polytone$instance);
         }
         for (var binder : polytone$declaredBinders) {
             binder.bindToShader(polytone$instance);

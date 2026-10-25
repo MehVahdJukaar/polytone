@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.api;
 
 //gets every shader source before it compiles. return it untouched when its not yours
-public interface IShaderSourcePatcher {
+public interface IShaderSourcePatch {
 
     String patchShaderSource(String source);
 

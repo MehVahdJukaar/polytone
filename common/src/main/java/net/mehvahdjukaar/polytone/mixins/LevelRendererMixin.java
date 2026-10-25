@@ -12,6 +12,7 @@ import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.content.particle.custom.ParticleLightCache;
 import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTracker;
 import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticleHandler;
+import net.mehvahdjukaar.polytone.content.shaders.PolytoneRenderHooks;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.DeltaTracker;
@@ -95,9 +96,7 @@ public class LevelRendererMixin {
         if (!LevelRenderPassTracker.popAndWasMain()) return;
 
         Polytone.POST_CHAINS.captureLevelDepthSnapshot();
-        for (var listener : Polytone.LEVEL_RENDER_LISTENERS) {
-            listener.afterLevelRender(camera, frustumMatrix, projectionMatrix);
-        }
+        PolytoneRenderHooks.afterLevelRender(camera, frustumMatrix, projectionMatrix);
     }
 
     // Join the async particle tick batch

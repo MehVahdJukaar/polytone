@@ -6,6 +6,7 @@ import net.caffeinemc.mods.sodium.client.render.chunk.shader.ChunkShaderInterfac
 import net.caffeinemc.mods.sodium.client.render.chunk.terrain.TerrainRenderPass;
 import net.mehvahdjukaar.polytone.api.IShaderInputs;
 import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
+import net.mehvahdjukaar.polytone.content.shaders.PolytoneRenderHooks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.Shadow;
@@ -31,7 +32,7 @@ public abstract class SodiumChunkRendererMixin {
     @Inject(method = "begin", remap = false, at = @At("TAIL"))
     private void polytone$bindExtraUniforms(TerrainRenderPass pass, CallbackInfo ci) {
         IShaderInputs shader = IShaderInputs.ofGenericProgram(activeProgram.handle());
-        List<IShaderInputPatch> binders = polytone$bindersByProgram.computeIfAbsent(activeProgram, p -> IShaderInputPatch.allApplyingTo(shader));
+        List<IShaderInputPatch> binders = polytone$bindersByProgram.computeIfAbsent(activeProgram, p -> PolytoneRenderHooks.inputPatchesFor(shader));
         for (var binder : binders) {
             binder.bindToShader(shader);
         }

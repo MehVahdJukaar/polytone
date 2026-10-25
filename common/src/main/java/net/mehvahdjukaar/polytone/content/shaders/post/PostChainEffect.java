@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
 import net.mehvahdjukaar.polytone.api.IShaderInputs;
 import net.mehvahdjukaar.polytone.content.shaders.ExpressionUniforms;
 import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
+import net.mehvahdjukaar.polytone.content.shaders.PolytoneRenderHooks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 
@@ -73,10 +74,8 @@ public final class PostChainEffect {
     }
 
     public void bindTo(IShaderInputs inputs, int depthTextureId) {
-        for (IShaderInputPatch binder : Polytone.SHADER_INPUT_PATCHES) {
-            if (binder.appliesToShader(inputs)){
-                binder.bindToShader(inputs);
-            }
+        for (IShaderInputPatch patch : PolytoneRenderHooks.inputPatchesFor(inputs)) {
+            patch.bindToShader(inputs);
         }
         expressionUniforms.evaluate();
         expressionUniforms.bindTo(inputs);

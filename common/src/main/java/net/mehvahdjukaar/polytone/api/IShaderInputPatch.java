@@ -1,8 +1,5 @@
 package net.mehvahdjukaar.polytone.api;
 
-import net.mehvahdjukaar.polytone.Polytone;
-
-import java.util.ArrayList;
 import java.util.List;
 
 public interface IShaderInputPatch {
@@ -17,13 +14,5 @@ public interface IShaderInputPatch {
             if (shader.hasUniform(name)) return true;
         }
         return false;
-    }
-
-    static List<IShaderInputPatch> allApplyingTo(IShaderInputs shader) {
-        List<IShaderInputPatch> enabled = new ArrayList<>();
-        for (var binder : Polytone.SHADER_INPUT_PATCHES) {
-            if (binder.appliesToShader(shader)) enabled.add(binder);
-        }
-        return enabled;
     }
 }

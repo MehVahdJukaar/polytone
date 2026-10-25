@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins.compat;
 
 import net.caffeinemc.mods.sodium.client.gl.shader.ShaderParser;
-import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.content.shaders.PolytoneRenderHooks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,9 +15,6 @@ public abstract class SodiumShaderParserMixin {
     @ModifyVariable(method = "parseShader(Ljava/lang/String;Lnet/caffeinemc/mods/sodium/client/gl/shader/ShaderConstants;)Lnet/caffeinemc/mods/sodium/client/gl/shader/ShaderParser$ParsedShader;",
             remap = false, at = @At("HEAD"), argsOnly = true)
     private static String polytone$patchChunkShader(String source) {
-        for (var patch : Polytone.SHADER_PATCHERS) {
-            source = patch.patchSodiumChunkShaderSource(source);
-        }
-        return source;
+        return PolytoneRenderHooks.patchSodiumChunkShader(source);
     }
 }
