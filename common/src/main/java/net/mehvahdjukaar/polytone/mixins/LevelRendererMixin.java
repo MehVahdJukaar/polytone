@@ -18,13 +18,13 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Constant;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -78,18 +78,18 @@ public class LevelRendererMixin {
     @Inject(method = "renderLevel", at = @At("HEAD"))
     private void polytone$trackLevelRenderPass(DeltaTracker deltaTracker, boolean renderBlockOutline,
                                                Camera camera, GameRenderer gameRenderer,
-                                               net.minecraft.client.renderer.LightTexture lightTexture,
-                                               org.joml.Matrix4f frustumMatrix, org.joml.Matrix4f projectionMatrix,
+                                               LightTexture lightTexture,
+                                               Matrix4f frustumMatrix, Matrix4f projectionMatrix,
                                                CallbackInfo ci) {
         LevelRenderPassTracker.push(camera);
     }
 
-    // before GameRenderer clears depth for first-person hand rendering
+    //before GameRenderer clears depth for first-person hand rendering
     @Inject(method = "renderLevel", at = @At("TAIL"))
     private void polytone$captureLevelDepth(DeltaTracker deltaTracker, boolean renderBlockOutline,
                                             Camera camera, GameRenderer gameRenderer,
-                                            net.minecraft.client.renderer.LightTexture lightTexture,
-                                            org.joml.Matrix4f frustumMatrix, org.joml.Matrix4f projectionMatrix,
+                                            LightTexture lightTexture,
+                                            Matrix4f frustumMatrix, Matrix4f projectionMatrix,
                                             CallbackInfo ci) {
         Polytone.CUSTOM_PARTICLES.gpuParticles.render(camera, gameRenderer, lightTexture, frustumMatrix, projectionMatrix,
                 deltaTracker.getGameTimeDeltaPartialTick(false));
@@ -103,13 +103,13 @@ public class LevelRendererMixin {
     @Inject(method = "renderLevel", at = @At("HEAD"))
     private void polytone$joinAsyncParticles(DeltaTracker deltaTracker, boolean renderBlockOutline,
                                              Camera camera, GameRenderer gameRenderer,
-                                             net.minecraft.client.renderer.LightTexture lightTexture,
-                                             org.joml.Matrix4f frustumMatrix, org.joml.Matrix4f projectionMatrix,
+                                             LightTexture lightTexture,
+                                             Matrix4f frustumMatrix, Matrix4f projectionMatrix,
                                              CallbackInfo ci) {
         PolytoneAsyncParticleHandler.awaitTicks();
     }
 
-    @ModifyConstant(method = "drawStars", constant = @Constant(intValue = 1500))
+    @ModifyExpressionValue(method = "drawStars", at = @At(value = "CONSTANT", args = "intValue=1500"))
     private int polytone$modifyStarCount(int original) {
         return Polytone.COLORS.getStarCount(original);
     }

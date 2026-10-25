@@ -130,8 +130,8 @@ public class Parsed<T> {
         return new Parsed<>(enabled, value, id, priority);
     }
 
-    // when partial codec is null it will give empty parsed on condition failure
-    public static <A, J> SortedMap<A> batchParseOrPartial(java.util.Map<ResourceLocation, J> jsons,
+    //when partial codec is null it will give empty parsed on condition failure
+    public static <A, J> SortedMap<A> batchParseOrPartial(Map<ResourceLocation, J> jsons,
                                                           Decoder<A> fullCodec,
                                                           @Nullable Decoder<A> codecWhenConditionIsNotMet,
                                                           DynamicOps<J> ops, String jsonTypeName) {
@@ -145,12 +145,12 @@ public class Parsed<T> {
         return treeMap;
     }
 
-    public static <A, J> SortedMap<A> batchParseAlways(java.util.Map<ResourceLocation, J> jsons,
+    public static <A, J> SortedMap<A> batchParseAlways(Map<ResourceLocation, J> jsons,
                                                        Decoder<A> codec, DynamicOps<J> ops, String jsonTypeName) {
         return batchParseOrPartial(jsons, codec, codec, ops, jsonTypeName);
     }
 
-    public static <A, J> Iterable<Map.Entry<ResourceLocation, A>> batchParseOnlyEnabled(java.util.Map<ResourceLocation, J> jsons,
+    public static <A, J> Iterable<Map.Entry<ResourceLocation, A>> batchParseOnlyEnabled(Map<ResourceLocation, J> jsons,
                                                                                         Decoder<A> codec, DynamicOps<J> ops, String jsonTypeName) {
         return batchParseOrPartial(jsons, codec, null, ops, jsonTypeName)
                 .entrySet().stream().filter(p -> p.getValue().isEnabled)

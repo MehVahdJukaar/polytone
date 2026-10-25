@@ -158,7 +158,7 @@ public record Targets(List<Entry> entries) {
         private static Codec<OptionalEntry> codec(Codec<Entry> entryCodec) {
             return RecordCodecBuilder.create(i -> i.group(
                     entryCodec.fieldOf("id").forGetter(OptionalEntry::entry),
-                    com.mojang.serialization.Codec.BOOL.optionalFieldOf("required", true).forGetter(OptionalEntry::required)
+                    Codec.BOOL.optionalFieldOf("required", true).forGetter(OptionalEntry::required)
             ).apply(i, OptionalEntry::new));
         }
 
@@ -205,7 +205,7 @@ public record Targets(List<Entry> entries) {
     }
 
     private record TagLocation(ResourceLocation id) implements Entry {
-        public static final Codec<TagLocation> TAG_CODEC = com.mojang.serialization.Codec.STRING.flatXmap(s -> {
+        public static final Codec<TagLocation> TAG_CODEC = Codec.STRING.flatXmap(s -> {
                     if (s.startsWith("#")) {
                         return ResourceLocation.read(s.substring(1)).map(TagLocation::new);
                     } else return DataResult.error(() -> "Tag location must start with #");

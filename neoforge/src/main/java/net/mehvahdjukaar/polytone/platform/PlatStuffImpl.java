@@ -66,6 +66,7 @@ import net.neoforged.neoforge.client.event.RegisterShadersEvent;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
+import org.jetbrains.annotations.Contract;
 import org.joml.Vector3f;
 import sereneseasons.api.season.SeasonHelper;
 
@@ -145,7 +146,7 @@ public class PlatStuffImpl {
         return s;
     }
 
-    @org.jetbrains.annotations.Contract
+    @Contract
     public static boolean isModLoaded(String namespace) {
         return ModList.get().isLoaded(namespace);
     }
@@ -169,9 +170,7 @@ public class PlatStuffImpl {
     }
 
     public static void sortTabs() {
-        // NeoForge sortTabs() appends to DEFAULT_TABS without clearing it first, so we must reset
-        // before re-sorting when dynamic tabs are registered. Guard against re-sorting when the
-        // registry doesn't yet contain all vanilla category tabs (would IndexOutOfBounds inside NeoForge).
+        //need to reset first
         int categoryTabs = 0;
         for (CreativeModeTab tab : BuiltInRegistries.CREATIVE_MODE_TAB) {
             if (tab.getType() == CreativeModeTab.Type.CATEGORY) {
@@ -211,8 +210,6 @@ public class PlatStuffImpl {
 
 
     public static void addTabEventForTab(ResourceKey<CreativeModeTab> key) {
-        // No-op on NeoForge: a single BuildCreativeModeTabContentsEvent listener registered in
-        // PolytoneForge already fires for every tab, so we don't need per-tab registration.
     }
 
     public static CreativeModeTab createCreativeTab(ResourceLocation id) {

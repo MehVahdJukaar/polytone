@@ -75,6 +75,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Contract;
 import org.joml.Vector3f;
 import sereneseasons.api.season.SeasonHelper;
 
@@ -122,7 +123,7 @@ public class PlatStuffImpl {
         mapper.idToT.set(id, null);
     }
 
-    @org.jetbrains.annotations.Contract
+    @Contract
     public static ItemColor getItemColor(ItemColors colors, Item item) {
         return ((ItemColorsAccessor) colors).getItemColors().byId(BuiltInRegistries.ITEM.getId(item));
     }
@@ -135,7 +136,7 @@ public class PlatStuffImpl {
         return FabricLoader.getInstance().getMappingResolver().mapClassName("official", s);
     }
 
-    @org.jetbrains.annotations.Contract
+    @Contract
     public static boolean isModLoaded(String namespace) {
         return FabricLoader.getInstance().isModLoaded(namespace);
     }
@@ -478,8 +479,6 @@ public class PlatStuffImpl {
     }
 
     public static void matchStencil(RenderTarget main, RenderTarget snapshot) {
-        // Fabric/vanilla has no enableStencil(); the main target is always plain depth, so there is
-        // nothing to mirror and copyDepthFrom's depth blit always matches.
     }
 
 }

@@ -4,6 +4,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.Entity;
@@ -114,7 +115,9 @@ public class ClientFrameTicker {
         }
         screenTime++;
         Polytone.GLOBAL_EXPRESSION.tick(level);
-        if (level instanceof net.minecraft.client.multiplayer.ClientLevel c) Polytone.COLORED_LIGHTS.onTick(c, cameraPos);
+        if (level instanceof ClientLevel c) {
+            Polytone.COLORED_LIGHTS.onTick(c, cameraPos);
+        }
         Polytone.POST_CHAINS.tick();
         TokenBucketTracker.tick();
     }
