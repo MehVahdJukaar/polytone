@@ -232,7 +232,6 @@ accessible field net/minecraft/client/renderer/culling/Frustum camX D
 accessible field net/minecraft/client/renderer/culling/Frustum camY D
 accessible field net/minecraft/client/renderer/culling/Frustum camZ D
 
-accessible field net/minecraft/client/renderer/LevelRenderer viewArea Lnet/minecraft/client/renderer/ViewArea;
 accessible field net/minecraft/client/renderer/LevelRenderer skyRenderer Lnet/minecraft/client/renderer/SkyRenderer;
 accessible method net/minecraft/client/renderer/SkyRenderer buildStars ()Lcom/mojang/renderpearl/api/buffers/GpuBuffer;
 accessible field net/minecraft/client/renderer/SkyRenderer starBuffer Lcom/mojang/renderpearl/api/buffers/GpuBuffer;
@@ -240,10 +239,4 @@ mutable field net/minecraft/client/renderer/SkyRenderer starBuffer Lcom/mojang/r
 #fabric dumb
 mutable field net/minecraft/client/gui/components/debug/DebugScreenEntries PROFILES Ljava/util/Map;
 
-# Sodium shadow replay needs the GL backend's DirectStateAccess to build an FBO for the shadow
-# attachments. GlDevice is package-private.
 accessible class com/mojang/renderpearl/backend/opengl/GlDevice
-
-# Shadow pass walks every loaded section itself (same set the main cull starts from). 26.2 made the
-# storage private.
-accessible field net/minecraft/client/renderer/ViewArea sections Lnet/minecraft/client/RotatingSectionStorage;
