@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
+import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL41;
@@ -61,7 +62,15 @@ public class GLHelper {
 
     //DSA so vanillas active texture is never touched
     public static void bindTextureUnit(int unit, int textureId) {
-        GL45.glBindTextureUnit(unit, textureId);
+        if (GL.getCapabilities().glBindTextureUnit != 0L) {
+            GL45.glBindTextureUnit(unit, textureId);
+            return;
+        }
+        //mac.... 2d only, 3d textures need 4.5 anyway. raw gl since GlStateManager only tracks 12 units
+        int previous = GL11.glGetInteger(GL13.GL_ACTIVE_TEXTURE);
+        GL13.glActiveTexture(GL13.GL_TEXTURE0 + unit);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureId);
+        GL13.glActiveTexture(previous);
     }
 
     //link time and flag changes only. GlCommandEncoder caches the bound program so put the old one back
