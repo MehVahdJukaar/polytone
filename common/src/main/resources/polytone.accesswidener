@@ -230,8 +230,10 @@ accessible field net/minecraft/client/renderer/culling/Frustum camY D
 accessible field net/minecraft/client/renderer/culling/Frustum camZ D
 
 accessible field net/minecraft/client/renderer/LevelRenderer viewArea Lnet/minecraft/client/renderer/ViewArea;
-accessible method net/minecraft/client/renderer/LevelRenderer renderSectionLayer (Lnet/minecraft/client/renderer/RenderType;DDDLorg/joml/Matrix4f;Lorg/joml/Matrix4f;)V
-accessible method net/minecraft/client/renderer/LevelRenderer createStars ()V
+accessible field net/minecraft/client/renderer/LevelRenderer skyRenderer Lnet/minecraft/client/renderer/SkyRenderer;
+accessible method net/minecraft/client/renderer/SkyRenderer buildStars ()Lcom/mojang/blaze3d/buffers/GpuBuffer;
+accessible field net/minecraft/client/renderer/SkyRenderer starBuffer Lcom/mojang/blaze3d/buffers/GpuBuffer;
+mutable field net/minecraft/client/renderer/SkyRenderer starBuffer Lcom/mojang/blaze3d/buffers/GpuBuffer;
 #fabric dumb
 mutable field net/minecraft/client/gui/components/debug/DebugScreenEntries PROFILES Ljava/util/Map;
 

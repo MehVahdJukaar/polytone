@@ -10,11 +10,9 @@ import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.mehvahdjukaar.polytone.common.expressions.impl.EntityExp;
 import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
 import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
-import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
@@ -33,7 +31,6 @@ import net.minecraft.client.resources.SplashManager;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -275,8 +272,12 @@ public class ColorManager extends SingleFileContentManager<Void> {
                     return;
                 case "boss_fog_distance":
                     bossFogDistance = parseFloat(e);
-                case "star_size" -> starSize = decodeSimpleExp(v);
-                case "star_count" -> starCount = Math.max(0, (int) decodeSimpleExp(v).evaluate());
+                    return;
+                case "star_size":
+                    starSize = decodeSimpleExp(e);
+                    return;
+                case "star_count":
+                    starCount = Math.max(0, (int) decodeSimpleExp(e).evaluate());
             }
         });
 
@@ -647,7 +648,9 @@ public class ColorManager extends SingleFileContentManager<Void> {
     @Override
     protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
         //star mesh is baked once
-        Minecraft.getInstance().levelRenderer.createStars();
+        var sky = Minecraft.getInstance().levelRenderer.skyRenderer;
+        sky.starBuffer.close();
+        sky.starBuffer = sky.buildStars();
     }
 
     @Override
