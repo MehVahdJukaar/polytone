@@ -122,14 +122,13 @@ public class CreativeTabsModifiersManager extends ContentManager<CreativeTabModi
         if (mod.registerTab()) {
             targets = Targets.ofIds(fileId);
         }
+
         for (var tab : targets.compute(fileId, BuiltInRegistries.CREATIVE_MODE_TAB)) {
             ResourceKey<CreativeModeTab> key = tab.unwrapKey().get();
             modifiers.merge(key, mod, CreativeTabModifier::merge);
         }
     }
 
-    // Called from CreativeModeTabMixin at the tail of CreativeModeTab#buildContents, so it always
-    // runs after every other mod's tab event on both NeoForge and Fabric. See that mixin.
     public void modifyTab(ItemToTabEvent event, HolderLookup.Provider access) {
         var tab = event.getTab();
         CreativeTabModifier overriding = override == null ? null : override.modifierFor(tab);
@@ -141,10 +140,7 @@ public class CreativeTabsModifiersManager extends ContentManager<CreativeTabModi
         }
     }
 
-    // Stands in for the loaded modifier on the tabs it covers, so the editor can try an unsaved file
-    // without a reload. Replaces rather than stacks: the edited file is already part of the loaded
-    // merge, so applying both would double its item additions. The previous state comes back through
-    // onApplied, so whoever installed the override can put the tab back.
+
     public interface ModifierOverride {
 
         @Nullable

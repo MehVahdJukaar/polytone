@@ -13,7 +13,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-// both hooks are inert unless the editor turned picking on
 @Mixin(CreativeModeInventoryScreen.class)
 public abstract class CreativeScreenPickMixin {
 
