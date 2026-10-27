@@ -100,6 +100,8 @@ public class ColorManager extends SingleFileContentManager<Void> {
     @Nullable
     private Float darknessFogDistance = null;
     @Nullable
+    private Integer skyRenderDistance = null;
+    @Nullable
     private Float bossFogDistance = null;
     private Integer voidDarknessOffset = null;
     private Integer horizonHeight = null;
@@ -168,6 +170,11 @@ public class ColorManager extends SingleFileContentManager<Void> {
 
     public float getDarknessFogDistance(float vanilla) {
         return darknessFogDistance != null ? darknessFogDistance : vanilla;
+    }
+
+    @Nullable
+    public Integer getSkyRenderDistance() {
+        return skyRenderDistance;
     }
 
     public float getBossFogDistance(float vanilla) {
@@ -266,6 +273,9 @@ public class ColorManager extends SingleFileContentManager<Void> {
                     return;
                 case "darkness_fog_distance":
                     darknessFogDistance = parseFloat(e);
+                    return;
+                case "sky_render_distance":
+                    skyRenderDistance = Mth.clamp(parseInt(e), 2, 32);
                     return;
                 case "boss_fog_distance":
                     bossFogDistance = parseFloat(e);
@@ -657,6 +667,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
         powderSnowFogColor = null;
         blindnessFogDistance = null;
         darknessFogDistance = null;
+        skyRenderDistance = null;
         bossFogDistance = null;
         starSize = null;
         starCount = null;
