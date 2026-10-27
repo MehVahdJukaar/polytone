@@ -6,11 +6,15 @@ import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SkyRenderer;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(SkyRenderer.class)
@@ -36,6 +40,17 @@ public class SkyRendererMixin {
     private RenderPipeline polytone$translucentSunAndMoon(RenderPipeline pipeline, @Local(argsOnly = true, ordinal = 1) GpuBuffer vertexBuffer) {
         if (vertexBuffer == this.endFlashBuffer) return pipeline;
         return Polytone.DIMENSION_MODIFIERS.translucentSunAndMoon() ? PolytoneRenderTypes.TRANSLUCENT_CELESTIAL_PIPELINE : pipeline;
+    }
+
+    //fake sky render distance can be past the real far plane, which clips the sky disc (512 out). sky fog reads the unscaled positions so here we shrink it to look identical
+    @ModifyArg(method = "renderSkyDisc", index = 0, at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/renderer/DynamicUniforms;writeTransform(Lorg/joml/Matrix4fc;Lorg/joml/Vector4fc;Lorg/joml/Vector3fc;Lorg/joml/Matrix4fc;)Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice;"))
+    private Matrix4fc polytone$hackfitSkyInFarPlane(Matrix4fc modelView) {
+        if (Polytone.COLORS.getSkyRenderDistance() == null) {
+            return modelView;
+        }
+        float scale = Minecraft.getInstance().levelRenderer.levelRenderState.cameraRenderState.depthFar / 520f;
+        return scale < 1 ? new Matrix4f(modelView).scale(scale) : modelView;
     }
 
     @ModifyExpressionValue(method = "buildStars", at = @At(value = "CONSTANT", args = "intValue=1500"))
