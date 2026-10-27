@@ -106,6 +106,8 @@ public class ColorManager extends SingleFileContentManager<Void> {
     @Nullable
     private Float darknessFogDistance = null;
     @Nullable
+    private Integer skyRenderDistance = null;
+    @Nullable
     private ISimpleExp starSize = null;
     @Nullable
     private Integer starCount = null;
@@ -141,6 +143,11 @@ public class ColorManager extends SingleFileContentManager<Void> {
 
     public float getDarknessFogDistance(float vanilla) {
         return darknessFogDistance != null ? darknessFogDistance : vanilla;
+    }
+
+    @Nullable
+    public Integer getSkyRenderDistance() {
+        return skyRenderDistance;
     }
 
     public float getStarSize(float vanilla) {
@@ -198,6 +205,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
                 case "powder_snow_fog" -> powderSnowFogColor = parseHex(v);
                 case "blindness_fog_distance" -> blindnessFogDistance = v.getAsFloat();
                 case "darkness_fog_distance" -> darknessFogDistance = v.getAsFloat();
+                case "sky_render_distance" -> skyRenderDistance = Mth.clamp(v.getAsInt(), 2, 32);
                 case "star_size" -> starSize = decodeSimpleExp(v);
                 case "star_count" -> starCount = Math.max(0, (int) decodeSimpleExp(v).evaluate());
             }
@@ -536,6 +544,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
         powderSnowFogColor = null;
         blindnessFogDistance = null;
         darknessFogDistance = null;
+        skyRenderDistance = null;
         starSize = null;
         starCount = null;
         // map colors

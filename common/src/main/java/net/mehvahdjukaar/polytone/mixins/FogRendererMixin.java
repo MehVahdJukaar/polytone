@@ -11,6 +11,7 @@ import net.minecraft.util.CubicSampler;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(FogRenderer.class)
 public abstract class FogRendererMixin {
@@ -69,5 +70,20 @@ public abstract class FogRendererMixin {
     private static float polytone$powderSnowFogBlue(float original) {
         Integer custom = Polytone.COLORS.getPowderSnowFogColor();
         return custom != null ? (custom & 255) / 255f : original;
+    }
+
+    //sky distance stuff
+
+    @ModifyVariable(method = "setupColor", at = @At("HEAD"), argsOnly = true)
+    private static int polytone$skyRenderDistance(int renderDistanceChunks) {
+        Integer skyRenderDistance = Polytone.COLORS.getSkyRenderDistance();
+        return skyRenderDistance != null ? skyRenderDistance : renderDistanceChunks;
+    }
+
+    @ModifyVariable(method = "setupFog", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+    private static float polytone$skyRenderDistanceFog(float farPlaneDistance, @Local(argsOnly = true) FogRenderer.FogMode fogMode) {
+        Integer skyRenderDistance = Polytone.COLORS.getSkyRenderDistance();
+        if (skyRenderDistance == null || fogMode != FogRenderer.FogMode.FOG_SKY) return farPlaneDistance;
+        return skyRenderDistance * 16;
     }
 }
