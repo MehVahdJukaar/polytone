@@ -1,1 +1,1 @@
-- one can no longer define a higher brightness level for a block than its actual light level using colored lights. brightness depends on the vanilla logic.
+- added setting to change sky render distance
