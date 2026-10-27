@@ -14,6 +14,7 @@ import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTracker;
 import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticleHandler;
 import net.mehvahdjukaar.polytone.content.shaders.PolytoneRenderHooks;
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.GameRenderer;
@@ -25,6 +26,7 @@ import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -64,6 +66,17 @@ public class LevelRendererMixin {
             target = "Lcom/mojang/blaze3d/systems/RenderSystem;blendFuncSeparate(Lcom/mojang/blaze3d/platform/GlStateManager$SourceFactor;Lcom/mojang/blaze3d/platform/GlStateManager$DestFactor;Lcom/mojang/blaze3d/platform/GlStateManager$SourceFactor;Lcom/mojang/blaze3d/platform/GlStateManager$DestFactor;)V"))
     private void polytone$translucentSunAndMoon(CallbackInfo ci) {
         if (Polytone.DIMENSION_MODIFIERS.hasTranslucentSunAndMoon(this.level)) RenderSystem.defaultBlendFunc();
+    }
+
+    //fake sky render distance can be past the real far plane, which clips the sky disc (512 out). sky fog reads the unscaled positions so here we shrink it to look identical
+    @ModifyArg(method = "renderSky", at = @At(value = "INVOKE",
+            target = "Lcom/mojang/blaze3d/vertex/PoseStack;mulPose(Lorg/joml/Matrix4f;)V"))
+    private Matrix4f polytone$hackfitSkyInFarPlane(Matrix4f frustumMatrix) {
+        if (Polytone.COLORS.getSkyRenderDistance() == null){
+            return frustumMatrix;
+        }
+        float scale = Minecraft.getInstance().gameRenderer.getDepthFar() / 520f;
+        return scale < 1 ? new Matrix4f(frustumMatrix).scale(scale) : frustumMatrix;
     }
 
     @Inject(method = "renderSky", at = @At(value = "INVOKE",
