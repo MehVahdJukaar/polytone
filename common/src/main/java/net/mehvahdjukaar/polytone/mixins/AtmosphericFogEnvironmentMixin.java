@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.fog.environment.AtmosphericFogEnvironment;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 @Mixin(AtmosphericFogEnvironment.class)
 public class AtmosphericFogEnvironmentMixin {
@@ -31,5 +32,11 @@ public class AtmosphericFogEnvironmentMixin {
     @ModifyExpressionValue(method = "setupFog", at = @At(value = "CONSTANT", args = "floatValue=10.0F"))
     private float polytone$bossFogStart(float original) {
         return Polytone.COLORS.getBossFogDistance(96) * original / 96;
+    }
+
+    @ModifyArg(method = "setupFog", index = 0, at = @At(value = "INVOKE", ordinal = 1, target = "Ljava/lang/Math;min(FF)F"))
+    private float polytone$skyRenderDistanceFog(float renderDistance) {
+        Integer skyRenderDistance = Polytone.COLORS.getSkyRenderDistance();
+        return skyRenderDistance != null ? skyRenderDistance * 16 : renderDistance;
     }
 }
