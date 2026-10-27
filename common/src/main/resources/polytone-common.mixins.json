@@ -26,6 +26,7 @@
     "AnimationStateMixin",
     "AtmosphericFogEnvironmentMixin",
     "BlindnessFogEnvironmentMixin",
+    "FogRendererMixin",
     "DarknessFogEnvironmentMixin",
     "AttributeProbeMixin",
     "ClientLevelDataMixin",
