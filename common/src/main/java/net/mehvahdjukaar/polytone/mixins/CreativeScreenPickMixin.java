@@ -19,21 +19,18 @@ public abstract class CreativeScreenPickMixin {
     @Inject(method = "extractRenderState", at = @At("TAIL"))
     private void polytone$renderPickOverlay(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
         if (CreativeTabPreview.isPickingEnabled()) {
-            NautilusCreativeTabOverlay.render(graphics, self(), mouseX, mouseY);
+            NautilusCreativeTabOverlay.render(graphics, (AbstractContainerScreen<?>) (Object) this, mouseX, mouseY);
         }
     }
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void polytone$pickItem(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
         if (!CreativeTabPreview.isPickingEnabled()) return;
-        ItemStack picked = NautilusCreativeTabOverlay.pickAt(self(), event.x(), event.y());
+        ItemStack picked = NautilusCreativeTabOverlay.pickAt((AbstractContainerScreen<?>) (Object) this, event.x(), event.y());
         if (picked != null) {
             CreativeTabPreview.onPick(picked.copy());
             cir.setReturnValue(true);
         }
     }
 
-    private AbstractContainerScreen<?> self() {
-        return (AbstractContainerScreen<?>) (Object) this;
-    }
 }
