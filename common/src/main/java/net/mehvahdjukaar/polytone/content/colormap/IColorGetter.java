@@ -209,7 +209,6 @@ public interface IColorGetter extends BlockTintSource, BarColor {
             g -> g instanceof ExpressionColor(IBlockExp exp) ? exp : IBlockExp.ZERO
     );
 
-    // One labeled picker: a color, or an MVEL expression.
     SchemaCodec<IColorGetter> SINGLE_COLOR_OR_EXPRESSION = SchemaCodecs.withAlternative(
             SchemaCodecs.alt("color", SINGLE_COLOR_CODEC),
             SchemaCodecs.alt("expression", EXPRESSION_CODEC));

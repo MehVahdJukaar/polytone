@@ -27,8 +27,6 @@ public final class PolytoneAsyncParticles {
                 ForkJoinWorkerThread t = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
                 t.setName("PolytoneParticleTicker-" + COUNTER.getAndIncrement());
                 t.setDaemon(true);
-                // MVEL's ASM optimizer defines accessors against the worker's context classloader; the
-                // default system loader fails to link mod classes (NoClassDefFoundError). Use the mod's.
                 t.setContextClassLoader(PolytoneAsyncParticles.class.getClassLoader());
                 return t;
             },

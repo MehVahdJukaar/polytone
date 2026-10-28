@@ -7,11 +7,6 @@ import java.util.List;
 
 public final class SimGlobalProxy extends GlobalProxy {
 
-    // These MUST NOT be public: MVEL's PropertyTools.getFieldOrAccessor resolves a public field
-    // before the bean getter, so a public field named like an accessor (rain -> rain()) would make
-    // g.rain return this SimValue object instead of invoking the overridden accessor - the read
-    // would never be recorded and the slider would never show. Private keeps them out of
-    // Class.getFields(), forcing MVEL onto the generated getRain() (which virtual-dispatches here).
     private final SimValue gameTime = SimValue.slider("Game time", 0, 24000, 0, 100);
     private final SimValue dayTime = SimValue.slider("Day time", 0, 24000, 6000, 100);
     private final SimValue rain = SimValue.slider("Rain / thunder", 0, 1, 0, 0.05);
