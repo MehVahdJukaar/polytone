@@ -71,33 +71,25 @@ public class LevelRendererMixin {
 
     @Inject(method = "renderLevel", at = @At("HEAD"))
     public void poly$preRender(GraphicsResourceAllocator resourceAllocator,
-                               DeltaTracker deltaTracker,
-                               boolean renderOutline,
-                               CameraRenderState cameraState,
-                               Matrix4fc modelViewMatrix,
-                               GpuBufferSlice terrainFog,
-                               Vector4f fogColor,
-                               boolean shouldRenderSky,
-                               ChunkSectionsToRender chunkSectionsToRender,
+                               DeltaTracker deltaTracker, boolean renderOutline,
+                               CameraRenderState cameraState, Matrix4fc modelViewMatrix,
+                               GpuBufferSlice terrainFog, Vector4f fogColor,
+                               boolean shouldRenderSky, ChunkSectionsToRender chunkSectionsToRender,
                                CallbackInfo ci) {
         Polytone.SHADER_UNIFORMS.updateAll();
         if (!LevelRenderPassTracker.pushAndIsMain()) return;
         Camera camera = minecraft.gameRenderer.getMainCamera();
         Polytone.GLOBAL_UNIFORMS.capture(cameraState.projectionMatrix, modelViewMatrix, deltaTracker.getGameTimeDeltaTicks());
-        Polytone.COLORED_LIGHTS.beforeRenderLevel(camera.position());
+        PolytoneRenderHooks.beforeLevelRender(camera, modelViewMatrix, cameraState.projectionMatrix, terrainFog);
     }
 
     //the frame graph already ran here, no pass is open
     @Inject(method = "renderLevel", at = @At("RETURN"))
     public void poly$popLevelRenderPass(GraphicsResourceAllocator resourceAllocator,
-                                        DeltaTracker deltaTracker,
-                                        boolean renderOutline,
-                                        CameraRenderState cameraState,
-                                        Matrix4fc modelViewMatrix,
-                                        GpuBufferSlice terrainFog,
-                                        Vector4f fogColor,
-                                        boolean shouldRenderSky,
-                                        ChunkSectionsToRender chunkSectionsToRender,
+                                        DeltaTracker deltaTracker, boolean renderOutline,
+                                        CameraRenderState cameraState, Matrix4fc modelViewMatrix,
+                                        GpuBufferSlice terrainFog, Vector4f fogColor,
+                                        boolean shouldRenderSky, ChunkSectionsToRender chunkSectionsToRender,
                                         CallbackInfo ci) {
         if (!LevelRenderPassTracker.popAndWasMain()) return;
         PolytoneRenderHooks.afterLevelRender(minecraft.gameRenderer.getMainCamera(), modelViewMatrix, cameraState.projectionMatrix);
@@ -106,16 +98,11 @@ public class LevelRendererMixin {
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addMainPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lnet/minecraft/client/renderer/culling/Frustum;Lorg/joml/Matrix4fc;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;ZLnet/minecraft/client/renderer/state/level/LevelRenderState;Lnet/minecraft/client/DeltaTracker;Lnet/minecraft/util/profiling/ProfilerFiller;Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;)V",
             shift = At.Shift.AFTER))
     public void poly$addGpuParticlesPass(GraphicsResourceAllocator resourceAllocator,
-                                         DeltaTracker deltaTracker,
-                                         boolean renderOutline,
-                                         CameraRenderState cameraState,
-                                         Matrix4fc modelViewMatrix,
-                                         GpuBufferSlice terrainFog,
-                                         Vector4f fogColor,
-                                         boolean shouldRenderSky,
-                                         ChunkSectionsToRender chunkSectionsToRender,
-                                         CallbackInfo ci,
-                                         @Local FrameGraphBuilder frameGraphBuilder) {
+                                         DeltaTracker deltaTracker, boolean renderOutline,
+                                         CameraRenderState cameraState, Matrix4fc modelViewMatrix,
+                                         GpuBufferSlice terrainFog, Vector4f fogColor,
+                                         boolean shouldRenderSky, ChunkSectionsToRender chunkSectionsToRender,
+                                         CallbackInfo ci, @Local FrameGraphBuilder frameGraphBuilder) {
         Polytone.CUSTOM_PARTICLES.gpuParticles.addRenderPass(frameGraphBuilder, this.targets, terrainFog,
                 this.levelRenderState.cameraRenderState.pos, this.levelRenderState.gameTime,
                 deltaTracker.getGameTimeDeltaPartialTick(false));
@@ -124,16 +111,11 @@ public class LevelRendererMixin {
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addLateDebugPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lnet/minecraft/client/renderer/state/level/CameraRenderState;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lorg/joml/Matrix4fc;)V",
             shift = At.Shift.BEFORE))
     public void poly$addPostShaders(GraphicsResourceAllocator resourceAllocator,
-                                    DeltaTracker deltaTracker,
-                                    boolean renderOutline,
-                                    CameraRenderState cameraState,
-                                    Matrix4fc modelViewMatrix,
-                                    GpuBufferSlice terrainFog,
-                                    Vector4f fogColor,
-                                    boolean shouldRenderSky,
-                                    ChunkSectionsToRender chunkSectionsToRender,
-                                    CallbackInfo ci,
-                                    @Local FrameGraphBuilder frameGraphBuilder) {
+                                    DeltaTracker deltaTracker, boolean renderOutline,
+                                    CameraRenderState cameraState, Matrix4fc modelViewMatrix,
+                                    GpuBufferSlice terrainFog, Vector4f fogColor,
+                                    boolean shouldRenderSky, ChunkSectionsToRender chunkSectionsToRender,
+                                    CallbackInfo ci, @Local FrameGraphBuilder frameGraphBuilder) {
         if (Polytone.CONFIGS.postChainsAfterHand.get()) return;
         int i = this.minecraft.getMainRenderTarget().width;
         int j = this.minecraft.getMainRenderTarget().height;

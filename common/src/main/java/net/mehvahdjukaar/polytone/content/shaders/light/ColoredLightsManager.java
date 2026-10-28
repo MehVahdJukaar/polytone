@@ -1,5 +1,9 @@
 package net.mehvahdjukaar.polytone.content.shaders.light;
 
+import org.joml.Matrix4fc;
+import net.minecraft.client.Camera;
+import net.mehvahdjukaar.polytone.api.LevelRenderListener;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
@@ -43,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-public class ColoredLightsManager extends ContentManager<ColoredLightEntry> implements IShaderInputPatch, IShaderSourcePatch {
+public class ColoredLightsManager extends ContentManager<ColoredLightEntry> implements IShaderInputPatch, IShaderSourcePatch, LevelRenderListener {
 
     public record BlockRule(PointLightProvider.ForBlock light, RuleTest predicate) {
         public boolean matches(BlockState state, RandomSource random) {
@@ -292,8 +296,11 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
         for (var source : lightSources) source.tick(level, camera.getCenter());
     }
 
-    public void beforeRenderLevel(Vec3 camera) {
-        if (pointLightStorage == shaderPointLights) shaderPointLights.upload(camera);
+    @Override
+    public void beforeLevelRender(Camera camera, Matrix4fc modelViewMatrix, Matrix4fc projectionMatrix, GpuBufferSlice terrainFog) {
+        if (pointLightStorage == shaderPointLights) {
+            shaderPointLights.upload(camera.position());
+        }
     }
 
     public void close() {
