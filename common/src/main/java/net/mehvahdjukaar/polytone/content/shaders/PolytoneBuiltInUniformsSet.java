@@ -13,7 +13,7 @@ public class PolytoneBuiltInUniformsSet extends HashSet<String> {
         DYNAMIC.add(name);
     }
 
-    //samplers no pipeline declares. programs linked before this call wont see it
+    //programs linked before this call wont see it
     public static void registerSampler(String name) {
         DYNAMIC_SAMPLERS.add(name);
     }
