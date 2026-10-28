@@ -16,6 +16,7 @@ import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.SpriteIconButton;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 import net.minecraft.network.chat.Component;
@@ -179,12 +180,15 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     }
 
     public SpriteIconButton makeConfigButton(int width, Screen parent, Runnable packReload) {
-        return SpriteIconButton.builder(Component.translatable("options.accessibility"),
+        Component title = Component.translatable("screen.polytone.configs.title");
+        SpriteIconButton button = SpriteIconButton.builder(title,
                         b -> {
                             bubbleManager.onConfigButtonClicked();
                             Minecraft.getInstance().setScreen(createScreenForPack(parent, packReload));
                         }, true).width(width)
                 .sprite(Polytone.res("paint_brush"), 16, 16).build();
+        button.setTooltip(Tooltip.create(title));
+        return button;
     }
 
     private List<OptionHolder<?>> shownOptions() {

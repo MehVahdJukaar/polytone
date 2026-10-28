@@ -15,10 +15,13 @@ val fabric_loader_version: String by extra
 val fabric_api_version: String by extra
 val packed_packs_fabric_version: String by extra
 val packed_packs_api_version: String by extra
+val polyshadows_version: String by extra
 
 dependencies {
     modImplementation("net.mehvahdjukaar:codecui-fabric:${codecui_version}")
     include("net.mehvahdjukaar:codecui-fabric:${codecui_version}")
+    modImplementation("net.mehvahdjukaar:polytone_shadows-fabric:${polyshadows_version}")
+    include("net.mehvahdjukaar:polytone_shadows-fabric:${polyshadows_version}")
 
     modImplementation("net.mehvahdjukaar:nautilus_studio-fabric:${nautilus_studio_version}")
 

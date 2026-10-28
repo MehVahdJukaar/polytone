@@ -13,10 +13,13 @@ val codecui_version: String by extra
 val nautilus_studio_version: String by extra
 val packed_packs_neoforge_version: String by extra
 val packed_packs_api_version: String by extra
+val polyshadows_version: String by extra
 
 dependencies {
     implementation("net.mehvahdjukaar:codecui-neoforge:${codecui_version}")
     jarJar("net.mehvahdjukaar:codecui-neoforge:${codecui_version}")
+    implementation("net.mehvahdjukaar:polytone_shadows-neoforge:${polyshadows_version}")
+    jarJar("net.mehvahdjukaar:polytone_shadows-neoforge:${polyshadows_version}")
 
     implementation("net.mehvahdjukaar:nautilus_studio-neoforge:${nautilus_studio_version}")
 

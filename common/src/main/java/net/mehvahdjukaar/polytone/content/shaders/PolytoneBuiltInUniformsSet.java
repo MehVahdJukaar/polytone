@@ -18,6 +18,10 @@ public class PolytoneBuiltInUniformsSet extends HashSet<String> {
         DYNAMIC_SAMPLERS.add(name);
     }
 
+    public static Set<String> dynamicBlocks() {
+        return DYNAMIC;
+    }
+
     public static Set<String> dynamicSamplers() {
         return DYNAMIC_SAMPLERS;
     }

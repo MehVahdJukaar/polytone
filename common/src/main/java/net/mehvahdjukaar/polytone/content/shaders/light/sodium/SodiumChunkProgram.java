@@ -9,6 +9,7 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import net.mehvahdjukaar.polytone.content.shaders.GLHelper;
 import net.mehvahdjukaar.polytone.content.shaders.IProgramWithModifiers.EnabledModifiers;
 import net.mehvahdjukaar.polytone.api.IShaderInputs;
+import net.mehvahdjukaar.polytone.content.shaders.PolytoneBuiltInUniformsSet;
 import net.mehvahdjukaar.polytone.content.shaders.PolytoneRenderHooks;
 import net.mehvahdjukaar.polytone.content.shaders.light.PolyShaderPointLights;
 import net.mehvahdjukaar.polytone.content.shaders.voxel.VoxelVolumeManager;
@@ -17,25 +18,29 @@ import org.lwjgl.opengl.GL30C;
 import org.lwjgl.opengl.GL31C;
 import org.lwjgl.opengl.GL32C;
 
+import java.util.ArrayList;
 import java.util.List;
 
 //sodium binds its chunk program itself. its source comes from the jar so our light include is all that can end up in there
 public class SodiumChunkProgram implements IShaderInputs {
 
     //our includes read CameraBlockPos from vanilla Globals, sodium never binds that one
-    private static final List<String> BLOCKS = List.of("Globals", VoxelVolumeManager.BLOCK_NAME, PolyShaderPointLights.BLOCK_NAME);
+    private static final List<String> BUILT_IN_BLOCKS = List.of("Globals", VoxelVolumeManager.BLOCK_NAME, PolyShaderPointLights.BLOCK_NAME);
     //sodium keeps u_Globals on 0
     private static final int FIRST_BINDING_POINT = 1;
 
+
     private final int program;
+    private final List<String> blocks = new ArrayList<>(BUILT_IN_BLOCKS);
     private final RenderPipeline pipeline;
     private EnabledModifiers enabled = null;
 
     public SodiumChunkProgram(int program, RenderPipeline pipeline) {
         this.program = program;
         this.pipeline = pipeline;
-        for (int i = 0; i < BLOCKS.size(); i++) {
-            int blockIndex = GL32C.glGetUniformBlockIndex(program, BLOCKS.get(i));
+        blocks.addAll(PolytoneBuiltInUniformsSet.dynamicBlocks());
+        for (int i = 0; i < blocks.size(); i++) {
+            int blockIndex = GL32C.glGetUniformBlockIndex(program, blocks.get(i));
             if (blockIndex >= 0) GL32C.glUniformBlockBinding(program, blockIndex, FIRST_BINDING_POINT + i);
         }
         VoxelVolumeManager.assignTextureUnits(program);
@@ -62,9 +67,9 @@ public class SodiumChunkProgram implements IShaderInputs {
 
     @Override
     public void setUniform(String name, GpuBufferSlice value) {
-        int i = BLOCKS.indexOf(name);
+        int i = blocks.indexOf(name);
         if (i < 0) return;
-        int buffer = ((GlBufferAccessor) (Object) value.buffer()).polytone$getHandle();
+        int buffer = ((GlBufferAccessor) value.buffer()).polytone$getHandle();
         GL30C.glBindBufferRange(GL31C.GL_UNIFORM_BUFFER, FIRST_BINDING_POINT + i, buffer, value.offset(), value.length());
     }
 
