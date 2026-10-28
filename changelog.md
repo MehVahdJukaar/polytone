@@ -1,1 +1,1 @@
-- you guessed it, even more 1.21.1 ports. see its changelog
+- added more exclusions to new version ids so packs made for new version with no proper support for old versions (using overlays), can still partially load
