@@ -46,7 +46,7 @@ public class OptionHolder<T> {
         DataResult<T> result = option.codec().parse(JsonOps.INSTANCE, element);
 
         if (result.isSuccess()) {
-            //neo builds mods before Minecraft exists and set() uses mc
+            //neo builds mods before Minecraft exists... and set() uses mc
             if (Minecraft.getInstance() == null) option.value = result.getOrThrow();
             else option.set(result.getOrThrow());
         } else {
