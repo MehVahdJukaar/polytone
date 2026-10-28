@@ -75,6 +75,7 @@ public class PolytoneRenderHooks {
         }
     }
 
+
     public static void afterLevelRender(Camera camera, Matrix4fc modelViewMatrix, Matrix4fc projectionMatrix) {
         for (var listener : LEVEL_RENDER_LISTENERS) {
             listener.afterLevelRender(camera, modelViewMatrix, projectionMatrix);

@@ -22,7 +22,7 @@ public abstract class ShaderManagerMixin {
                                                      @Local(argsOnly = true) Map<Identifier, Resource> files) {
         Identifier shaderId = type.idConverter().fileToId(location);
         //sodium terrain pipelines load their glsl through here too
-        if (type == ShaderType.VERTEX && shaderId.getNamespace().equals("sodium")) {
+        if (shaderId.getNamespace().equals("sodium")) {
             return PolytoneRenderHooks.patchSodiumChunkShader(source);
         }
         return PolytoneRenderHooks.patchShader(shaderId, type, source, files);

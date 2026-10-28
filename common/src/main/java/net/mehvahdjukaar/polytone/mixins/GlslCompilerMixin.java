@@ -18,7 +18,7 @@ public class GlslCompilerMixin {
             target = "Lcom/mojang/blaze3d/pipeline/BindGroupLayout;flattenUniforms(Ljava/util/List;)Ljava/util/List;"))
     private static List<BindGroupLayout.UniformDescription> poly$addBuiltInBlocks(List<BindGroupLayout.UniformDescription> original) {
         List<BindGroupLayout.UniformDescription> withOurs = new ArrayList<>(original);
-        for (String name : PolytoneBuiltInUniformsSet.dynamicNames()) {
+        for (String name : PolytoneBuiltInUniformsSet.dynamicBlocks()) {
             withOurs.add(new BindGroupLayout.UniformDescription(name, UniformType.UNIFORM_BUFFER));
         }
         return withOurs;
