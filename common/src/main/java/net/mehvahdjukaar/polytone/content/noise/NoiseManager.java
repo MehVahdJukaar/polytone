@@ -6,7 +6,6 @@ import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
-import net.mehvahdjukaar.polytone.common.exp.ExpressionUtils;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
@@ -55,7 +54,6 @@ public class NoiseManager extends ContentManager<OctaveSimplexNoise> {
             OctaveSimplexNoise noise = decodeStrict(json, id, ops);
             noises.register(id, noise);
         }
-        ExpressionUtils.regenNoiseFunctions(noises.getEntries());
     }
 
     @Override

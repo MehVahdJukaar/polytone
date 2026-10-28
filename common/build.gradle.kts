@@ -8,7 +8,6 @@ common {
 }
 
 val candlelight_version: String by extra
-val exp4j_version: String by extra
 val nexp_version: String by extra
 val codecui_version: String by extra
 val nautilus_studio_version: String by extra
@@ -20,7 +19,6 @@ dependencies {
     compileOnly ("net.mehvahdjukaar:codecui-common:${codecui_version}")
     compileOnly ("net.mehvahdjukaar:nautilus_studio-common:${nautilus_studio_version}")
 
-    implementation ("net.objecthunter:exp4j:${exp4j_version}")
     implementation ("hollowpoint:nexp:${nexp_version}")
 
     modCompileOnly("maven.modrinth:iris:1.11.7+26.3-neoforge")

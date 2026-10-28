@@ -3,23 +3,10 @@ package net.mehvahdjukaar.polytone.common.expressions.impl;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
-import net.mehvahdjukaar.polytone.common.exp.impl.ParticleContextExpression;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 
 public interface IParticleExp {
-
-    Codec<IParticleExp> CODEC_LEGACY = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
-            SchemaCodecs.alternatives(
-                    CodecUtils.LENIENT_DOUBLE.xmap(
-                            aDouble -> (IParticleExp) (p, l) -> aDouble,
-                            i -> 0.0
-                    ),
-                    ParticleContextExpression.CODEC,
-                    ParticleExp.TYPE.codec()),
-            SchemaCodecs.alt("constant", Codec.DOUBLE),
-            SchemaCodecs.alt("expression", ParticleExp.TYPE.codec()),
-            SchemaCodecs.alt("legacy expression", ParticleContextExpression.CODEC)));
 
     Codec<IParticleExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
             SchemaCodecs.alternatives(

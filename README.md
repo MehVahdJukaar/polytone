@@ -30,20 +30,3 @@ https://github.com/MehVahdJukaar/polytone/wiki/Custom-Block-Properties
 
 https://github.com/MehVahdJukaar/polytone/wiki/Custom-Biome-Effects
 
-
-## Attribuitions
-
-This project uses the following third-party libraries:
-
-- **MVEL**
-    - Description: Expression language for Java
-    - Website: [https://github.com/mvel/mvel](https://github.com/mvel/mvel)
-    - License: Apache License 2.0 ([Full text](http://www.apache.org/licenses/LICENSE-2.0))
-
-- **exp4j**
-    - Description: Mathematical expression parser and evaluator for Java
-    - Website: [https://www.objecthunter.net/exp4j/](https://www.objecthunter.net/exp4j/)
-    - License: Apache License 2.0 ([Full text](http://www.apache.org/licenses/LICENSE-2.0))
-
-All included libraries are used under the terms of the **Apache License 2.0**.  
-Please see their respective links for full license details.

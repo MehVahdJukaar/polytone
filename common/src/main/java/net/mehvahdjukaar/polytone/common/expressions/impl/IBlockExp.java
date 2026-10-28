@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.common.expressions.impl;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
-import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
@@ -11,18 +10,6 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public interface IBlockExp {
-
-    Codec<IBlockExp> CODEC_LEGACY = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
-            SchemaCodecs.alternatives(
-                    CodecUtils.LENIENT_DOUBLE.xmap(
-                            aDouble -> (IBlockExp) (level, pos, state) -> aDouble,
-                            i -> 0.0
-                    ),
-                    BlockContextExpression.CODEC,
-                    BlockExp.TYPE.codec()),
-            SchemaCodecs.alt("constant", Codec.DOUBLE),
-            SchemaCodecs.alt("expression", BlockExp.TYPE.codec()),
-            SchemaCodecs.alt("legacy expression", BlockContextExpression.CODEC)));
 
     Codec<IBlockExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
             SchemaCodecs.alternatives(

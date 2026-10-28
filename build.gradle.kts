@@ -64,12 +64,6 @@ subprojects {
         }
     }
 
-    tasks.processResources {
-        from(rootDir) {
-            include("MVEL_LICENSE.md")
-            into("") // root of jar (or change path below)
-        }
-    }
 
     tasks.withType<JavaCompile> {
         options.compilerArgs.addAll(listOf("-Xmaxerrs", "4000"))

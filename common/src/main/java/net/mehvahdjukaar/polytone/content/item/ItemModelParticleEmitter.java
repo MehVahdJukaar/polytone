@@ -1,14 +1,14 @@
 package net.mehvahdjukaar.polytone.content.item;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.mehvahdjukaar.polytone.common.exp.impl.ParticleContextExpression;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
-public record ItemModelParticleEmitter(ParticleContextExpression exp) {
+public record ItemModelParticleEmitter(IParticleExp exp) {
 
     // Converts the top of the PoseStack (in view space) into world-space by applying the camera's matrix. The
     // current PoseStack, in view space. A Matrix4f representing the model's matrix in world space.

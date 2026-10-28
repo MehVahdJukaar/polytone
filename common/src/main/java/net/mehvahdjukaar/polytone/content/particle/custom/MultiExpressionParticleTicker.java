@@ -27,21 +27,21 @@ public record MultiExpressionParticleTicker(@Nullable IParticleExp x,
                                             @Nullable IParticleExp removeIf) implements ICustomParticleTicker {
 
     public static final SchemaCodec<MultiExpressionParticleTicker> CODEC = SchemaRecord.create(MultiExpressionParticleTicker.class, i -> i.group(
-            i.optional("x", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.x)),
-            i.optional("y", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.y)),
-            i.optional("z", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.z)),
-            i.optional("dx", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.dx)),
-            i.optional("dy", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.dy)),
-            i.optional("dz", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.dz)),
-            i.optional("size", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.size)),
-            i.optional("red", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.red)),
-            i.optional("green", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.green)),
-            i.optional("blue", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.blue)),
-            i.optional("alpha", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.alpha)),
-            i.optional("roll", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.roll)),
-            i.optional("custom", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.custom)),
-            i.optional("customs", Codec.unboundedMap(Codec.STRING, IParticleExp.CODEC_LEGACY), Map.of(), p -> p.customs),
-            i.optional("remove_condition", IParticleExp.CODEC_LEGACY, p -> Optional.ofNullable(p.removeIf))
+            i.optional("x", IParticleExp.CODEC, p -> Optional.ofNullable(p.x)),
+            i.optional("y", IParticleExp.CODEC, p -> Optional.ofNullable(p.y)),
+            i.optional("z", IParticleExp.CODEC, p -> Optional.ofNullable(p.z)),
+            i.optional("dx", IParticleExp.CODEC, p -> Optional.ofNullable(p.dx)),
+            i.optional("dy", IParticleExp.CODEC, p -> Optional.ofNullable(p.dy)),
+            i.optional("dz", IParticleExp.CODEC, p -> Optional.ofNullable(p.dz)),
+            i.optional("size", IParticleExp.CODEC, p -> Optional.ofNullable(p.size)),
+            i.optional("red", IParticleExp.CODEC, p -> Optional.ofNullable(p.red)),
+            i.optional("green", IParticleExp.CODEC, p -> Optional.ofNullable(p.green)),
+            i.optional("blue", IParticleExp.CODEC, p -> Optional.ofNullable(p.blue)),
+            i.optional("alpha", IParticleExp.CODEC, p -> Optional.ofNullable(p.alpha)),
+            i.optional("roll", IParticleExp.CODEC, p -> Optional.ofNullable(p.roll)),
+            i.optional("custom", IParticleExp.CODEC, p -> Optional.ofNullable(p.custom)),
+            i.optional("customs", Codec.unboundedMap(Codec.STRING, IParticleExp.CODEC), Map.of(), p -> p.customs),
+            i.optional("remove_condition", IParticleExp.CODEC, p -> Optional.ofNullable(p.removeIf))
     ).apply(i, MultiExpressionParticleTicker::new));
 
     private MultiExpressionParticleTicker(Optional<IParticleExp> x, Optional<IParticleExp> y,

@@ -62,7 +62,7 @@ public sealed interface ColoredLightEntry {
     record Particles(Targets targets, ColoredLight<IParticleExp> light) implements ColoredLightEntry {
         static final MapCodec<Particles> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
                 Targets.CODEC.fieldOf("targets").forGetter(Particles::targets),
-                ColoredLight.codec(IParticleExp.CODEC_LEGACY, c -> (p, l) -> c).fieldOf("colored_light").forGetter(Particles::light)
+                ColoredLight.codec(IParticleExp.CODEC, c -> (p, l) -> c).fieldOf("colored_light").forGetter(Particles::light)
         ).apply(i, Particles::new));
 
         @Override

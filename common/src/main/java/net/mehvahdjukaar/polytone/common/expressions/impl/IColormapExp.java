@@ -9,7 +9,6 @@ import net.mehvahdjukaar.polytone.common.expressions.preview.PreviewContext;
 import net.mehvahdjukaar.polytone.common.expressions.preview.SimProxies;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
-import net.mehvahdjukaar.polytone.content.colormap.ColormapExpressionProvider;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
@@ -30,19 +29,6 @@ public interface IColormapExp {
     Codec<IColormapExp> CONSTANT_CODEC = CodecUtils.LENIENT_FLOAT.xmap(
             aDouble -> (a, b, c, d, e, f) -> aDouble,
             iBlockExp -> 0.0f);
-
-    // Same wire codec as always; the labels only name the editor's picker options.
-    // The "constant" branch is displayed as a plain number, NOT via CONSTANT_CODEC: that one wraps
-    // LENIENT_FLOAT (a float-or-string union), whose schema is an AnyOf that anyOf() splices flat -
-    // leaking two unlabeled "number"/"text" options and, worse, a "text" branch that EXACT-matches
-    // expression strings on load so expressions would open under "text". Codec.FLOAT keeps it one option.
-    Codec<IColormapExp> CODEC_LEGACY = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
-            SchemaCodecs.referenceOrDirect(BUILTIN_EXP,
-                    SchemaCodecs.alternatives(CONSTANT_CODEC, ColormapExpressionProvider.CODEC, ColormapExp.TYPE.codec()), true),
-            SchemaCodecs.alt("preset", BUILTIN_EXP),
-            SchemaCodecs.alt("constant", Codec.FLOAT),
-            SchemaCodecs.alt("expression", ColormapExp.TYPE.codec()),
-            SchemaCodecs.alt("legacy expression", ColormapExpressionProvider.CODEC)));
 
     Codec<IColormapExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
             SchemaCodecs.referenceOrDirect(BUILTIN_EXP,

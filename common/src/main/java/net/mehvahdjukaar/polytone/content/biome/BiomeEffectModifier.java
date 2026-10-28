@@ -11,7 +11,7 @@ import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.common.Weather;
 import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributeMapMod;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
-import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.ARGB;
@@ -301,14 +301,14 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
                         Codec.simpleMap(Weather.CODEC, SIMPLE_CODEC, StringRepresentable.keys(Weather.values()))
                                 .xmap(FogMap::new, FogMap::map).codec()
                 ),
-                BlockContextExpression.CODEC.xmap(
+                IBlockExp.CODEC.xmap(
                         FogExpression::new,
                         fogMap -> fogMap.map
                 )
         );
     }
 
-    public record FogExpression(BlockContextExpression map) implements FogParam {
+    public record FogExpression(IBlockExp map) implements FogParam {
 
         @Override
         public float get(ClientLevel level) {
