@@ -22,13 +22,13 @@ public class PolytoneBuiltInUniformsSet extends HashSet<String> {
         DYNAMIC.add(name);
     }
 
-    public static Set<String> dynamicNames() {
-        return DYNAMIC;
-    }
-
     //programs linked before this call wont see it
     public static void registerSampler(String name) {
         DYNAMIC_SAMPLERS.add(name);
+    }
+
+    public static Set<String> dynamicBlocks() {
+        return DYNAMIC;
     }
 
     public static Set<String> dynamicSamplers() {

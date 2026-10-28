@@ -24,7 +24,7 @@ public class PipelineBuilderMixin {
         Set<String> existing = new HashSet<>(original.size());
         for (var u : original) existing.add(u.name());
         List<BindGroupLayout.UniformDescription> withOurs = new ArrayList<>(original);
-        for (String name : PolytoneBuiltInUniformsSet.dynamicNames()) {
+        for (String name : PolytoneBuiltInUniformsSet.dynamicBlocks()) {
             if (existing.add(name)) withOurs.add(new BindGroupLayout.UniformDescription(name, UniformType.UNIFORM_BUFFER));
         }
         return withOurs;
