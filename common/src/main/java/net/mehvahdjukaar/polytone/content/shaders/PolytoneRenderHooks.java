@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.shaders.ShaderType;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.api.IShaderInputPatch;
@@ -21,7 +22,7 @@ public class PolytoneRenderHooks {
     private static final List<IShaderSourcePatch> SOURCE_PATCHERS = new ArrayList<>(List.of(Polytone.COLORED_LIGHTS));
     private static final List<IShaderInputPatch> INPUT_PATCHES = new ArrayList<>(List.of(
             Polytone.GLOBAL_UNIFORMS, Polytone.VOXEL_VOLUME, Polytone.COLORED_LIGHTS, Polytone.SHADER_UNIFORMS, Polytone.POST_CHAINS));
-    private static final List<LevelRenderListener> LEVEL_RENDER_LISTENERS = new ArrayList<>(List.of(Polytone.VOXEL_VOLUME));
+    private static final List<LevelRenderListener> LEVEL_RENDER_LISTENERS = new ArrayList<>(List.of(Polytone.VOXEL_VOLUME, Polytone.COLORED_LIGHTS));
     private static int inputPatchesGeneration = 0;
 
     public static void addSourcePatcher(IShaderSourcePatch patcher) {
@@ -66,6 +67,12 @@ public class PolytoneRenderHooks {
             if (patch.appliesToShader(shader)) applying.add(patch);
         }
         return applying;
+    }
+
+    public static void beforeLevelRender(Camera camera, Matrix4fc modelViewMatrix, Matrix4fc projectionMatrix, GpuBufferSlice terrainFog) {
+        for (var listener : LEVEL_RENDER_LISTENERS) {
+            listener.beforeLevelRender(camera, modelViewMatrix, projectionMatrix, terrainFog);
+        }
     }
 
     public static void afterLevelRender(Camera camera, Matrix4fc modelViewMatrix, Matrix4fc projectionMatrix) {
