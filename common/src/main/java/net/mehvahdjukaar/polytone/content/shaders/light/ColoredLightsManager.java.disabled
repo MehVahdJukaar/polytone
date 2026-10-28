@@ -322,7 +322,6 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
         return lights != null ? lights.openScan() : null;
     }
 
-    //face bit tracking needs to see every vertex shader, patched or not
     @Override
     public String patchShaderSource(Identifier shaderId, ShaderType type, String source, Map<Identifier, Resource> files) {
         if (type != ShaderType.VERTEX) return source;
