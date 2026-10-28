@@ -6,6 +6,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.resources.language.I18n;
@@ -45,7 +46,9 @@ public class OptionHolder<T> {
         DataResult<T> result = option.codec().parse(JsonOps.INSTANCE, element);
 
         if (result.isSuccess()) {
-            option.set(result.getOrThrow());
+            //neo builds mods before Minecraft exists and set() uses mc
+            if (Minecraft.getInstance() == null) option.value = result.getOrThrow();
+            else option.set(result.getOrThrow());
         } else {
             Polytone.LOGGER.error("Failed to load config option {}: {}", fileId, result.error().get().message());
         }
