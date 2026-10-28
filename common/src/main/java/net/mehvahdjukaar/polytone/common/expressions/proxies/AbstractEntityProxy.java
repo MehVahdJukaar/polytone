@@ -108,6 +108,14 @@ public abstract class AbstractEntityProxy extends PositionalProxy {
         return itemKey(le.getItemBySlot(eq));
     }
 
+    public boolean hasEffect(String effect) {
+        LivingEntity le = livingEntity();
+        if (le == null || le.getActiveEffectsMap().isEmpty()) return false;
+        ResourceLocation id = ResourceLocation.tryParse(effect);
+        if (id == null) return false;
+        return BuiltInRegistries.MOB_EFFECT.getHolder(id).map(le::hasEffect).orElse(false);
+    }
+
     public double height() {
         return entity().getBbHeight();
     }
