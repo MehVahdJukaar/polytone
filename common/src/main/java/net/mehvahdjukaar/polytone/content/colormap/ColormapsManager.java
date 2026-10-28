@@ -155,6 +155,8 @@ public class ColormapsManager extends ContentManager<IColorGetter> {
         colormaps.register(ResourceLocation.parse("grass_color"), () -> GRASS_COLOR);
         colormaps.register(ResourceLocation.parse("foliage_color"), () -> FOLIAGE_COLOR);
         colormaps.register(ResourceLocation.parse("water_color"), () -> WATER_COLOR);
+        //newer vanilla colormaps so packs can load. dummy
+        colormaps.register(ResourceLocation.parse("dry_foliage_color"), () -> Colormap.singleColor(0xFF5C3C32));
         colormaps.register(ResourceLocation.parse("original"), () -> ORIGINAL_MARKER);
         //These create new incomplete ones every time
         colormaps.register(ResourceLocation.parse("biome_sample"), Colormap::createDefSquare);

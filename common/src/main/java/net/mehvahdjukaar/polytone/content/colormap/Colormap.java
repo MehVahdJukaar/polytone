@@ -362,7 +362,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     }
 
     //this is dumb. dont use
-    private static Colormap singleColor(int color) {
+    public static Colormap singleColor(int color) {
         var c = new Colormap(IColormapExp.ZERO, IColormapExp.ZERO, false);
         c.acceptTexture(new ArrayImage(new int[][]{{color}}));
         return c;
