@@ -3,6 +3,8 @@ package net.mehvahdjukaar.polytone.common.expressions.proxies;
 import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -97,6 +99,14 @@ public abstract class AbstractEntityProxy extends PositionalProxy {
         };
         if (eq == EquipmentSlot.MAINHAND) return "air";
         return le.getItemBySlot(eq).typeHolder().getRegisteredName();
+    }
+
+    public boolean hasEffect(String effect) {
+        LivingEntity le = livingEntity();
+        if (le == null || le.getActiveEffectsMap().isEmpty()) return false;
+        Identifier id = Identifier.tryParse(effect);
+        if (id == null) return false;
+        return BuiltInRegistries.MOB_EFFECT.get(id).map(le::hasEffect).orElse(false);
     }
 
     public double height() {
