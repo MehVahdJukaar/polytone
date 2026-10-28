@@ -1,1 +1,8 @@
 minecraft:grass
+minecraft:block.sand.wind
+minecraft:entity.goat.screaming.horn_break
+minecraft:entity.wolf.howl
+minecraft:item.goat_horn.play
+minecraft:leaves
+minecraft:moss
+minecraft:dappled_forest
