@@ -6,7 +6,6 @@ import com.seibel.distanthorizons.api.methods.events.abstractEvents.DhApiBlockSt
 import com.seibel.distanthorizons.api.methods.events.sharedParameterObjects.DhApiEventParam;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
-import net.minecraft.CrashReport;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -62,9 +61,9 @@ public class DistantHorizonsCompat {
 
             boolean isFromThisLevel = level.registryAccess().lookupOrThrow(Registries.BIOME).getResourceKey(biome).isPresent();
             if (!isFromThisLevel) {
-                //DH swallows exceptions here
-                var e = new IllegalStateException("Distant Horizons gave Polytone a Biome that is not in the current client level registry (old world or server side biome): " + lod.getBiomeWrapper().getSerialString());
-                Minecraft.getInstance().delayCrash(CrashReport.forThrowable(e, "Getting Distant Horizons LOD tint"));
+                //DH can retain biome holders from a previous level; don't sample them against the current level.
+                Polytone.LOGGER.warn("Distant Horizons provided a biome that is not in the current client level registry; skipping Polytone LOD tint. Biome: {}",
+                        lod.getBiomeWrapper().getSerialString());
                 return;
             }
 
