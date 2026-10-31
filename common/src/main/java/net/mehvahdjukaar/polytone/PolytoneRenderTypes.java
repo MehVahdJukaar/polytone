@@ -20,6 +20,7 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.BindGroupLayouts;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.oit.OitPipelineSet;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -60,6 +61,19 @@ public class PolytoneRenderTypes {
                     .withColorTargetState(new ColorTargetState(ADDITIVE_TRANSLUCENT_BLEND))
                     .build());
 
+    public static final OitPipelineSet ADDITIVE_TRANSLUCENT_PARTICLE_OIT = registerOit(
+            OitPipelineSet.builder("polytone_additive_particle", RenderPipeline.builder()
+                    .withVertexShader("core/particle")
+                    .withFragmentShader(Polytone.res("core/particle_no_cutoff"))
+                    .withBindGroupLayout(BindGroupLayouts.SAMPLER0_SAMPLER2)
+                    .withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS)
+                    .withBindGroupLayout(BindGroupLayouts.FOG)
+                    .withVertexBinding(0, DefaultVertexFormat.PARTICLE)
+                    .withPrimitiveTopology(PrimitiveTopology.QUADS)
+                    .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
+                    .withShaderDefine("OIT_ADDITIVE")
+            ).build());
+
     public static final RenderPipeline ADDITIVE_TRANSLUCENT_BLOCK_PIPELINE = register(
             RenderPipeline.builder()
                     .withBindGroupLayout(BindGroupLayouts.GLOBALS)
@@ -76,14 +90,37 @@ public class PolytoneRenderTypes {
                     .withColorTargetState(new ColorTargetState(ADDITIVE_TRANSLUCENT_BLEND))
                     .build());
 
+    public static final OitPipelineSet ADDITIVE_TRANSLUCENT_BLOCK_OIT = registerOit(
+            OitPipelineSet.builder("polytone_additive_translucent_moving_block", RenderPipeline.builder()
+                    .withBindGroupLayout(BindGroupLayouts.GLOBALS)
+                    .withBindGroupLayout(BindGroupLayouts.FOG)
+                    .withBindGroupLayout(BindGroupLayouts.SAMPLER0)
+                    .withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS)
+                    .withVertexShader("core/block")
+                    .withFragmentShader("core/block")
+                    .withVertexBinding(0, DefaultVertexFormat.BLOCK)
+                    .withPrimitiveTopology(PrimitiveTopology.QUADS)
+                    .withDepthStencilState(DepthStencilState.DEFAULT)
+                    .withShaderDefine("OIT_ADDITIVE")
+            ).withAccumulateModifier(accumulate -> accumulate.withBindGroupLayout(BindGroupLayouts.SAMPLER2)).build());
+
     public static final RenderType ADDITIVE_TRANSLUCENT_MOVING_BLOCK_RENDERTYPE = RenderType.create(Polytone.MOD_ID + ":additive_translucent_moving_block",
             RenderSetup.builder(ADDITIVE_TRANSLUCENT_BLOCK_PIPELINE)
+                    .setOitPipelines(ADDITIVE_TRANSLUCENT_BLOCK_OIT)
                     .useLightmap()
                     .withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS,
                             () -> RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.NEAREST, true))
                     .setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE)
                     .createRenderSetup());
 
+
+    //vanillas OitPipelineSet register is pirvate
+    private static OitPipelineSet registerOit(OitPipelineSet set) {
+        register(set.depthBoundsPipeline());
+        register(set.transmittancePipeline());
+        register(set.accumulatePipeline());
+        return set;
+    }
 
     public static final RenderPipeline SKY_DEPTH_WRITE_PIPELINE = register(
             RenderPipeline.builder(RenderPipelines.MATRICES_FOG_SNIPPET)
