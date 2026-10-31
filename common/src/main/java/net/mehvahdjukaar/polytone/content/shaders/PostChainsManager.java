@@ -227,6 +227,7 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
                 if (chain != null) active.add(chain);
             }
         }
+
         return active;
     }
 
@@ -252,7 +253,7 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         levelRenderedThisFrame = true;
         worldDepthCaptured = false;
         if (!anyActiveChainReadsMainDepth()) return;
-        ensureSnapshotSized(main.width, main.height);
+        ensureSnapshotSized(main);
         worldDepthSnapshot.copyDepthFrom(main);
         worldDepthCaptured = true;
     }
@@ -276,12 +277,20 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         }
     }
 
-    private void ensureSnapshotSized(int width, int height) {
+    private void ensureSnapshotSized(RenderTarget main) {
+        //neo stencil sutff
+        GpuFormat depthFormat = main.getDepthTexture().getFormat();
+        if (worldDepthSnapshot != null && worldDepthSnapshot.getDepthTexture().getFormat() != depthFormat) {
+            worldDepthSnapshot.destroyBuffers();
+            worldDepthSnapshot = null;
+        }
+
+
         if (worldDepthSnapshot == null) {
-            worldDepthSnapshot = new TextureTarget("Polytone World Depth Snapshot", width, height,
-                    GpuFormat.RGBA8_UNORM, GpuFormat.D32_FLOAT);
-        } else if (worldDepthSnapshot.width != width || worldDepthSnapshot.height != height) {
-            worldDepthSnapshot.resize(width, height);
+            worldDepthSnapshot = new TextureTarget("Polytone World Depth Snapshot", main.width, main.height,
+                    GpuFormat.RGBA8_UNORM, depthFormat);
+        } else if (worldDepthSnapshot.width != main.width || worldDepthSnapshot.height != main.height) {
+            worldDepthSnapshot.resize(main.width, main.height);
         }
     }
 

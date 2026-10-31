@@ -1,6 +1,6 @@
 package net.mehvahdjukaar.polytone.mixins;
 
-import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.pipeline.PipelineCache;
 import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
@@ -18,7 +18,9 @@ public class PipelineCacheMixin {
         CompiledPipelineSources.record(compiled, pipeline);
     }
 
-    @ModifyReturnValue(method = "get", at = @At("RETURN"))
+
+    @ModifyExpressionValue(method = "get", at = @At(value = "INVOKE",
+            target = "Lcom/mojang/renderpearl/api/pipeline/CompiledRenderPipeline$Pending;finishCompile()Lcom/mojang/renderpearl/api/pipeline/CompiledRenderPipeline;"))
     private CompiledRenderPipeline poly$recordCompiled(CompiledRenderPipeline compiled, RenderPipeline pipeline) {
         if (compiled != null) CompiledPipelineSources.record(compiled, pipeline);
         return compiled;
