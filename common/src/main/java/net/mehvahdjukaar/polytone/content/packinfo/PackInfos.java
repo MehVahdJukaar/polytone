@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.packinfo;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.server.packs.PackMetadataResources;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfo.OpenGLVersion;
@@ -35,11 +36,16 @@ public class PackInfos {
         return BY_PACK_ID.get(packId);
     }
 
+    private static boolean isOpenGlBackend() {
+        return RenderSystem.getDevice().getDeviceInfo().backendName().equals("OpenGL");
+    }
+
     //null if its ok
     public static @Nullable OpenGLVersion missingOpenGL(String packId) {
         PackInfo info = BY_PACK_ID.get(packId);
         if (info == null || info.minOpenGL().isEmpty()) return null;
         OpenGLVersion required = info.minOpenGL().get();
+        if (!isOpenGlBackend()) return required;
         // TODO: vulkan
         //return GLHelper.supportsOpenGL(required.major(), required.minor()) ? null : required;
         return null;

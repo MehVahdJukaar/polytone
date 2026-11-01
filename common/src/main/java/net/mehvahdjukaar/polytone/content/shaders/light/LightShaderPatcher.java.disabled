@@ -1,6 +1,8 @@
 package net.mehvahdjukaar.polytone.content.shaders.light;
 
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
+import net.mehvahdjukaar.polytone.content.shaders.GLHelper;
 import net.mehvahdjukaar.polytone.content.shaders.GlslImports;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
@@ -39,6 +41,11 @@ public class LightShaderPatcher {
     private static final Identifier TERRAIN = Identifier.withDefaultNamespace("core/terrain");
     private static final Identifier BLOCK = Identifier.withDefaultNamespace("core/block");
     private static final Set<Identifier> SOLID_FACE_SHADERS = Set.of(TERRAIN, BLOCK);
+
+    //vulkan only takes 2D/cube samplers and our volume binds raw gl texture units, so no patch there
+    public static boolean tintsVanillaBlockLight() {
+        return Polytone.CONFIGS.coloredLightsBackend.get().tintsVanillaBlockLight() && GLHelper.isOpenGlBackend();
+    }
 
     public static boolean isIncludeAvailable() {
         return Minecraft.getInstance().getResourceManager().getResource(INCLUDE_LOCATION).isPresent();

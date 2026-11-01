@@ -125,8 +125,7 @@ public abstract class PackEntryMixin extends  ObjectSelectionList.Entry<Transfer
     private Component polytone$explainMissingOpenGL(PackCompatibility compatibility, Operation<Component> original) {
         OpenGLVersion missing = PackInfos.missingOpenGL(this.pack.getId());
         if (compatibility.isCompatible() && missing != null) {
-            // TODO: vulkan
-            return Component.translatable("pack.polytone.needs_opengl", missing.toString(), "");
+            return polytone$missingOpenGLMessage("pack.polytone.needs_opengl", missing);
         }
         return original.call(compatibility);
     }
@@ -136,9 +135,17 @@ public abstract class PackEntryMixin extends  ObjectSelectionList.Entry<Transfer
     private Component polytone$confirm(PackCompatibility compatibility, Operation<Component> original) {
         OpenGLVersion missing = PackInfos.missingOpenGL(this.pack.getId());
         if (compatibility.isCompatible() && missing != null) {
-            // TODO: vulkan
-            return Component.translatable("pack.polytone.needs_opengl.confirm", missing.toString(), "");
+            return polytone$missingOpenGLMessage("pack.polytone.needs_opengl.confirm", missing);
         }
         return original.call(compatibility);
+    }
+
+
+    @Unique
+    private static Component polytone$missingOpenGLMessage(String key, OpenGLVersion missing) {
+        // TODO: vulkan
+        //if (!GLHelper.isOpenGlBackend()) return Component.translatable(key + ".vulkan", missing.toString());
+        //return Component.translatable(key, missing.toString(), GLHelper.getContextVersionStr());
+        return Component.translatable(key + ".vulkan", missing.toString());
     }
 }
