@@ -190,7 +190,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
     }
 
     public float getStarSize(float vanilla) {
-        return starSize != null ? (float) starSize.evaluate() : vanilla;
+        return starSize != null ? (float) starSize.evaluate(vanilla) : vanilla;
     }
 
     public int getStarCount(int vanilla) {
@@ -281,7 +281,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
                     bossFogDistance = parseFloat(e);
                     return;
                 case "star_size":
-                    starSize = decodeSimpleExp(e);
+                    starSize = ISimpleExp.CODEC_WITH_VALUE.decode(JsonOps.INSTANCE, e).getOrThrow().getFirst();
                     return;
                 case "star_count":
                     starCount = Math.max(0, (int) decodeSimpleExp(e).evaluate());
