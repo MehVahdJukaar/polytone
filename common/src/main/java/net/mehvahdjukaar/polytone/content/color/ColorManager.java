@@ -637,6 +637,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
     protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
         //star mesh is baked once
         var sky = Minecraft.getInstance().levelRenderer.skyRenderer;
+        if (sky == null) return;
         sky.starBuffer.close();
         sky.starBuffer = sky.buildStars();
     }
