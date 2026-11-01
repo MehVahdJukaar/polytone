@@ -28,6 +28,8 @@
   "screen.polytone.pack_info.tooltip": "Pack Info",
   "pack.polytone.needs_opengl": "Needs OpenGL %s, this device has %s",
   "pack.polytone.needs_opengl.confirm": "This pack needs OpenGL %s but this device only has %s. Some of its effects won't show. Load it anyway?",
+  "pack.polytone.needs_opengl.vulkan": "Needs OpenGL %s, the game is running on Vulkan",
+  "pack.polytone.needs_opengl.confirm.vulkan": "This pack needs OpenGL %s but the game is running on Vulkan. Some of its effects, like colored lights, won't show. Load it anyway?",
   "config.polytone.lenient_loading.tooltip": "Attempts loading packs with errors. Not guaranteed to work. Do NOT enable this if you are a pack creator.",
   "config.polytone.lenient_loading": "Lenient Pack Loading",
   "config.polytone.legacy_parsing.tooltip": "Tries to translate formats from other mods to be parsed as Polytone files. Relevant for custom colors and colormaps.",

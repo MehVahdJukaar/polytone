@@ -344,7 +344,7 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
 
     //shaders can compile before our reload so this must not read pack data
     private static boolean tintsVanillaBlockLight() {
-        return Polytone.CONFIGS.coloredLightsBackend.get().tintsVanillaBlockLight();
+        return PolytoneShaderPatcher.tintsVanillaBlockLight();
     }
 
     @Override

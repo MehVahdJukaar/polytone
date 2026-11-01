@@ -236,3 +236,5 @@ accessible field net/minecraft/client/renderer/SkyRenderer starBuffer Lcom/mojan
 mutable field net/minecraft/client/renderer/SkyRenderer starBuffer Lcom/mojang/blaze3d/buffers/GpuBuffer;
 #fabric dumb
 mutable field net/minecraft/client/gui/components/debug/DebugScreenEntries PROFILES Ljava/util/Map;
+accessible class com/mojang/blaze3d/opengl/GlDevice
+accessible field com/mojang/blaze3d/systems/GpuDevice backend Lcom/mojang/blaze3d/systems/GpuDeviceBackend;
