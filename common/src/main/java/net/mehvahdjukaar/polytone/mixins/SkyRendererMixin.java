@@ -7,7 +7,6 @@ import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SkyRenderer;
 import org.joml.Matrix4f;
-import org.joml.Matrix4fc;
 import org.spongepowered.asm.mixin.Mixin;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import org.spongepowered.asm.mixin.injection.At;
@@ -36,13 +35,13 @@ public class SkyRendererMixin {
 
     //fake sky render distance can be past the real far plane, which clips the sky disc (512 out). sky fog reads the unscaled positions so here we shrink it to look identical
     @ModifyArg(method = "renderSkyDisc", index = 0, at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/renderer/DynamicUniforms;writeTransform(Lorg/joml/Matrix4fc;Lorg/joml/Vector4fc;Lorg/joml/Vector3fc;Lorg/joml/Matrix4fc;)Lcom/mojang/blaze3d/buffers/GpuBufferSlice;"))
-    private Matrix4fc polytone$hackfitSkyInFarPlane(Matrix4fc modelView) {
+            target = "Lnet/minecraft/client/renderer/DynamicUniforms;writeTransform(Lorg/joml/Matrix4f;Lorg/joml/Vector4f;)Lcom/mojang/blaze3d/buffers/GpuBufferSlice;"))
+    private Matrix4f polytone$hackfitSkyInFarPlane(Matrix4f modelView) {
         if (Polytone.COLORS.getSkyRenderDistance() == null) {
             return modelView;
         }
         float scale = Minecraft.getInstance().levelRenderer.levelRenderState.cameraRenderState.depthFar / 520f;
-        return scale < 1 ? new Matrix4f(modelView).scale(scale) : modelView;
+        return scale < 1 ? modelView.scale(scale) : modelView;
     }
 
     @ModifyExpressionValue(method = "buildStars", at = @At(value = "CONSTANT", args = "intValue=1500"))
