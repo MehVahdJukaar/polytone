@@ -151,7 +151,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
     }
 
     public float getStarSize(float vanilla) {
-        return starSize != null ? (float) starSize.evaluate() : vanilla;
+        return starSize != null ? (float) starSize.evaluate(vanilla) : vanilla;
     }
 
     public int getStarCount(int vanilla) {
@@ -206,7 +206,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
                 case "blindness_fog_distance" -> blindnessFogDistance = v.getAsFloat();
                 case "darkness_fog_distance" -> darknessFogDistance = v.getAsFloat();
                 case "sky_render_distance" -> skyRenderDistance = Mth.clamp(v.getAsInt(), 2, 32);
-                case "star_size" -> starSize = decodeSimpleExp(v);
+                case "star_size" -> starSize = ISimpleExp.CODEC_WITH_VALUE.decode(JsonOps.INSTANCE, v).getOrThrow().getFirst();
                 case "star_count" -> starCount = Math.max(0, (int) decodeSimpleExp(v).evaluate());
             }
         });
