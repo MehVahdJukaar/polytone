@@ -40,6 +40,7 @@ public class PackInfos {
         PackInfo info = BY_PACK_ID.get(packId);
         if (info == null || info.minOpenGL().isEmpty()) return null;
         OpenGLVersion required = info.minOpenGL().get();
+        if (!GLHelper.isOpenGlBackend()) return required;
         return GLHelper.supportsOpenGL(required.major(), required.minor()) ? null : required;
     }
 }

@@ -1,6 +1,8 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
+import com.mojang.blaze3d.opengl.GlDevice;
 import com.mojang.blaze3d.opengl.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.mehvahdjukaar.polytone.Polytone;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL;
@@ -100,6 +102,10 @@ public class GLHelper {
             throw new IllegalStateException("Failed to build compute shader: " + log);
         }
         return program;
+    }
+
+    public static boolean isOpenGlBackend() {
+        return RenderSystem.getDevice().backend instanceof GlDevice;
     }
 
     //Rip Mac lmao

@@ -2,7 +2,6 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.shaders.ShaderType;
-import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.shaders.light.LightShaderPatcher;
 import net.minecraft.client.renderer.ShaderManager;
 import net.minecraft.resources.Identifier;
@@ -22,7 +21,7 @@ public abstract class ShaderManagerMixin {
                                                         @Local(argsOnly = true) ShaderType type,
                                                         @Local(argsOnly = true) Map<Identifier, Resource> files) {
         if (type != ShaderType.VERTEX) return source;
-        boolean builtInLights = Polytone.CONFIGS.coloredLightsBackend.get().tintsVanillaBlockLight();
+        boolean builtInLights = LightShaderPatcher.tintsVanillaBlockLight();
         boolean canPatch = builtInLights && files.containsKey(LightShaderPatcher.INCLUDE_LOCATION);
         Identifier shaderId = type.idConverter().fileToId(location);
         //sodium terrain pipelines load their glsl through here too

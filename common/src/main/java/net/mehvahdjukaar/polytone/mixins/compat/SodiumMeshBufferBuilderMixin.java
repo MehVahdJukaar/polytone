@@ -4,7 +4,6 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.caffeinemc.mods.sodium.client.render.chunk.vertex.builder.ChunkMeshBufferBuilder;
 import net.caffeinemc.mods.sodium.client.render.chunk.vertex.format.ChunkVertexEncoder;
 import net.caffeinemc.mods.sodium.client.render.chunk.vertex.format.ChunkVertexType;
-import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.content.shaders.light.LightShaderPatcher;
 import net.minecraft.core.Direction;
@@ -25,7 +24,7 @@ public abstract class SodiumMeshBufferBuilderMixin {
 
     @Inject(method = "<init>", remap = false, require = 0, at = @At("TAIL"))
     private void polytone$checkFaceBits(ChunkVertexType vertexType, int initialCapacity, CallbackInfo ci) {
-        polytone$writesFaceBits = Polytone.CONFIGS.coloredLightsBackend.get().tintsVanillaBlockLight()
+        polytone$writesFaceBits = LightShaderPatcher.tintsVanillaBlockLight()
                 && !CompatHandler.irisShaderPackActive();
     }
 
