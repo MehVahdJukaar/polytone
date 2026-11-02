@@ -57,8 +57,8 @@ dependencies {
     modCompileOnly("foundry.veil:veil-neoforge-1.21.1:${veil_version}") { exclude(group = "maven.modrinth") }
     modRuntimeOnly("foundry.veil:veil-neoforge-1.21.1:${veil_version}") { exclude(group = "maven.modrinth") }
 
-    modRuntimeOnly("net.mehvahdjukaar:moonlight-neoforge:1.21.1-3.7.0") { isTransitive = false }
-    modRuntimeOnly("net.mehvahdjukaar:supplementaries-neoforge:1.21.1-4.0.2") { isTransitive = false }
+    modRuntimeOnly("net.mehvahdjukaar:moonlight-neoforge:1.21.1-3.7.2") { isTransitive = false }
+    modRuntimeOnly("net.mehvahdjukaar:supplementaries-neoforge:1.21.1-4.1.0") { isTransitive = false }
     modRuntimeOnly("net.mehvahdjukaar:hauntedharvest-neoforge:1.21-3.5.0") { isTransitive = false }
     modRuntimeOnly("net.mehvahdjukaar:snowyspirit-neoforge:1.21.1-3.1.15") { isTransitive = false }
 }

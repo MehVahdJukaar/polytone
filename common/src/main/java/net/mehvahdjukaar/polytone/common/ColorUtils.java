@@ -10,13 +10,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 
+import java.awt.Color;
 import java.util.Locale;
 
 //ML class
 public class ColorUtils {
 
-    //utility codec that serializes either a string or an integer.
-    //declared as a SchemaCodec so the editor shows a color picker (encodes as "#AARRGGBB" hex)
     public static final SchemaCodec<Integer> CODEC = SchemaCodec.of(
             Codec.either(Codec.INT,
                     Codec.STRING.flatXmap(ColorUtils::isValidStringOrError, s -> isValidStringOrError(s)
@@ -53,6 +52,20 @@ public class ColorUtils {
 
     public static boolean isValidString(String s) {
         return isValidStringOrError(s).result().isPresent();
+    }
+
+    public static int parseHex(String s) {
+        return Integer.parseUnsignedInt(isValidStringOrError(s).getOrThrow(), 16);
+    }
+
+    public static String toHexString(int color, boolean hasAlpha) {
+        return hasAlpha
+                ? "#" + String.format("%08X", color)
+                : "#" + String.format("%06X", color & 0xFFFFFF);
+    }
+
+    public static float[] argbToHsv(int argb) {
+        return Color.RGBtoHSB((argb >> 16) & 255, (argb >> 8) & 255, argb & 255, null);
     }
 
 

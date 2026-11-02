@@ -33,7 +33,8 @@ public abstract class PolyConfig<T> implements OptionInstance.ValueSet<T> {
     public static final Codec<PolyConfig<?>> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.alternatives(
             "string", StringConfig.CODEC,
             "number", NumberConfig.CODEC,
-            "bool", BoolConfig.CODEC));
+            "bool", BoolConfig.CODEC,
+            "color", ColorConfig.CODEC));
 
     protected PolyConfig(Optional<String> valueTranslationKey, Map<String, T> presets,
                          Map<String, T> sectionPresets, int order, Optional<String> section,

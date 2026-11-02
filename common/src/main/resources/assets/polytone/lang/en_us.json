@@ -4,6 +4,8 @@
   "toast.polytone.early_load_fail": "Polytone Early Resource Reload failed",
   "message.polytone.fabulous_warning": "Fabulous Graphics detected! Some polytone features may not work correctly with it enabled.",
   "screen.polytone.configs.title": "Polytone Packs Configs",
+  "gui.polytone.color_picker": "Color Picker",
+  "gui.polytone.color_pick": "Pick",
   "screen.polytone.config_button.bubble": "Configure me!",
   "screen.polytone.config_button.support": "Enjoying Polytone packs? Consider supporting §c<3",
   "screen.polytone.configs.reset": "Reset to Defaults",

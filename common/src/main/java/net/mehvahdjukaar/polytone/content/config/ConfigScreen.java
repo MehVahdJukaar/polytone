@@ -68,6 +68,7 @@ public class ConfigScreen extends OptionsSubScreen {
         for (OptionHolder<?> e : options) {
             opt.put(e.fileId.getNamespace(), e);
         }
+        collapsed.addAll(opt.keySet());
         this.safeFunc = safeFunc;
     }
 
