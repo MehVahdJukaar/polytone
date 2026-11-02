@@ -59,12 +59,14 @@ public class ConfigScreen extends OptionsSubScreen {
         for (OptionHolder<?> e : options) {
             this.optionsPerCategory.put(e.fileId.getNamespace(), e);
         }
+        this.collapsedNamespaces.addAll(this.optionsPerCategory.keySet());
         this.saveFunc = saveFunc;
     }
 
     public ConfigScreen(Screen lastScreen, Multimap<String, OptionHolder<?>> options, Runnable saveFunc) {
         super(lastScreen, Minecraft.getInstance().options, TITLE);
         this.optionsPerCategory.putAll(options);
+        this.collapsedNamespaces.addAll(this.optionsPerCategory.keySet());
         this.saveFunc = saveFunc;
     }
     @Override
