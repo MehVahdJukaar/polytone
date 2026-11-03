@@ -1,6 +1,8 @@
 package net.mehvahdjukaar.polytone.content.biome;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.PlatStuff;
@@ -15,6 +17,8 @@ import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributeMapMod;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
@@ -38,11 +42,26 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
                                   BiomeEnvAttributeModifications attributeModifications,
                                   Targets targets) {
 
+    //0 means off, do nothing
+    private static final Codec<Optional<Integer>> CONFIG_COLOR = Identifier.CODEC.fieldOf("config").codec().flatXmap(
+            id -> Polytone.CONFIGS.getValue(id) instanceof Integer c
+                    ? DataResult.success(c == 0 ? Optional.empty() : Optional.of(ARGB.alpha(c) == 0 ? ARGB.opaque(c) : c))
+                    : DataResult.error(() -> "Config " + id + " is not a color config"),
+            o -> DataResult.error(() -> "Can't encode a config color"));
+
+    private static final Codec<Optional<Integer>> COLOR_OR_CONFIG = SchemaCodecs.withAlternative(
+            SchemaCodecs.alt("color", ColorUtils.COLOR.xmap(Optional::of, o -> o.orElse(0))),
+            SchemaCodecs.alt("config", CONFIG_COLOR));
+
+    private static MapCodec<Optional<Integer>> colorField(String name) {
+        return COLOR_OR_CONFIG.optionalFieldOf(name).xmap(o -> o.flatMap(c -> c), o -> o.map(Optional::of));
+    }
+
     public static final SchemaCodec<BiomeEffectModifier> DIRECT_CODEC = SchemaRecord.create(BiomeEffectModifier.class, (i) -> i.group(
-            i.optional("water_color", ColorUtils.COLOR, BiomeEffectModifier::waterColor),
-            i.optional("foliage_color", ColorUtils.COLOR, BiomeEffectModifier::foliageColorOverride),
-            i.optional("dry_foliage_color", ColorUtils.COLOR, BiomeEffectModifier::dryFoliageColorOverride),
-            i.optional("grass_color", ColorUtils.COLOR, BiomeEffectModifier::grassColorOverride),
+            i.field("water_color", colorField("water_color"), COLOR_OR_CONFIG, BiomeEffectModifier::waterColor),
+            i.field("foliage_color", colorField("foliage_color"), COLOR_OR_CONFIG, BiomeEffectModifier::foliageColorOverride),
+            i.field("dry_foliage_color", colorField("dry_foliage_color"), COLOR_OR_CONFIG, BiomeEffectModifier::dryFoliageColorOverride),
+            i.field("grass_color", colorField("grass_color"), COLOR_OR_CONFIG, BiomeEffectModifier::grassColorOverride),
             i.optional("grass_color_modifier", BiomeSpecialEffects.GrassColorModifier.CODEC, BiomeEffectModifier::grassColorModifier),
             i.optional("attributes_modifiers", BiomeEnvAttributeModifications.CODEC,
                     BiomeEnvAttributeModifications.EMPTY, BiomeEffectModifier::attributeModifications),
@@ -50,8 +69,8 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
     ).apply(i, BiomeEffectModifier::new));
 
     public static final Codec<BiomeEffectModifier> CODEC = SchemaCodecs.withExtra(DIRECT_CODEC,
-            ColorUtils.COLOR.optionalFieldOf("fog_color"),
-            ColorUtils.COLOR.optionalFieldOf("sky_color"),
+            colorField("fog_color"),
+            colorField("sky_color"),
             //shitty backward compat. todo: remove
             SchemaCodecs.optionalAlias(FogParam.CODEC, "fog_fade", "fog_start"),
             SchemaCodecs.optionalAlias(FogParam.CODEC, "fog_radius", "fog_end"),
