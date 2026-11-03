@@ -1,9 +1,12 @@
 package net.mehvahdjukaar.polytone.content.biome;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
@@ -12,6 +15,7 @@ import net.mehvahdjukaar.polytone.common.Weather;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.StringRepresentable;
@@ -36,13 +40,28 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                                   Optional<FogParam> fogStart, Optional<FogParam> fogEnd,
                                   Targets targets) {
 
+    //0 means off, do nothing
+    private static final Codec<Optional<Integer>> CONFIG_COLOR = ResourceLocation.CODEC.fieldOf("config").codec().flatXmap(
+            id -> Polytone.CONFIGS.getValue(id) instanceof Integer c
+                    ? DataResult.success(c == 0 ? Optional.empty() : Optional.of(c))
+                    : DataResult.error(() -> "Config " + id + " is not a color config"),
+            o -> DataResult.error(() -> "Can't encode a config color"));
+
+    private static final Codec<Optional<Integer>> COLOR_OR_CONFIG = SchemaCodecs.withAlternative(
+            SchemaCodecs.alt("color", ColorUtils.CODEC.xmap(Optional::of, o -> o.orElse(0))),
+            SchemaCodecs.alt("config", CONFIG_COLOR));
+
+    private static MapCodec<Optional<Integer>> colorField(String name) {
+        return COLOR_OR_CONFIG.optionalFieldOf(name).xmap(o -> o.flatMap(c -> c), o -> o.map(Optional::of));
+    }
+
     public static final Codec<BiomeEffectModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
-            ColorUtils.CODEC.optionalFieldOf("fog_color").forGetter(BiomeEffectModifier::fogColor),
-            ColorUtils.CODEC.optionalFieldOf("water_color").forGetter(BiomeEffectModifier::waterColor),
-            ColorUtils.CODEC.optionalFieldOf("water_fog_color").forGetter(BiomeEffectModifier::waterFogColor),
-            ColorUtils.CODEC.optionalFieldOf("sky_color").forGetter(BiomeEffectModifier::skyColor),
-            ColorUtils.CODEC.optionalFieldOf("foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
-            ColorUtils.CODEC.optionalFieldOf("grass_color").forGetter(BiomeEffectModifier::grassColorOverride),
+            colorField("fog_color").forGetter(BiomeEffectModifier::fogColor),
+            colorField("water_color").forGetter(BiomeEffectModifier::waterColor),
+            colorField("water_fog_color").forGetter(BiomeEffectModifier::waterFogColor),
+            colorField("sky_color").forGetter(BiomeEffectModifier::skyColor),
+            colorField("foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
+            colorField("grass_color").forGetter(BiomeEffectModifier::grassColorOverride),
             BiomeSpecialEffects.GrassColorModifier.CODEC.optionalFieldOf("grass_color_modifier").forGetter(BiomeEffectModifier::grassColorModifier),
             AmbientParticleSettings.CODEC.optionalFieldOf("particle").forGetter(BiomeEffectModifier::ambientParticleSettings),
             SoundEvent.CODEC.optionalFieldOf("ambient_sound").forGetter(BiomeEffectModifier::ambientLoopSoundEvent),

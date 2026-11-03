@@ -4,7 +4,9 @@ import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -30,13 +32,21 @@ public abstract class PositionalProxy {
     private BlockState stateCache;
     private BlockEntity beCache;
     private Biome biomeCache;
-    private String biomeNameCache;
+    private Holder<Biome> biomeHolderCache;
     private BlockPos posCache;
 
 
     public PositionalProxy(@Nullable BlockState state, @Nullable Biome biome) {
         this.stateCache = state;
         this.biomeCache = biome;
+    }
+
+    public PositionalProxy(@Nullable BlockState state, @Nullable Holder<Biome> biome) {
+        this.stateCache = state;
+        if (biome != null) {
+            this.biomeCache = biome.value();
+            this.biomeHolderCache = biome;
+        }
     }
 
     public PositionalProxy(@Nullable BlockState state) {
@@ -80,7 +90,7 @@ public abstract class PositionalProxy {
             stateCache = null;
             beCache = null;
             biomeCache = null;
-            biomeNameCache = null;
+            biomeHolderCache = null;
         }
         return posCache;
     }
@@ -103,9 +113,22 @@ public abstract class PositionalProxy {
             if (!(l instanceof LevelReader lr) || blockPos == null) return null;
             var holder = lr.getBiome(blockPos);
             biomeCache = holder.value();
-            biomeNameCache = holder.getRegisteredName();
+            biomeHolderCache = holder;
         }
         return biomeCache;
+    }
+
+    @Nullable
+    protected Holder<Biome> getBiomeHolderInternal() {
+        Biome biome = getBiomeInternal();
+        if (biome == null) return null;
+        if (biomeHolderCache == null) {
+            //not the best
+            Level level = Minecraft.getInstance().level;
+            if (level == null) return null;
+            biomeHolderCache = level.registryAccess().registryOrThrow(Registries.BIOME).wrapAsHolder(biome);
+        }
+        return biomeHolderCache;
     }
 
     @Nullable
@@ -142,16 +165,8 @@ public abstract class PositionalProxy {
     }
 
     public String biome() {
-        updatedPos();
-
-        if (biomeNameCache == null) {
-            if (biomeCache != null) {
-                if (!(getLevelInternal() instanceof Level)) {
-                    biomeNameCache = "plains";
-                }
-            } else getBiomeInternal(); //updates cache
-        }
-        return biomeNameCache;
+        var holder = getBiomeHolderInternal();
+        return holder == null ? null : holder.getRegisteredName();
     }
 
     public double biomeIndex() {
@@ -211,6 +226,11 @@ public abstract class PositionalProxy {
     public boolean hasBlockTag(String tag) {
         TagKey<Block> tagKey = TagKey.create(Registries.BLOCK, ResourceLocation.parse(tag));
         return getStateInternal().is(tagKey);
+    }
+
+    public boolean hasBiomeTag(String tag) {
+        var holder = getBiomeHolderInternal();
+        return holder != null && holder.is(TagKey.create(Registries.BIOME, ResourceLocation.parse(tag)));
     }
 
     public boolean hasAirAt() {

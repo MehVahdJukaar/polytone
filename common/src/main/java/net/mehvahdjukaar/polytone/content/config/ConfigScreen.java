@@ -100,8 +100,9 @@ public class ConfigScreen extends OptionsSubScreen {
     }
 
     @Override
-    public void removed() {
+    public void onClose() {
         safeFunc.run();
+        super.onClose();
     }
 
     @Override
@@ -129,7 +130,7 @@ public class ConfigScreen extends OptionsSubScreen {
         footer.addChild(Button.builder(Component.translatable("screen.polytone.configs.undo"),
                 b -> applyToAll(OptionHolder::undoChanges)).width(textBtnW).build());
         footer.addChild(Button.builder(CommonComponents.GUI_DONE,
-                b -> this.minecraft.setScreen(this.lastScreen)).width(textBtnW).build());
+                b -> this.onClose()).width(textBtnW).build());
         this.heartButton = footer.addChild(SpriteIconButton.builder(
                         Component.translatable("screen.polytone.support.title"),
                         b -> this.minecraft.setScreen(new SupportScreen(this)),

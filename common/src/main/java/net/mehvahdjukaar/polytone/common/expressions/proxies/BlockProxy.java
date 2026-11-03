@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
 import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
@@ -15,9 +16,7 @@ import org.jetbrains.annotations.Nullable;
 @BeanAliases
 public class BlockProxy extends PositionalProxy {
 
-    // Max distance (per axis, from the source block) a neighbor query may reach. Keeps expressions
-    // from walking arbitrarily far into the world.
-    public static final int MAX_NEIGHBOR_DEPTH = 8;
+    public static final int MAX_NEIGHBOR_QUERY_DEPTH = 8;
 
     private final Vec3 p;
     private final BlockPos pos;
@@ -25,6 +24,14 @@ public class BlockProxy extends PositionalProxy {
     private final BlockAndTintGetter level;
 
     public BlockProxy(@NotNull BlockAndTintGetter level, @Nullable Vec3 pos, @Nullable BlockState state, @Nullable Biome biome) {
+        super(state, biome);
+        this.p = pos == null ? Vec3.ZERO : pos;
+        this.pos = BlockPos.containing(p);
+        this.origin = this.pos;
+        this.level = level;
+    }
+
+    public BlockProxy(@NotNull BlockAndTintGetter level, @Nullable Vec3 pos, @Nullable BlockState state, @Nullable Holder<Biome> biome) {
         super(state, biome);
         this.p = pos == null ? Vec3.ZERO : pos;
         this.pos = BlockPos.containing(p);
@@ -103,7 +110,7 @@ public class BlockProxy extends PositionalProxy {
     }
 
     private static int clampToDepth(int value, int originAxis) {
-        return Math.clamp(value, originAxis - MAX_NEIGHBOR_DEPTH, originAxis + MAX_NEIGHBOR_DEPTH);
+        return Math.clamp(value, originAxis - MAX_NEIGHBOR_QUERY_DEPTH, originAxis + MAX_NEIGHBOR_QUERY_DEPTH);
     }
 
     public BlockProxy north() {
