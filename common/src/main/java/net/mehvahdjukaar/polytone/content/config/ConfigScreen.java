@@ -74,8 +74,9 @@ public class ConfigScreen extends OptionsSubScreen {
     }
 
     @Override
-    public void removed() {
+    public void onClose() {
         saveFunc.run();
+        super.onClose();
     }
 
     @Override
@@ -111,7 +112,7 @@ public class ConfigScreen extends OptionsSubScreen {
                         b -> undoAndRebuild())
                 .width(btnWidth).build());
         footer.addChild(Button.builder(CommonComponents.GUI_DONE,
-                        b -> this.minecraft.gui.setScreen(this.lastScreen))
+                        b -> this.onClose())
                 .width(btnWidth).build());
 
         SpriteIconButton heart = SpriteIconButton.builder(
