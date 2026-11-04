@@ -14,6 +14,6 @@ public abstract class ClientPacketListenerMixin {
     //block entity data doesnt go through sendBlockUpdated
     @Inject(method = "handleBlockEntityData(Lnet/minecraft/network/protocol/game/ClientboundBlockEntityDataPacket;)V", at = @At("TAIL"))
     private void polytone$updateVoxelVolumeBlockEntity(ClientboundBlockEntityDataPacket packet, CallbackInfo ci) {
-        Polytone.VOXEL_VOLUME.onBlockEntityDataPacket(packet.getPos(), packet.getType());
+        //Polytone.VOXEL_VOLUME.onBlockEntityDataPacket(packet.getPos(), packet.getType());
     }
 }

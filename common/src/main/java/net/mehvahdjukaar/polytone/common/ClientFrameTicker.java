@@ -54,7 +54,7 @@ public class ClientFrameTicker {
 
         cameraBiome = level.getBiome(getCameraBlockPos());
 
-        Polytone.COLORED_LIGHTS.onRenderTick(partialTicks);
+        //Polytone.COLORED_LIGHTS.onRenderTick(partialTicks);
 
         if (mc.player != null) {
             playerSpeed = mc.player.getDeltaMovement().lengthSqr();
@@ -66,7 +66,7 @@ public class ClientFrameTicker {
         var biome = level.getBiome(cameraPos);
         temperature = ColorUtils.getClimateSettings(biome.value()).temperature();
         downfall = ColorUtils.getClimateSettings(biome.value()).downfall();
-        if (level instanceof ClientLevel c) Polytone.COLORED_LIGHTS.onTick(c, cameraPos);
+        //if (level instanceof ClientLevel c) Polytone.COLORED_LIGHTS.onTick(c, cameraPos);
     }
 
     public static double getDayTime() {

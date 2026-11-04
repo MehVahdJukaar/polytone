@@ -47,7 +47,6 @@ public class LevelRendererMixin {
         if (!LevelRenderPassTracker.pushAndIsMain(camera)) return;
         DeltaTracker deltaTracker = Minecraft.getInstance().getDeltaTracker();
         Polytone.GLOBAL_UNIFORMS.capture(cameraState.projectionMatrix, cameraState.viewRotationMatrix, deltaTracker.getGameTimeDeltaTicks());
-        Polytone.SHADOW_MAP.updateBeforeRenderLevel(terrainFog, camera, cameraState.viewRotationMatrix, cameraState.projectionMatrix);
         //Polytone.COLORED_LIGHTS.beforeRenderLevel(camera.position());
     }
 

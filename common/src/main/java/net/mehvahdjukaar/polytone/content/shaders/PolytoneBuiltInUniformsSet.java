@@ -1,8 +1,7 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
-import net.mehvahdjukaar.polytone.content.shaders.light.PolyShaderPointLights;
-import net.mehvahdjukaar.polytone.content.shaders.shadow.ShadowMapManager;
-import net.mehvahdjukaar.polytone.content.shaders.voxel.VoxelVolumeManager;
+//import net.mehvahdjukaar.polytone.content.shaders.light.PolyShaderPointLights;
+//import net.mehvahdjukaar.polytone.content.shaders.voxel.VoxelVolumeManager;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,9 +13,8 @@ public class PolytoneBuiltInUniformsSet extends HashSet<String> {
 
     static {
         DYNAMIC.add(PolyGlobalUniforms.BLOCK_NAME);
-        DYNAMIC.add(ShadowMapManager.BLOCK_NAME);
-        DYNAMIC.add(VoxelVolumeManager.BLOCK_NAME);
-        DYNAMIC.add(PolyShaderPointLights.BLOCK_NAME);
+        //DYNAMIC.add(VoxelVolumeManager.BLOCK_NAME);
+        //DYNAMIC.add(PolyShaderPointLights.BLOCK_NAME);
     }
 
     public static void register(String name) {

@@ -169,7 +169,7 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
 
         //in parse so COLORED_LIGHTS sees them when it applies
         for (var e : modifiers.entrySet()) {
-            e.getValue().coloredLight().ifPresent(l -> Polytone.COLORED_LIGHTS.addBlockLight(e.getKey(), l, AlwaysTrueTest.INSTANCE));
+            //e.getValue().coloredLight().ifPresent(l -> Polytone.COLORED_LIGHTS.addBlockLight(e.getKey(), l, AlwaysTrueTest.INSTANCE));
         }
     }
 

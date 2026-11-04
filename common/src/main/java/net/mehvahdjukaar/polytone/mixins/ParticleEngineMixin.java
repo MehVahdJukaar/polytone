@@ -43,7 +43,7 @@ public abstract class ParticleEngineMixin {
                                                                                   @Local(argsOnly = true) T particleData) {
         if (original != null) {
             Polytone.PARTICLE_MODIFIERS.maybeModify(particleData, this.level, original);
-            Polytone.COLORED_LIGHTS.onParticleCreated(particleData.getType(), original);
+            //Polytone.COLORED_LIGHTS.onParticleCreated(particleData.getType(), original);
         }
         return original;
     }
@@ -68,13 +68,13 @@ public abstract class ParticleEngineMixin {
     @Inject(method = "setLevel", at = @At("HEAD"))
     private void polytone$joinBeforeLevelChange(CallbackInfo ci) {
         PolytoneAsyncParticles.awaitTicks();
-        Polytone.COLORED_LIGHTS.onParticlesCleared();
+        //Polytone.COLORED_LIGHTS.onParticlesCleared();
     }
 
     @Inject(method = "clearParticles", at = @At("HEAD"))
     private void polytone$joinBeforeClear(CallbackInfo ci) {
         PolytoneAsyncParticles.awaitTicks();
-        Polytone.COLORED_LIGHTS.onParticlesCleared();
+        //Polytone.COLORED_LIGHTS.onParticlesCleared();
     }
 
 }

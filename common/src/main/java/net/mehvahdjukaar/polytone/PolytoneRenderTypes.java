@@ -136,7 +136,8 @@ public class PolytoneRenderTypes {
     public static final RenderPipeline TRANSLUCENT_CELESTIAL_PIPELINE = register(
             RenderPipeline.builder()
                     .withBindGroupLayout(BindGroupLayouts.GLOBALS)
-                    .withBindGroupLayout(BindGroupLayouts.MATRICES_PROJECTION)
+                    .withBindGroupLayout(BindGroupLayouts.PROJECTION)
+                    .withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS)
                     .withLocation(Polytone.res("pipeline/translucent_celestial"))
                     .withVertexShader("core/position_tex")
                     .withFragmentShader("core/position_tex")

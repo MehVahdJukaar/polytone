@@ -38,7 +38,7 @@ public abstract class ClientLevelMixin extends Level {
     //todo: but if thats better we should and have dedicated sodium mixin
     @Inject(method = "sendBlockUpdated", at = @At("HEAD"))
     private void polytone$updateVoxelVolumeBlock(BlockPos pos, BlockState oldState, BlockState newState, int flags, CallbackInfo ci) {
-        Polytone.VOXEL_VOLUME.onBlockChanged(pos, oldState, newState);
+        //Polytone.VOXEL_VOLUME.onBlockChanged(pos, oldState, newState);
     }
 
     @WrapOperation(method = "doAnimateTick", at = @At(value = "INVOKE",

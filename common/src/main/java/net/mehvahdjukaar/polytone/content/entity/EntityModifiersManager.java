@@ -48,7 +48,7 @@ public class EntityModifiersManager extends ContentManager<EntityModifier> {
         }
 
         for (var e : emittersPerEntity.entrySet()) {
-            e.getValue().coloredLight().ifPresent(l -> Polytone.COLORED_LIGHTS.addEntityLight(e.getKey(), l));
+            //e.getValue().coloredLight().ifPresent(l -> Polytone.COLORED_LIGHTS.addEntityLight(e.getKey(), l));
         }
     }
 

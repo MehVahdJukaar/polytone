@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.packinfo;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.server.packs.PackMetadataResources;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfo.OpenGLVersion;
-import net.mehvahdjukaar.polytone.content.shaders.GLHelper;
+//import net.mehvahdjukaar.polytone.content.shaders.GLHelper;
 import net.minecraft.server.packs.PackType;
 import org.jspecify.annotations.Nullable;
 
@@ -40,6 +40,8 @@ public class PackInfos {
         PackInfo info = BY_PACK_ID.get(packId);
         if (info == null || info.minOpenGL().isEmpty()) return null;
         OpenGLVersion required = info.minOpenGL().get();
-        return GLHelper.supportsOpenGL(required.major(), required.minor()) ? null : required;
+        // TODO: vulkan
+        //return GLHelper.supportsOpenGL(required.major(), required.minor()) ? null : required;
+        return null;
     }
 }

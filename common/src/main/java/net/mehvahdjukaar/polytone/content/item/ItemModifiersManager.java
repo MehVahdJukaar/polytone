@@ -83,7 +83,7 @@ public class ItemModifiersManager extends ContentManager<ItemModifier> {
         }
 
         for (var e : modifiers.entrySet()) {
-            e.getValue().coloredLight().ifPresent(l -> Polytone.COLORED_LIGHTS.addItemLight(e.getKey(), l));
+            //e.getValue().coloredLight().ifPresent(l -> Polytone.COLORED_LIGHTS.addItemLight(e.getKey(), l));
         }
     }
 
