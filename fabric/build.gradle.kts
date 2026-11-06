@@ -41,7 +41,7 @@ dependencies {
     modCompileOnly("curse.maven:sodium-core-shader-support-956376:8267839") // 1.5.0-mc26.1.2-sodium0.9.0beta.1
      //modImplementation ("curse.maven:distant-horizons-508933:6387715")
 
-    modImplementation("maven.modrinth:iris:1.11.2+26.2-fabric")
+    modCompileOnly("maven.modrinth:iris:1.11.2+26.2-fabric")
     modCompileOnly("maven.modrinth:distanthorizons:3.3.3-26.2")
 
     modImplementation("maven.modrinth:packed-packs:${packed_packs_fabric_version}")
