@@ -10,9 +10,12 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.gui.ChatBubbleWidget;
 import net.mehvahdjukaar.polytone.content.config.ConfigsManager;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfo;
+import net.mehvahdjukaar.polytone.content.packinfo.PackInfo.OpenGLVersion;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfoBadge;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfos;
+import net.minecraft.client.gui.components.ImageWidget;
 import net.minecraft.client.gui.components.SpriteIconButton;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.repository.Pack;
 import org.jspecify.annotations.Nullable;
@@ -67,11 +70,17 @@ public class PackedPacksCompat implements PackedPacksInitializer {
 
         Pack pack = event.packContext().pack();
         String id = pack.getId();
-        if (!PackInfoBadge.shouldShow(infoPage(id))) return;
-
-        //badge hides itself while the pack sits in the available list
-        Supplier<@Nullable PackInfo> info = () -> isSelected(screen, id) ? infoPage(id) : null;
-        event.addTopRight(2, new PackInfoBadge(info, pack.getTitle(), screen::reload));
+        if (PackInfoBadge.shouldShow(infoPage(id))) {
+            //badge hides itself while the pack sits in the available list
+            Supplier<@Nullable PackInfo> info = () -> isSelected(screen, id) ? infoPage(id) : null;
+            event.addTopRight(2, new PackInfoBadge(info, pack.getTitle(), screen::reload));
+        }
+        OpenGLVersion missing = PackInfos.missingOpenGL(id);
+        if (missing != null) {
+            ImageWidget warning = ImageWidget.sprite(PackInfoBadge.SIZE, PackInfoBadge.SIZE, Polytone.res("pack_needs_opengl"));
+            warning.setTooltip(Tooltip.create(PackInfos.missingOpenGLMessage("pack.polytone.needs_opengl", missing)));
+            event.addTopRight(2, warning);
+        }
     }
 
     private static @Nullable PackInfo infoPage(String packId) {

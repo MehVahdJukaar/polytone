@@ -7,7 +7,6 @@ import net.mehvahdjukaar.polytone.content.packinfo.PackInfo.OpenGLVersion;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfoBadge;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfoScreen;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfos;
-import net.mehvahdjukaar.polytone.content.shaders.GLHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ObjectSelectionList;
@@ -125,7 +124,7 @@ public abstract class PackEntryMixin extends  ObjectSelectionList.Entry<Transfer
     private Component polytone$explainMissingOpenGL(PackCompatibility compatibility, Operation<Component> original) {
         OpenGLVersion missing = PackInfos.missingOpenGL(this.pack.getId());
         if (compatibility.isCompatible() && missing != null) {
-            return Component.translatable("pack.polytone.needs_opengl", missing.toString(), GLHelper.getContextVersionStr());
+            return PackInfos.missingOpenGLMessage("pack.polytone.needs_opengl", missing);
         }
         return original.call(compatibility);
     }
@@ -135,7 +134,7 @@ public abstract class PackEntryMixin extends  ObjectSelectionList.Entry<Transfer
     private Component polytone$confirm(PackCompatibility compatibility, Operation<Component> original) {
         OpenGLVersion missing = PackInfos.missingOpenGL(this.pack.getId());
         if (compatibility.isCompatible() && missing != null) {
-            return Component.translatable("pack.polytone.needs_opengl.confirm", missing.toString(), GLHelper.getContextVersionStr());
+            return PackInfos.missingOpenGLMessage("pack.polytone.needs_opengl.confirm", missing);
         }
         return original.call(compatibility);
     }
