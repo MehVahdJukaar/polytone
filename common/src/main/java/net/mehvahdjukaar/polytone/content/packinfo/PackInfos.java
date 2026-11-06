@@ -5,6 +5,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.server.packs.PackMetadataResources;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfo.OpenGLVersion;
 //import net.mehvahdjukaar.polytone.content.shaders.GLHelper;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.PackType;
 import org.jspecify.annotations.Nullable;
 
@@ -49,5 +50,12 @@ public class PackInfos {
         // TODO: vulkan
         //return GLHelper.supportsOpenGL(required.major(), required.minor()) ? null : required;
         return null;
+    }
+
+    public static Component missingOpenGLMessage(String key, OpenGLVersion missing) {
+        // TODO: vulkan
+        //if (!GLHelper.isOpenGlBackend()) return Component.translatable(key + ".vulkan", missing.toString());
+        //return Component.translatable(key, missing.toString(), GLHelper.getContextVersionStr());
+        return Component.translatable(key + ".vulkan", missing.toString());
     }
 }

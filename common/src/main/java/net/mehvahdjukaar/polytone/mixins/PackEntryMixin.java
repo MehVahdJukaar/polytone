@@ -7,7 +7,6 @@ import net.mehvahdjukaar.polytone.content.packinfo.PackInfo.OpenGLVersion;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfoBadge;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfoScreen;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfos;
-//import net.mehvahdjukaar.polytone.content.shaders.GLHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ObjectSelectionList;
@@ -125,7 +124,7 @@ public abstract class PackEntryMixin extends  ObjectSelectionList.Entry<Transfer
     private Component polytone$explainMissingOpenGL(PackCompatibility compatibility, Operation<Component> original) {
         OpenGLVersion missing = PackInfos.missingOpenGL(this.pack.getId());
         if (compatibility.isCompatible() && missing != null) {
-            return polytone$missingOpenGLMessage("pack.polytone.needs_opengl", missing);
+            return PackInfos.missingOpenGLMessage("pack.polytone.needs_opengl", missing);
         }
         return original.call(compatibility);
     }
@@ -135,17 +134,8 @@ public abstract class PackEntryMixin extends  ObjectSelectionList.Entry<Transfer
     private Component polytone$confirm(PackCompatibility compatibility, Operation<Component> original) {
         OpenGLVersion missing = PackInfos.missingOpenGL(this.pack.getId());
         if (compatibility.isCompatible() && missing != null) {
-            return polytone$missingOpenGLMessage("pack.polytone.needs_opengl.confirm", missing);
+            return PackInfos.missingOpenGLMessage("pack.polytone.needs_opengl.confirm", missing);
         }
         return original.call(compatibility);
-    }
-
-
-    @Unique
-    private static Component polytone$missingOpenGLMessage(String key, OpenGLVersion missing) {
-        // TODO: vulkan
-        //if (!GLHelper.isOpenGlBackend()) return Component.translatable(key + ".vulkan", missing.toString());
-        //return Component.translatable(key, missing.toString(), GLHelper.getContextVersionStr());
-        return Component.translatable(key + ".vulkan", missing.toString());
     }
 }
