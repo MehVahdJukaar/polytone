@@ -1,1 +1,2 @@
-- fixes
+- ported more changes from 26.1.2
+- more stuff for packed packs integration
