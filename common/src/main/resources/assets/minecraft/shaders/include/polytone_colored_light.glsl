@@ -49,7 +49,7 @@ vec3 _polyWithFarLight(vec3 nearLight, vec3 pos, float vanillaLevel) {
 vec3 _polyColorAtVanillaBrightness(vec3 lightColor, float vanillaLightLevel) {
     float level = max(lightColor.r, max(lightColor.g, lightColor.b));
     if (level <= 0.0) return lightColor;
-    return lightColor * (vanillaLightLevel / max(level, 1.0));
+    return lightColor * (vanillaLightLevel / max(level, 0.25));
 }
 
 vec4 _polyColoredLightmap(vec4 vanilla, sampler2D lightMap, vec2 levels, float texelShift, vec3 pos, vec3 normal) {
