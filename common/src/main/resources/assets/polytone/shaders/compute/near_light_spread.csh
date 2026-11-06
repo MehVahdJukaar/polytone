@@ -40,7 +40,10 @@ Block blockAt(ivec3 slot) {
     // alpha byte is emission * 17, gets 0-15 back
     float emission = colorAndEmission.a * 15.0;
     bool emits = emission > 0.0;
-    return Block(colorAndEmission.rgb * emission, emits ? vec3(1.0) : colorAndEmission.rgb,
+    //range has to match vanillas so strongest channel starts at full level
+    float strongest = max(colorAndEmission.r, max(colorAndEmission.g, colorAndEmission.b));
+    vec3 hue = strongest > 0.0 ? colorAndEmission.rgb / strongest : vec3(1.0);
+    return Block(hue * emission, emits ? vec3(1.0) : colorAndEmission.rgb,
             float(entry.y & 0xFFu), solidFacesOf(entry));
 }
 
@@ -68,7 +71,10 @@ vec3 fadeThrough(vec3 incoming, Block block) {
     float level = max(incoming.r, max(incoming.g, incoming.b));
     if (level <= 0.0) return vec3(0.0);
     float faded = max(level - max(1.0, block.opacity), 0.0);
-    return incoming * (faded / level) * block.filterColor;
+    vec3 filtered = incoming * block.filterColor;
+    float filteredLevel = max(filtered.r, max(filtered.g, filtered.b));
+    if (filteredLevel <= 0.0) return vec3(0.0);
+    return filtered * (faded / filteredLevel);
 }
 
 void main() {
