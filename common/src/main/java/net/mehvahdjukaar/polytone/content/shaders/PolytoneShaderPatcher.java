@@ -52,8 +52,12 @@ public class PolytoneShaderPatcher {
     }
 
     //texel shift matchs how the vanilla read samples: terrain between texels, entities at their centers
-    private static String wrapWithColoredLight(String vanillaRead, String lightLevels, String texelShift, String pos, String normal) {
+    public static String wrapWithColoredLight(String vanillaRead, String lightLevels, String texelShift, String pos, String normal) {
         return "_polyColoredLightmap(" + vanillaRead + ", Sampler2, " + lightLevels + ", " + texelShift + ", " + pos + ", " + normal + ")";
+    }
+
+    public static String expandedInclude() {
+        return String.join("", new PostProgramImports().process(INCLUDE_IMPORT_LINE));
     }
 
     //its safer not to use moj_import as some mods resource provider might not see ours

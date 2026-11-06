@@ -61,4 +61,9 @@ dependencies {
     modRuntimeOnly("net.mehvahdjukaar:supplementaries-neoforge:1.21.1-4.1.0") { isTransitive = false }
     modRuntimeOnly("net.mehvahdjukaar:hauntedharvest-neoforge:1.21-3.5.0") { isTransitive = false }
     modRuntimeOnly("net.mehvahdjukaar:snowyspirit-neoforge:1.21.1-3.1.15") { isTransitive = false }
+
+    modRuntimeOnly("maven.modrinth:sable:fg9dTRz9") // 2.0.6
+    modRuntimeOnly("curse.maven:create-328085:7963363")
+    modRuntimeOnly("maven.modrinth:create-aeronautics:44pLdPGg") // 1.3.2
+    modRuntimeOnly("curse.maven:vista-1368607:8348336")
 }

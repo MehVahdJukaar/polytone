@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone;
 
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
+import net.mehvahdjukaar.polytone.compat.VeilCompat;
 import net.mehvahdjukaar.polytone.compat.nautilus.PolytoneNautilus;
 import net.mehvahdjukaar.polytone.content.biome.BiomeEffectsManager;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapperManager;
@@ -137,6 +138,9 @@ public class Polytone {
 
         if (CompatHandler.NAUTILUS) {
             PolytoneNautilus.init();
+        }
+        if (CompatHandler.VEIL) {
+            VeilCompat.init();
         }
         isDevEnv = devEnv;
         isForge = forge;

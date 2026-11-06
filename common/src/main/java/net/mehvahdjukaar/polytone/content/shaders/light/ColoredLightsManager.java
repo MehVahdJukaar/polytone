@@ -319,6 +319,8 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
 
     @Override
     public String patchShaderSource(String source) {
+        //veil recompiles every vanilla shader anyway, VeilCompat patches them there
+        if (CompatHandler.VEIL) return source;
         return canPatchShaders() ? PolytoneShaderPatcher.patch(source) : source;
     }
 
@@ -328,7 +330,7 @@ public class ColoredLightsManager extends ContentManager<ColoredLightEntry> impl
     }
 
     //shaders can compile before our reload so this must not read pack data
-    private static boolean canPatchShaders() {
+    public static boolean canPatchShaders() {
         return Polytone.CONFIGS.coloredLightsBackend.get().tintsVanillaBlockLight() && PolytoneShaderPatcher.isIncludeAvailable();
     }
 
