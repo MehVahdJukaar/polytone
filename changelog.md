@@ -1,1 +1,1 @@
-- added more exclusions to new version ids so packs made for new version with no proper support for old versions (using overlays), can still partially load
+- added more veil compat. With veil on our shader preprocessors dont use regex magic but use veil syntax tree to patch stuff properly
