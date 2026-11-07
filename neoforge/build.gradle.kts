@@ -41,7 +41,7 @@ dependencies {
     modRuntimeOnly("net.mehvahdjukaar:nautilus_studio-neoforge:${nautilus_studio_version}")
     modCompileOnly("maven.modrinth:iris:1.8.14-beta.1+1.21.1-neoforge")
     modCompileOnly(":sodium-neoforge-mod:0.8.13")
-    localRuntime(":sodium-neoforge-mod:0.8.12")
+    //localRuntime(":sodium-neoforge-mod:0.8.12")
     localRuntime(":fabric-api-base:0.4.42")
     localRuntime(":fabric-block-view-api-v2:1.0.10")
     localRuntime(":fabric-renderer-api-v1:3.4.1")

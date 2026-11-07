@@ -23,19 +23,22 @@ public abstract class ShaderInstanceMixin {
     private List<Uniform> uniforms;
 
     @Unique
-    private List<IShaderInputPatch> polytone$declaredBinders = null;
+    private List<IShaderInputPatch> polytone$inputPatches = null;
     @Unique
-    private IShaderInputs polytone$instance = null;
+    private IShaderInputs polytone$inputs = null;
+    @Unique
+    private int polytone$inputPatchesProgramId = -1;
 
     @Inject(method = "apply", at = @At("HEAD"))
     private void polytone$bindExtraUniforms(CallbackInfo ci) {
         ShaderInstance shader = (ShaderInstance) (Object) this;
-        if (polytone$declaredBinders == null) {
-            polytone$instance = IShaderInputs.ofShaderInstance(shader, uniforms);
-            polytone$declaredBinders = PolytoneRenderHooks.inputPatchesFor(polytone$instance);
+        if (polytone$inputPatches == null || polytone$inputPatchesProgramId != shader.getId()) {
+            polytone$inputPatchesProgramId = shader.getId();
+            polytone$inputs = IShaderInputs.ofShaderInstance(shader, uniforms);
+            polytone$inputPatches = PolytoneRenderHooks.inputPatchesFor(polytone$inputs);
         }
-        for (var binder : polytone$declaredBinders) {
-            binder.bindToShader(polytone$instance);
+        for (var patch : polytone$inputPatches) {
+            patch.bindToShader(polytone$inputs);
         }
     }
 }
