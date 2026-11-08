@@ -27,13 +27,13 @@ public class ClientFrameTicker {
     private static int skyLight;
     private static int blockLight;
     private static BlockPos cameraPos = BlockPos.ZERO;
-    public static Holder<Biome> cameraBiome;
+    private static WeakReference<Holder<Biome>> cameraBiome = new WeakReference<>(null);
     private static float temperature;
     private static float downfall;
     private static float deltaTime;
     private static double playerSpeed;
 
-    private static DimensionType lastDImType;
+    private static WeakReference<DimensionType> lastDImType = new WeakReference<>(null);
     private static Screen lastScreen;
     private static float screenTime;
 
@@ -77,8 +77,8 @@ public class ClientFrameTicker {
     public static void onRenderTick(Minecraft mc) {
         Level level = mc.level;
         if (level == null) return;
-        if (level.dimensionType() != lastDImType) {
-            lastDImType = level.dimensionType();
+        if (level.dimensionType() != lastDImType.get()) {
+            lastDImType = new WeakReference<>(level.dimensionType());
             Polytone.onDimChanged(level);
         }
         float partialTicks = mc.getTimer().getGameTimeDeltaPartialTick(false);
@@ -90,7 +90,8 @@ public class ClientFrameTicker {
         season = PlatStuff.compatSSGetSeason(level);
 
         cameraPos = mc.gameRenderer.getMainCamera().getBlockPosition();
-        cameraBiome = level.getBiome(cameraPos);
+        var biome = level.getBiome(cameraPos);
+        if (biome != cameraBiome.get()) cameraBiome = new WeakReference<>(biome);
 
         Polytone.COLORED_LIGHTS.onRenderTick(partialTicks);
 
@@ -155,7 +156,7 @@ public class ClientFrameTicker {
     }
 
     public static Holder<Biome> getCameraBiome() {
-        return cameraBiome;
+        return cameraBiome.get();
     }
 
     public static float getDeltaTime() {
