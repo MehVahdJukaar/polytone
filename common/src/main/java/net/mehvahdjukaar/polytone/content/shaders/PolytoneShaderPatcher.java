@@ -5,6 +5,7 @@ import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -45,7 +46,11 @@ public class PolytoneShaderPatcher {
     }
 
     public static boolean isIncludeAvailable() {
-        return Minecraft.getInstance().getResourceManager().getResource(INCLUDE_LOCATION).isPresent();
+        //other mods can compile shaders during RenderSystem.initRenderer, inside the Minecraft constructor,
+        //before the resource manager exists. Nothing can be patched yet so just skip
+        ResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
+        if (resourceManager == null) return false;
+        return resourceManager.getResource(INCLUDE_LOCATION).isPresent();
     }
 
     //face = Direction ordinal + 1, 0 = dont know. shared by the sodium and vanilla meshes
