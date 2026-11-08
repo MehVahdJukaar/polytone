@@ -1,1 +1,1 @@
-- added more veil compat. With veil on our shader preprocessors dont use regex magic but use veil syntax tree to patch stuff properly
+- fixed another issue with  veil

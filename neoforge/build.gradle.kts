@@ -66,4 +66,5 @@ dependencies {
     modRuntimeOnly("curse.maven:create-328085:7963363")
     modRuntimeOnly("maven.modrinth:create-aeronautics:44pLdPGg") // 1.3.2
     modRuntimeOnly("curse.maven:vista-1368607:8348336")
+    modRuntimeOnly("curse.maven:distant-horizons-508933:8908517")
 }

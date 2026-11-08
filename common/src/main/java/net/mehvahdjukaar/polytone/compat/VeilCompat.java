@@ -53,7 +53,9 @@ public class VeilCompat {
                 return;
             }
             GlslFunctionNode main = tree.mainFunction().orElse(null);
-            if (main == null) return;
+            if (main == null) {
+                return;
+            }
 
             List<GlslInvokeFunctionNode> lightmapReads = new ArrayList<>();
             for (GlslNode node : main.stream().toList()) {
@@ -93,6 +95,8 @@ public class VeilCompat {
                     params.size() == paramCount && params.getFirst() instanceof GlslVariableNode sampler && sampler.getName().equals("Sampler2");
         }
     }
+
+
 
     private static class VeilPointLightStorage implements PointLightStorage {
 
