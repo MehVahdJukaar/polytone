@@ -20,7 +20,7 @@ public class ClientFrameTicker {
     private static double time;
     private static double sunTime;
     private static double dayTime;
-    public static Holder<Biome> cameraBiome;
+    private static WeakReference<Holder<Biome>> cameraBiome = new WeakReference<>(null);
     private static float temperature;
     private static float downfall;
     private static double playerSpeed = 0;
@@ -52,7 +52,8 @@ public class ClientFrameTicker {
         dayTime = level.dimensionType().hasFixedTime() ? clockTime : clockTime + partialTicks;
         //TODO: other param like moon pos
 
-        cameraBiome = level.getBiome(getCameraBlockPos());
+        var biome = level.getBiome(getCameraBlockPos());
+        if (biome != cameraBiome.get()) cameraBiome = new WeakReference<>(biome);
 
         Polytone.COLORED_LIGHTS.onRenderTick(partialTicks);
 
@@ -94,13 +95,15 @@ public class ClientFrameTicker {
     }
 
     public static Holder<Biome> getCameraBiome() {
-        if (cameraBiome == null) {
+        Holder<Biome> biome = cameraBiome.get();
+        if (biome == null) {
             //mega dumb. idk why this can be called before tick
             Minecraft mc = Minecraft.getInstance();
             Level level = mc.level;
-            cameraBiome = level.getBiome(getCameraBlockPos());
+            biome = level.getBiome(getCameraBlockPos());
+            cameraBiome = new WeakReference<>(biome);
         }
-        return cameraBiome;
+        return biome;
     }
 
     public static double getSunTime() {
