@@ -4,6 +4,7 @@ import net.mehvahdjukaar.polytone.content.shaders.post.PostProgramImports;
 import net.minecraft.FileUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,8 +29,11 @@ public class PolytoneShaderPatcher {
     private static final ResourceLocation INCLUDE_LOCATION = ResourceLocation.withDefaultNamespace("shaders/include/polytone_colored_light.glsl");
 
     public static boolean isIncludeAvailable() {
-        return Minecraft.getInstance().getResourceManager()
-                .getResource(INCLUDE_LOCATION).isPresent();
+        //other mods can compile shaders during RenderSystem.initRenderer, inside the Minecraft constructor,
+        //before the resource manager exists. Nothing can be patched yet so just skip
+        ResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
+        if (resourceManager == null) return false;
+        return resourceManager.getResource(INCLUDE_LOCATION).isPresent();
     }
 
     public static String patch(String vertexShaderText) {
