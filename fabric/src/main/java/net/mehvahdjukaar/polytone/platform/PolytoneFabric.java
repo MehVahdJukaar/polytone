@@ -64,10 +64,8 @@ public class PolytoneFabric implements ClientModInitializer {
         });
 
         ServerLifecycleEvents.SERVER_STARTED.register(server -> currentServer = server);
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> currentServer = null);
 
-        // vanilla renders only the render types in RENDER_ORDER, so ours has to be spliced in.
-        // On JOIN, not SERVER_STARTED: that one never fires when connecting to a dedicated server,
-        // leaving every additive_translucent particle invisible there.
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> addRenderParticlesType());
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
