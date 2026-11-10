@@ -33,7 +33,7 @@ public class ColorFieldWidget extends AbstractContainerWidget {
 
     public ColorFieldWidget(int width, int height, int initial, boolean hasAlpha,
                             Consumer<Integer> onChange, @Nullable Consumer<Integer> onSwatchClick) {
-        super(0, 0, width, height, Component.empty());
+        super(0, 0, width, height, Component.empty(), defaultSettings(10));
         this.hasAlpha = hasAlpha;
         this.color = sanitize(initial);
 

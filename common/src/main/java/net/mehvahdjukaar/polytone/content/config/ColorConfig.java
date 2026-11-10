@@ -16,6 +16,7 @@ import net.minecraft.network.chat.MutableComponent;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class ColorConfig extends PolyConfig<Integer> {
@@ -53,13 +54,13 @@ public class ColorConfig extends PolyConfig<Integer> {
     }
 
     @Override
-    public Function<OptionInstance<Integer>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<Integer> tooltipSupplier, Options options, int x, int y, int width, OptionInstance.ValueUpdateListener<? super Integer> consumer) {
+    public Function<OptionInstance<Integer>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<Integer> tooltipSupplier, Options options, int x, int y, int width, Consumer<Integer> consumer) {
         return optionInstance -> {
             Button button = new SwatchButton(x, y, width, optionInstance, b -> {
                 Minecraft mc = Minecraft.getInstance();
                 mc.setScreen(new ColorPickerScreen(optionInstance.get(), hasAlpha, mc.screen, picked -> {
                     optionInstance.set(picked);
-                    consumer.valueChanged(picked);
+                    consumer.accept(picked);
                 }));
             });
             button.setTooltip(tooltipSupplier.apply(optionInstance.get()));

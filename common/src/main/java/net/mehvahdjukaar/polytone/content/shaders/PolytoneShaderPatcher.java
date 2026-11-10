@@ -45,6 +45,8 @@ public class PolytoneShaderPatcher {
         return Polytone.CONFIGS.coloredLightsBackend.get().tintsVanillaBlockLight() && GLHelper.isOpenGlBackend();
     }
 
+    //dont trust null check... caused a crash with voxy
+    @SuppressWarnings("ConstantConditions")
     public static boolean isIncludeAvailable() {
         //other mods can compile shaders during RenderSystem.initRenderer, inside the Minecraft constructor,
         //before the resource manager exists. Nothing can be patched yet so just skip
@@ -66,17 +68,27 @@ public class PolytoneShaderPatcher {
     public static String onLoadVertexShader(Identifier shaderId, String vertexShaderText, boolean canPatch) {
         String patched = canPatch ? patch(shaderId, vertexShaderText) : vertexShaderText;
         boolean readsFaceBits = patched.contains("_polyColoredLightmapForFace(");
-        if (shaderId.equals(TERRAIN)) terrainReadsFaceBits = readsFaceBits;
-        else if (shaderId.equals(BLOCK)) blockReadsFaceBits = readsFaceBits;
+        if (shaderId.equals(TERRAIN)){
+            terrainReadsFaceBits = readsFaceBits;
+        }
+        else if (shaderId.equals(BLOCK)) {
+            blockReadsFaceBits = readsFaceBits;
+        }
         return patched;
     }
 
     private static String patch(Identifier shaderId, String vertexShaderText) {
-        if (!LIGHTMAP_READ.matcher(vertexShaderText).find()) return vertexShaderText;
+        if (!LIGHTMAP_READ.matcher(vertexShaderText).find()) {
+            return vertexShaderText;
+        }
         Matcher fogDistance = FOG_DISTANCE_ARG.matcher(vertexShaderText);
-        if (!fogDistance.find()) return vertexShaderText;
+        if (!fogDistance.find()){
+            return vertexShaderText;
+        }
         Matcher versionLine = VERSION_LINE.matcher(vertexShaderText);
-        if (!versionLine.find()) return vertexShaderText;
+        if (!versionLine.find()){
+            return vertexShaderText;
+        }
 
         String cameraRelativePos = fogDistance.group(1);
         boolean hasNormal = DECLARES_NORMAL.matcher(vertexShaderText).find();
@@ -105,6 +117,7 @@ public class PolytoneShaderPatcher {
     private static String wrapWithColoredLight(String vanillaRead, String lightLevels, String texelShift, String pos, String normal) {
         return "_polyColoredLightmap(" + vanillaRead + ", Sampler2, " + lightLevels + ", " + texelShift + ", " + pos + ", " + normal + ")";
     }
+
 
     //sodium #import only looks in its own jat and doesnt know #moj_import. paste ours in expanded
     public static String patchSodiumChunkShader(String vertexShaderText) {
