@@ -7,6 +7,10 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -63,6 +67,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
     private static final int DEFAULT_COLOR = ARGB.colorFromFloat(1.0f, 1, 0, 0);
     private final Object2IntMap<MapColor> vanillaMapColors = new Object2IntOpenHashMap<>();
     private final Map<DyeColor, Integer> vanillaFireworkColors = new EnumMap<>(DyeColor.class);
+    private final Int2IntMap fireworkColorsByVanilla = new Int2IntOpenHashMap();
     private final Map<DyeColor, Integer> vanillaDiffuseColors = new EnumMap<>(DyeColor.class);
     private final Map<DyeColor, Integer> vanillaTextColors = new EnumMap<>(DyeColor.class);
     private final Object2IntMap<MobEffect> vanillaEffectColors = new Object2IntOpenHashMap<>();
@@ -197,6 +202,19 @@ public class ColorManager extends SingleFileContentManager<Void> {
         return starCount != null ? starCount : vanilla;
     }
 
+    public int getVanillaFireworkColor(DyeColor color) {
+        return vanillaFireworkColors.getOrDefault(color, color.getFireworkColor());
+    }
+
+    public IntList remapFireworkColors(IntList colors) {
+        if (fireworkColorsByVanilla.isEmpty() || colors.isEmpty()) return colors;
+        IntList res = new IntArrayList(colors.size());
+        for (int c : colors) {
+            res.add(fireworkColorsByVanilla.getOrDefault(c, c));
+        }
+        return res;
+    }
+
     public Integer getXpBar() {
         return xpBar;
     }
@@ -305,9 +323,8 @@ public class ColorManager extends SingleFileContentManager<Void> {
                         color.textureDiffuseColor = ARGB.opaque(col);
                     }
                     case "firework" -> {
-                        if (!vanillaFireworkColors.containsKey(color)) {
-                            vanillaFireworkColors.put(color, color.fireworkColor);
-                        }
+                        int vanilla = vanillaFireworkColors.computeIfAbsent(color, DyeColor::getFireworkColor);
+                        fireworkColorsByVanilla.put(vanilla, col);
                         color.fireworkColor = col;
                     }
                     case "text" -> {
@@ -692,6 +709,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
             color.fireworkColor = e.getValue();
         }
         vanillaFireworkColors.clear();
+        fireworkColorsByVanilla.clear();
 
         for (var e : vanillaTextColors.entrySet()) {
             DyeColor color = e.getKey();
