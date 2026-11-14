@@ -10,7 +10,6 @@
     "ColorResolverRegistryAccessor",
     "CreativeTabAccessor",
     "EquipmentLayerRendererMixin",
-    "EquipmentLayerRendererMixin",
     "FabricItemGroupEntriesAccessor",
     "FaceBakeryMixin",
     "FogRendererMixin",
