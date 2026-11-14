@@ -4,7 +4,9 @@
   "compatibilityLevel": "JAVA_21",
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
+    "CelebrateRaidFireworkMixin",
     "DarkOakColorMixin",
+    "FireworkRecipesMixin",
     "EnvironmentAttributeSystemBuilderMixin",
     "IdentifierMixin",
     "OverlayEntryMixin",
@@ -45,6 +47,8 @@
     "EnvironmentAttributeEntryMixin",
     "EnvironmentSystemMixin",
     "ValueProbeMixin",
+    "FireworkStarterMixin",
+    "FireworkTintMixin",
     "FishingHookRendererMixin",
     "FluidStateModelSetMixin",
     "GameRendererMixin",
