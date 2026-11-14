@@ -43,6 +43,7 @@ dependencies {
 
     modImplementation("maven.modrinth:iris:1.11.2+26.2-fabric")
     modCompileOnly("maven.modrinth:distanthorizons:3.3.3-26.2")
+    modCompileOnly("maven.modrinth:flashback:0.43.3")
 
     modImplementation("maven.modrinth:packed-packs:${packed_packs_fabric_version}")
     compileOnly("io.github.fishstiz.packed_packs.api:packed_packs_api-fabric:${packed_packs_api_version}")
