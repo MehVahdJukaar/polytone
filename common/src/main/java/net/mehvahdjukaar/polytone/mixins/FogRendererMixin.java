@@ -13,7 +13,7 @@ public abstract class FogRendererMixin {
     @ModifyArg(method = "setupFog", index = 3, at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/renderer/fog/FogRenderer;computeFogColor(Lnet/minecraft/client/Camera;FLnet/minecraft/client/multiplayer/ClientLevel;IFLorg/joml/Vector4f;)V"))
     private int polytone$skyRenderDistance(int renderDistanceChunks) {
-        Integer skyRenderDistance = Polytone.COLORS.getSkyRenderDistance();
-        return skyRenderDistance != null ? skyRenderDistance : renderDistanceChunks;
+        Integer fogColorDistance = Polytone.COLORS.getFogColorRenderDistance();
+        return fogColorDistance != null ? fogColorDistance : renderDistanceChunks;
     }
 }
