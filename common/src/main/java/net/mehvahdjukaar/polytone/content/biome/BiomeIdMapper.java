@@ -25,10 +25,11 @@ public interface BiomeIdMapper {
 
     float getIndex(Biome biome);
 
-    record Custom(Map<ResourceKey<Biome>, Float> map, float textureSize) implements BiomeIdMapper {
+    record Custom(Map<ResourceKey<Biome>, Float> map, float textureSize, float defaultValue) implements BiomeIdMapper {
 
         public Custom(Map<ResourceKey<Biome>, Float> map) {
-            this(map, map.getOrDefault(ResourceKey.create(Registries.BIOME, Identifier.withDefaultNamespace("texture_size")), 1f));
+            this(map, map.getOrDefault(ResourceKey.create(Registries.BIOME, Identifier.withDefaultNamespace("texture_size")), 1f),
+                    map.getOrDefault(ResourceKey.create(Registries.BIOME, Identifier.withDefaultNamespace("default")), 0f));
         }
 
         public static final Codec<Custom> CUSTOM_CODEC = Codec.unboundedMap(Identifier.CODEC
@@ -38,7 +39,7 @@ public interface BiomeIdMapper {
 
         @Override
         public float getIndex(Biome biome) {
-            return (map.getOrDefault(BiomeKeysCache.get(biome), 0f)) / (textureSize-1);
+            return (map.getOrDefault(BiomeKeysCache.get(biome), defaultValue)) / (textureSize-1);
         }
     }
 
