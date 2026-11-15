@@ -1,0 +1,2 @@
+- second know for sky color render distance
+- minor fixes
