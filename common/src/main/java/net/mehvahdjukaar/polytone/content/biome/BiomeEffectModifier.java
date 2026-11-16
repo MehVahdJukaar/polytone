@@ -11,6 +11,7 @@ import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.Targets;
+import net.mehvahdjukaar.polytone.common.codec.OptOrUnset;
 import net.minecraft.core.registries.Registries;
 import net.mehvahdjukaar.polytone.common.Weather;
 import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributeMapMod;
@@ -23,8 +24,6 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.attribute.EnvironmentAttributes;
-import net.minecraft.world.attribute.modifier.FloatModifier;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Blocks;
@@ -32,12 +31,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
-import java.util.function.Supplier;
 
 public record BiomeEffectModifier(Optional<Integer> waterColor,
-                                  Optional<Integer> foliageColorOverride,
-                                  Optional<Integer> dryFoliageColorOverride,
-                                  Optional<Integer> grassColorOverride,
+                                  OptOrUnset<Integer> foliageColorOverride,
+                                  OptOrUnset<Integer> dryFoliageColorOverride,
+                                  OptOrUnset<Integer> grassColorOverride,
                                   Optional<BiomeSpecialEffects.GrassColorModifier> grassColorModifier,
                                   BiomeEnvAttributeModifications attributeModifications,
                                   Targets targets) {
@@ -57,11 +55,19 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
         return COLOR_OR_CONFIG.optionalFieldOf(name).xmap(o -> o.flatMap(c -> c), o -> o.map(Optional::of));
     }
 
+    private static final SchemaCodec<OptOrUnset<Integer>> OVERRIDE_COLOR = OptOrUnset.alternatives(
+            OptOrUnset.alt("color", ColorUtils.COLOR),
+            SchemaCodecs.alt("config", CONFIG_COLOR.xmap(o -> o.map(OptOrUnset::of).orElseGet(OptOrUnset::empty), OptOrUnset::toOptional)));
+
+    private static MapCodec<OptOrUnset<Integer>> overrideField(String name) {
+        return OptOrUnset.optionalFieldOf(name, OVERRIDE_COLOR);
+    }
+
     public static final SchemaCodec<BiomeEffectModifier> DIRECT_CODEC = SchemaRecord.create(BiomeEffectModifier.class, (i) -> i.group(
             i.field("water_color", colorField("water_color"), COLOR_OR_CONFIG, BiomeEffectModifier::waterColor),
-            i.field("foliage_color", colorField("foliage_color"), COLOR_OR_CONFIG, BiomeEffectModifier::foliageColorOverride),
-            i.field("dry_foliage_color", colorField("dry_foliage_color"), COLOR_OR_CONFIG, BiomeEffectModifier::dryFoliageColorOverride),
-            i.field("grass_color", colorField("grass_color"), COLOR_OR_CONFIG, BiomeEffectModifier::grassColorOverride),
+            i.field("foliage_color", overrideField("foliage_color"), OVERRIDE_COLOR, BiomeEffectModifier::foliageColorOverride),
+            i.field("dry_foliage_color", overrideField("dry_foliage_color"), OVERRIDE_COLOR, BiomeEffectModifier::dryFoliageColorOverride),
+            i.field("grass_color", overrideField("grass_color"), OVERRIDE_COLOR, BiomeEffectModifier::grassColorOverride),
             i.optional("grass_color_modifier", BiomeSpecialEffects.GrassColorModifier.CODEC, BiomeEffectModifier::grassColorModifier),
             i.optional("attributes_modifiers", BiomeEnvAttributeModifications.CODEC,
                     BiomeEnvAttributeModifications.EMPTY, BiomeEffectModifier::attributeModifications),
@@ -106,9 +112,9 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
     private static BiomeEffectModifier wrapVanilla(BiomeSpecialEffects effects, EnvironmentAttributeMap attributes) {
         return new BiomeEffectModifier(
                 Optional.of(effects.waterColor()),
-                effects.foliageColorOverride(),
-                effects.dryFoliageColorOverride(),
-                effects.grassColorOverride(),
+                OptOrUnset.fromOptional(effects.foliageColorOverride()),
+                OptOrUnset.fromOptional(effects.dryFoliageColorOverride()),
+                OptOrUnset.fromOptional(effects.grassColorOverride()),
                 Optional.of(effects.grassColorModifier()),
                 BiomeEnvAttributeModifications.baseOnly(EnvironmentAttributeMapMod.wrapVanilla(attributes)),
                 Targets.EMPTY
@@ -118,9 +124,9 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
     private static BiomeEffectModifier ofAttributes(BiomeEnvAttributeModifications attributes) {
         return new BiomeEffectModifier(
                 Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
+                OptOrUnset.empty(),
+                OptOrUnset.empty(),
+                OptOrUnset.empty(),
                 Optional.empty(),
                 attributes,
                 Targets.EMPTY
@@ -131,9 +137,9 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
     public BiomeEffectModifier merge(BiomeEffectModifier newMod) {
         return new BiomeEffectModifier(
                 newMod.waterColor.or(this::waterColor),
-                newMod.foliageColorOverride.or(this::foliageColorOverride),
-                newMod.dryFoliageColorOverride.or(this::dryFoliageColorOverride),
-                newMod.grassColorOverride.or(this::grassColorOverride),
+                newMod.foliageColorOverride.or(this.foliageColorOverride),
+                newMod.dryFoliageColorOverride.or(this.dryFoliageColorOverride),
+                newMod.grassColorOverride.or(this.grassColorOverride),
                 newMod.grassColorModifier.or(this::grassColorModifier),
                 this.attributeModifications.merge(newMod.attributeModifications),
                 this.targets.merge(newMod.targets)
@@ -156,22 +162,24 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
         builder.waterColor(newWaterColor);
 
         Optional<Integer> newFoliageColorOverride = specialEffects.foliageColorOverride();
-        if (foliageColorOverride.isPresent()) {
-            newFoliageColorOverride = foliageColorOverride;
+        if (!foliageColorOverride.isEmpty()) {
+            //  if (foliageColorOverride.isUnset()) newFoliageColorOverride = Optional.empty();
+            newFoliageColorOverride = foliageColorOverride.toOptional();
             changed = true;
         }
         newFoliageColorOverride.ifPresent(builder::foliageColorOverride);
 
         Optional<Integer> newDryFoliageColorOverride = specialEffects.dryFoliageColorOverride();
-        if (dryFoliageColorOverride.isPresent()) {
-            newDryFoliageColorOverride = dryFoliageColorOverride;
+        if (!dryFoliageColorOverride.isEmpty()) {
+            newDryFoliageColorOverride = dryFoliageColorOverride.toOptional();
             changed = true;
         }
         newDryFoliageColorOverride.ifPresent(builder::dryFoliageColorOverride);
 
         Optional<Integer> newGrassColorOverride = specialEffects.grassColorOverride();
-        if (grassColorOverride.isPresent()) {
-            newGrassColorOverride = grassColorOverride;
+        if (!grassColorOverride.isEmpty()) {
+            //if (grassColorOverride.isSet()) newGrassColorOverride = grassColorOverride.toOptional();
+            newGrassColorOverride = grassColorOverride.toOptional();
             changed = true;
         }
         newGrassColorOverride.ifPresent(builder::grassColorOverride);
