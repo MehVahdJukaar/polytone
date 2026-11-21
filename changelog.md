@@ -1,3 +1,3 @@
-ALPHA version! use at your own risk, wont receive further updates until old stuff has been ported to 26.1.2 first
-thanks to icehunter for 26.3 port PR
-- fixed 1 crash with Improved Transparency on
+- ported so many changes from past few months that were in 26.2 and 26.1.2
+- removed exp4j, expressions can now only be done with the new expressions types.
+- colored light stuff and shader patching stuff remains disabled as it needs (a lot) more work to function on vulkan
