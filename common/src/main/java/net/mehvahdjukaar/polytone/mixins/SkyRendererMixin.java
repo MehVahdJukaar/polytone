@@ -9,7 +9,6 @@ import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SkyRenderer;
 import org.joml.Matrix4f;
-import org.joml.Matrix4fc;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -44,8 +43,8 @@ public class SkyRendererMixin {
 
     //fake sky render distance can be past the real far plane, which clips the sky disc (512 out). sky fog reads the unscaled positions so here we shrink it to look identical
     @ModifyArg(method = "renderSkyDisc", index = 0, at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/renderer/DynamicUniforms;writeTransform(Lorg/joml/Matrix4fc;Lorg/joml/Vector4fc;Lorg/joml/Vector3fc;Lorg/joml/Matrix4fc;)Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice;"))
-    private Matrix4fc polytone$hackfitSkyInFarPlane(Matrix4fc modelView) {
+            target = "Lnet/minecraft/client/renderer/DynamicGpuData;writeTransform(Lorg/joml/Matrix4f;Lorg/joml/Vector4f;)Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice;"))
+    private Matrix4f polytone$hackfitSkyInFarPlane(Matrix4f modelView) {
         if (Polytone.COLORS.getSkyRenderDistance() == null) {
             return modelView;
         }
