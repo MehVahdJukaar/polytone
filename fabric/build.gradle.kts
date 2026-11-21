@@ -32,7 +32,7 @@ dependencies {
     // modRuntimeOnly("maven.modrinth:sodium:mc1.21-0.6.0-beta.1-fabric")
 //modImplementation "curse.maven:continuity-531351:5425853"
     // modImplementation ("curse.maven:continuity-531351:5425853")
-    modCompileOnly("maven.modrinth:sodium:mc26.3-0.9.2-fabric")
+    modCompileOnly("maven.modrinth:sodium:mc26.3-0.9.3-fabric")
     modCompileOnly("curse.maven:sodium-core-shader-support-956376:8267839") // 1.5.0-mc26.1.2-sodium0.9.0beta.1
      //modImplementation ("curse.maven:distant-horizons-508933:6387715")
     modCompileOnly("maven.modrinth:iris:1.11.7+26.3-fabric")
