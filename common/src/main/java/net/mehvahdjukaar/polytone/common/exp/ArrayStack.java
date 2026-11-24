@@ -53,4 +53,8 @@ class ArrayStack {
     int size() {
         return idx + 1;
     }
+
+    void clear() {
+        idx = -1;
+    }
 }

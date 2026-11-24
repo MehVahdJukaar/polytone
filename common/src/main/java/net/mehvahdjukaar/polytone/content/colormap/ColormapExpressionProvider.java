@@ -12,6 +12,7 @@ import net.mehvahdjukaar.polytone.common.exp.IExpression;
 import net.mehvahdjukaar.polytone.common.exp.PolytoneExpression;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
@@ -88,13 +89,16 @@ public class ColormapExpressionProvider extends PolytoneExpression implements IC
     public float evaluate(@NotNull BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome,
                           @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
 
-        BlockPos bp = pos == null ? BlockPos.ZERO : BlockPos.containing(pos);
+        // Runs per vertex during chunk meshing: only create a BlockPos when a light lookup actually needs one
+        long packedPos = 0;
         if (pos == null) {
             pos = Vec3.ZERO;
             ExpressionUtils.randomizeRandom();
         } else {
-            ExpressionUtils.seedRandom(pos.hashCode() * bp.asLong());
+            packedPos = BlockPos.asLong(Mth.floor(pos.x()), Mth.floor(pos.y()), Mth.floor(pos.z()));
+            ExpressionUtils.seedRandom(pos.hashCode() * packedPos);
         }
+        BlockPos bp = hasSkyLight || hasBlockLight ? BlockPos.containing(pos) : null;
         IExpression.IVars vb = expression.varBuilder();
 
         if (hasPos) {
